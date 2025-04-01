@@ -3,10 +3,8 @@ import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platfo
 import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
-import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 
-
-class PPPeripheralApple {
+class PPPeripheralCoconut {
 
   /// 获取历史数据-获取历史数据后，调用 deleteHistoryData 删除设备中的历史数据
   /// [callBack] 返回的是设备离线测量的数据
@@ -37,24 +35,6 @@ class PPPeripheralApple {
     PPBluetoothKitFlutterPlatform.instance.syncUnit(deviceUser);
   }
 
-  /// 配网（Wi-Fi）
-  /// 参数说明：
-  ///   - [domain] 配网服务器域名
-  ///   - [ssId] Wi-Fi的名称（区分大小写）
-  ///   - [password] Wi-Fi的密码
-  ///   - [callBack] 配网结果回调函数，包含三个参数：
-  ///     1. [success] true:成功，false：失败
-  ///     2. [sn] sn
-  ///     3. [errorCode] 错误码
-  static Future<PPWifiResult> configWifi({required String domain, required String ssId, required String password}) async {
-    return PPBluetoothKitFlutterPlatform.instance.configWifi(domain: domain, ssId: ssId, password: password);
-  }
-
-  /// 获取设备配网信息（Wi-Fi）
-  /// 返回: 如果设备已配网，则返回设备中的 ssId
-  static Future<String?> fetchWifiInfo() async {
-    return PPBluetoothKitFlutterPlatform.instance.fetchWifiInfo();
-  }
 
   /// 获取设备信息
   static Future<PPDevice180AModel?> fetchDeviceInfo() async {
@@ -67,9 +47,5 @@ class PPPeripheralApple {
     PPBluetoothKitFlutterPlatform.instance.fetchBatteryInfo(continuity: continuity, callBack: callBack);
   }
 
-  /// 恢复出厂设置
-  static void resetDevice() {
-    PPBluetoothKitFlutterPlatform.instance.resetDevice();
-  }
 
 }

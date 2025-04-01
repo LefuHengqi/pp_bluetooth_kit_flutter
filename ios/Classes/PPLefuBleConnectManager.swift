@@ -24,6 +24,7 @@ class PPLefuBleConnectManager:NSObject {
     var measureStreamHandler:PPLefuStreamHandler?
     var historyStreamHandler:PPLefuStreamHandler?
     var batteryStreamHandler:PPLefuStreamHandler?
+    var blePermissionStreamHandler:PPLefuStreamHandler?
     
     lazy var scaleManager:PPBluetoothConnectManager = PPBluetoothConnectManager()
     
@@ -37,10 +38,14 @@ class PPLefuBleConnectManager:NSObject {
     private var tempScaleHistoryList : Array<PPBluetoothScaleBaseModel>?
     
     private var appleControl : PPBluetoothPeripheralApple?
+    private var coconutControl : PPBluetoothPeripheralCoconut?
     
     func startScan() {
         
-        scan(type: .scan);
+        self.stopScan()
+        self.disconnect()
+        
+        scan(type: .scan)
     }
     
     func scan(type:PPLefuScanType) {
@@ -54,6 +59,14 @@ class PPLefuBleConnectManager:NSObject {
     }
     
     func connectDevice(deviceMac:String, deviceName:String) {
+        
+        if self.currentDevice?.deviceMac == deviceMac {
+            self.loggerStreamHandler?.event?("\(deviceMac)-该设备已连接，继续使用")
+            sendConnectState(1)
+            
+            return
+        }
+
         self.stopScan()
         self.disconnect()
         
@@ -73,7 +86,17 @@ class PPLefuBleConnectManager:NSObject {
         if let apple = self.appleControl?.peripheral {
             self.scaleManager.disconnect(apple)
         }
+        if let coconut = self.coconutControl?.peripheral {
+            self.scaleManager.disconnect(coconut)
+        }
+        
+        self.clearData()
+    }
+    
+    func clearData() {
+        
         self.appleControl = nil
+        self.coconutControl = nil
         
         self.needScan = false
         self.needConnectMac = ""
@@ -105,6 +128,9 @@ class PPLefuBleConnectManager:NSObject {
         if currentDevice.peripheralType == .peripheralApple {
             self.tempScaleHistoryList = []
             self.appleControl?.fetchDeviceHistoryData()
+        } else if currentDevice.peripheralType == .peripheralCoconut {
+            self.tempScaleHistoryList = []
+            self.coconutControl?.fetchDeviceHistoryData()
         }
     }
     
@@ -118,6 +144,9 @@ class PPLefuBleConnectManager:NSObject {
             self.appleControl?.deleteDeviceHistoryData(handler: { state in
                 self.loggerStreamHandler?.event?("删除历史数据-状态:\(state)")
             })
+        } else if currentDevice.peripheralType == .peripheralCoconut {
+            self.coconutControl?.deleteDeviceHistoryData()
+            self.loggerStreamHandler?.event?("Coconut删除历史数据")
         }
     }
     
@@ -129,6 +158,8 @@ class PPLefuBleConnectManager:NSObject {
 
         if currentDevice.peripheralType == .peripheralApple {
             self.appleControl?.syncDeviceSetting(model)
+        } else if currentDevice.peripheralType == .peripheralCoconut {
+            self.coconutControl?.syncDeviceSetting(model)
         }
     }
     
@@ -148,6 +179,12 @@ class PPLefuBleConnectManager:NSObject {
                 
                 callBack(param)
             })
+        } else if currentDevice.peripheralType == .peripheralCoconut {
+            self.coconutControl?.syncDeviceTime()
+            self.loggerStreamHandler?.event?("Coconut同步时间")
+            let param = ["state":1]
+            
+            callBack(param)
         }
     }
     
@@ -244,6 +281,18 @@ class PPLefuBleConnectManager:NSObject {
             })
             
             return
+        } else if currentDevice.peripheralType == .peripheralCoconut {
+            self.coconutControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+            
+            return
         }
         
         
@@ -259,6 +308,8 @@ class PPLefuBleConnectManager:NSObject {
         
         if currentDevice.peripheralType == .peripheralApple {
             self.appleControl?.fetchDeviceBatteryInfo()
+        } else if currentDevice.peripheralType == .peripheralCoconut {
+            self.coconutControl?.fetchDeviceBatteryInfo()
         }
     }
     
@@ -275,6 +326,29 @@ class PPLefuBleConnectManager:NSObject {
             })
         }
         
+    }
+    
+    func fetchConnectedDevice(callBack: @escaping FlutterResult) {
+        if let device = self.currentDevice {
+            
+            let dict:[String:Any] = self.convertDeviceDict(device)
+            callBack(dict)
+            
+        } else {
+            
+            callBack([:]);
+        }
+    }
+    
+    func addBlePermissionListener() {
+        if let state = self.bluetoothState {
+            
+            self.sendBlePermissionState(state: state)
+        } else {
+            
+            self.scaleManager = PPBluetoothConnectManager()
+            self.scaleManager.updateStateDelegate = self
+        }
     }
     
     func convert180A(model:PPBluetooth180ADeviceModel)->[String:Any] {
@@ -322,11 +396,8 @@ class PPLefuBleConnectManager:NSObject {
         
         let dateTimeInterval = Int(model.dateTimeInterval * 1000)
         var memberId = model.memberId
-        if memberId == nil {
-            memberId = ""
-        }
         
-        let dict:[String:Any] = [
+        let dict:[String:Any?] = [
             "weight":model.weight,
             "impedance":model.impedance,
             "impedance100EnCode":model.impedance100EnCode,
@@ -351,7 +422,9 @@ class PPLefuBleConnectManager:NSObject {
                 
         ]
         
-        return dict
+        let filtedDict = dict.compactMapValues { $0 }
+        
+        return filtedDict
     }
     
     func sendMeasureData(_ model:PPBluetoothScaleBaseModel, advModel: PPBluetoothAdvDeviceModel, measureState:Int) {
@@ -377,6 +450,24 @@ class PPLefuBleConnectManager:NSObject {
         ]
         self.historyStreamHandler?.event?(dict)
     }
+    
+    func sendBlePermissionState(state:PPBluetoothState) {
+        
+        var stateValue:Int = 0
+        if state == .unauthorized {
+            stateValue = 1
+        } else if state == .poweredOn {
+            stateValue = 2
+        } else if state == .poweredOff {
+            stateValue = 3
+        }
+        
+        let dict:[String:Any] = [
+            "state":stateValue
+        ]
+        
+        self.blePermissionStreamHandler?.event?(dict)
+    }
 
 }
 
@@ -384,6 +475,8 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
 
     func centralManagerDidUpdate(_ state: PPBluetoothState) {
         self.bluetoothState = state
+        
+        self.sendBlePermissionState(state: state)
         
         self.loggerStreamHandler?.event?("蓝牙状态:\(state)")
         
@@ -422,6 +515,13 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
                 self.appleControl = PPBluetoothPeripheralApple(peripheral: peripheral, andDevice: device)
                 self.appleControl?.serviceDelegate = self
                 self.appleControl?.cmdDelegate = self
+            } else if device.peripheralType == .peripheralCoconut {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.coconutControl = PPBluetoothPeripheralCoconut(peripheral: peripheral, andDevice: device)
+                self.coconutControl?.serviceDelegate = self
+                self.coconutControl?.cmdDelegate = self
             }
             
             
@@ -451,16 +551,21 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
                 self.appleControl?.discoverFFF0Service()
 
             })
+        } else if self.currentDevice?.peripheralType == .peripheralCoconut {
+            
+            self.coconutControl?.discoverFFF0Service()
         }
 
     }
     
     func centralManagerDidDisconnect() {
         self.sendConnectState(0)
+        self.clearData()
     }
     
     func centralManagerDidFail(toConnect error: (any Error)!) {
         self.sendConnectState(2)
+        self.clearData()
     }
     
 }
@@ -479,6 +584,9 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
         if self.currentDevice?.peripheralType == .peripheralApple {
             
             self.appleControl?.scaleDataDelegate = self
+        } else if self.currentDevice?.peripheralType == .peripheralCoconut {
+            
+            self.coconutControl?.scaleDataDelegate = self
         }
     }
     

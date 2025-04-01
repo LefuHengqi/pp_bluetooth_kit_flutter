@@ -6,7 +6,9 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
+import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
@@ -21,6 +23,10 @@ Future<void> main() async {
     final path = 'config/Device.json';
     String jsonStr = await rootBundle.loadString(path);
     PPBluetoothKitManager.setDeviceSetting(jsonStr);
+
+    PPBluetoothKitManager.addBlePermissionListener(callBack: (state) {
+      print('蓝牙权限变化-$state');
+    });
 
   } catch(e) {
     print('初始化SDK异常:$e');
@@ -85,6 +91,7 @@ class DynamicTextPage extends StatefulWidget {
 class _DynamicTextPageState extends State<DynamicTextPage> {
   // 动态文本内容（可外部修改）
   String _dynamicText = '初始化SDK';
+  PPUnitType _unit = PPUnitType.Unit_KG;
 
   final List<GridItem> _gridItems = [
     GridItem('扫描设备'),
@@ -97,6 +104,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('获取设备信息'),
     GridItem('获取电量'),
     GridItem('恢复出厂设置'),
+    GridItem('获取已连接的设备'),
+    GridItem('同步单位'),
   ];
 
   void _updateText(String newText) {
@@ -176,6 +185,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 2) {
 
                           final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
+                          // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -225,6 +235,17 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           final str = "业务-恢复出厂设置";
                           print(str);
                           _updateText(str);
+                        } else if (index == 10) {
+
+                          final device = await PPBluetoothKitManager.fetchConnectedDevice();
+                          final str = "已连接设备-mac:${device?.deviceMac}";
+                          print(str);
+                          _updateText(str);
+                        } else if (index == 11) {
+                          _unit = _unit == PPUnitType.Unit_KG ? PPUnitType.PPUnitJin : PPUnitType.Unit_KG;
+                          final deviceUser = PPDeviceUser(unitType: _unit,age: 20, userHeight: 170, sex: PPUserGender.PPUserGenderFemale);
+                          PPPeripheralApple.syncUnit(deviceUser);
+
                         }
                       },
                     );

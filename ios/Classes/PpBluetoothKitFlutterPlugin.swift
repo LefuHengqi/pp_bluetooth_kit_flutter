@@ -46,6 +46,11 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       instance.bleManager.batteryStreamHandler = batteryStreamHandler
       let batteryEventChannel = FlutterEventChannel(name: "pp_battery_streams", binaryMessenger: registrar.messenger())
       batteryEventChannel.setStreamHandler(batteryStreamHandler)
+      
+      let blePermissionStreamHandler = PPLefuStreamHandler()
+      instance.bleManager.blePermissionStreamHandler = blePermissionStreamHandler
+      let blePermissionEventChannel = FlutterEventChannel(name: "pp_ble_permission_streams", binaryMessenger: registrar.messenger())
+      blePermissionEventChannel.setStreamHandler(blePermissionStreamHandler)
 
   }
 
@@ -195,7 +200,13 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "resetDevice" {
           
           self.bleManager.resetDevice()
+      } else if method == "fetchConnectedDevice" {
+          
+          self.bleManager.fetchConnectedDevice(callBack: result)
+      } else if method == "addBlePermissionListener" {
+          
+          self.bleManager.addBlePermissionListener()
       }
-
+      
   }
 }

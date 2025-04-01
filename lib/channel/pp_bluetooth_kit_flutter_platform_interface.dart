@@ -1,11 +1,10 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-
-import '../enums/pp_scale_enums.dart';
-import '../model/pp_device_180a_model.dart';
-import '../model/pp_wifi_result.dart';
-import '../model/pp_body_base_model.dart';
-import '../model/pp_device_model.dart';
-import '../model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'pp_bluetooth_kit_flutter_method_channel.dart';
 
 abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
@@ -102,6 +101,14 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
 
   Future<void> resetDevice() {
     throw UnimplementedError('resetDevice has not been implemented.');
+  }
+
+  Future<PPDeviceModel?> fetchConnectedDevice() {
+    throw UnimplementedError('fetchConnectedDevice has not been implemented.');
+  }
+
+  Future<void> blePermissionListener({required Function (PPBlePermissionState state) callBack}) {
+    throw UnimplementedError('fetchConnectedDevice has not been implemented.');
   }
 
 }

@@ -1,7 +1,6 @@
 
-import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 
-import '../enums/pp_scale_enums.dart';
+import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 
 ///@author liyp
 ///@email liyp520@foxmail.com

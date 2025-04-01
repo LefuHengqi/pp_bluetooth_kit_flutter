@@ -200,3 +200,21 @@ enum PPUserGender {
 
   const PPUserGender(this.type);
 }
+
+enum PPBlePermissionState {
+  unknown(0), // 未知
+  unauthorized(1), // 未授权
+  on(2), // 蓝牙-开
+  off(3); // 蓝牙-关
+
+  final int state;
+
+  const PPBlePermissionState(this.state);
+
+  static PPBlePermissionState fromInt(int value) {
+    return values.firstWhere(
+          (e) => e.state == value,
+      orElse: () => PPBlePermissionState.unknown,
+    );
+  }
+}

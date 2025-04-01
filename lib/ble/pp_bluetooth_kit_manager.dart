@@ -1,9 +1,9 @@
 
-import '../channel/pp_bluetooth_kit_flutter_platform_interface.dart';
-import '../enums/pp_scale_enums.dart';
-import '../model/pp_body_base_model.dart';
-import '../model/pp_device_model.dart';
-import '../utils/pp_bluetooth_kit_logger.dart';
+import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platform_interface.dart';
+import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
+import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
 
 
 class PPBluetoothKitManager {
@@ -26,6 +26,12 @@ class PPBluetoothKitManager {
   /// 使用场景：页面退出或扫描到目标设备后调用
   static void stopScan() {
     PPBluetoothKitFlutterPlatform.instance.stopScan();
+  }
+
+
+  /// 蓝牙权限变化-监听
+  static void addBlePermissionListener({required Function(PPBlePermissionState state) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance.blePermissionListener(callBack: callBack);
   }
 
   /// 连接指定蓝牙设备
@@ -65,6 +71,11 @@ class PPBluetoothKitManager {
   /// [deviceContent] 设备配置的JSON字符串
   static void setDeviceSetting(String deviceContent) {
     PPBluetoothKitFlutterPlatform.instance.setDeviceSetting(deviceContent);
+  }
+
+  /// 获取已连接设备
+  static Future<PPDeviceModel?> fetchConnectedDevice() async {
+    return PPBluetoothKitFlutterPlatform.instance.fetchConnectedDevice();
   }
 
 }

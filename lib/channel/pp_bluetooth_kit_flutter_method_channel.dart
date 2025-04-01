@@ -1,15 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/services.dart';
+import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
+import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
 
-import '../enums/pp_scale_enums.dart';
-import '../model/pp_device_180a_model.dart';
-import '../model/pp_wifi_result.dart';
-import '../model/pp_body_base_model.dart';
-import '../model/pp_device_model.dart';
-import '../model/pp_device_user.dart';
-import '../utils/pp_bluetooth_kit_logger.dart';
+
 import 'pp_bluetooth_kit_flutter_platform_interface.dart';
 
 /// An implementation of [PpBluetoothKitFlutterPlatform] that uses method channels.
@@ -21,6 +20,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   StreamSubscription? _measurementSubscription;
   StreamSubscription? _historySubscription;
   StreamSubscription? _batterySubscription;
+  StreamSubscription? _blePermissionSubscription;
 
   final methodChannel = const MethodChannel('pp_bluetooth_kit_flutter');
 
@@ -32,6 +32,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   final _measurementDataEvent = const EventChannel('pp_measurement_streams');
   final _historyDataEvent = const EventChannel('pp_history_data_streams');
   final _batteryEvent = const EventChannel('pp_battery_streams');
+  final _blePermissionEvent = const EventChannel('pp_ble_permission_streams');
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -378,6 +379,65 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   @override
   Future<void> resetDevice() async {
     _bleChannel.invokeMethod<Map>('resetDevice');
+  }
+
+  @override
+  Future<PPDeviceModel?> fetchConnectedDevice() async {
+    try {
+
+      final ret = await _bleChannel.invokeMethod('fetchConnectedDevice');
+      if (ret is Map) {
+
+        final retJson = ret.cast<String, dynamic>();
+        PPDeviceModel model =PPDeviceModel.fromJson(retJson);
+        if (model.deviceMac != null) {
+
+          return model;
+        } else {
+
+          return null;
+        }
+
+      } else {
+        return null;
+      }
+    } catch(e) {
+      PPBluetoothKitLogger.i('获取已连接的设备-返回结果异常:$e');
+
+      return null;
+    }
+
+  }
+
+  @override
+  Future<void> blePermissionListener({required Function(PPBlePermissionState state) callBack}) async {
+
+    _blePermissionSubscription?.cancel();
+    _blePermissionSubscription = _blePermissionEvent.receiveBroadcastStream().listen((event) {
+
+      if (event is Map){
+        try {
+
+          final retJson = event.cast<String, dynamic>();
+          final stateValue = retJson['state'] as int? ?? 0;
+          final state = PPBlePermissionState.fromInt(stateValue);
+          callBack(state);
+
+        } catch(e) {
+
+          PPBluetoothKitLogger.i('蓝牙权限变化-监听结果异常:$e');
+          callBack(PPBlePermissionState.unknown);
+        }
+      } else {
+
+        PPBluetoothKitLogger.i('蓝牙权限变化-返回数据格式不正确');
+        callBack(PPBlePermissionState.unknown);
+      }
+
+    });
+
+    _bleChannel.invokeMethod('addBlePermissionListener');
+
   }
 
 }
