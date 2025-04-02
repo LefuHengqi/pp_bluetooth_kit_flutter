@@ -57,27 +57,28 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
       let method = call.method;
       
-      let params = call.arguments as? [String:Any];
+      let params = call.arguments as? [String:Any?];
+//      let peripheralType = params?["peripheralType"] as? Int
 
       if method == "getPlatformVersion" {
           result("iOS 桥接返回结果:" + UIDevice.current.systemVersion)
 
       } else if method == "initSDK" {
           
-          let appKey = params?["appKey"] as? String;
-          let appSecret = params?["appSecret"] as? String;
-          let filePath = params?["filePath"] as? String;
+          let appKey = params?["appKey"] as? String
+          let appSecret = params?["appSecret"] as? String
+          let filePath = params?["filePath"] as? String
           
           guard let appKey = appKey else {
-              self.bleManager.loggerStreamHandler?.event?("appKey为空");
+              self.bleManager.loggerStreamHandler?.event?("appKey为空")
               return;
           }
           guard let appSecret = appSecret else {
-              self.bleManager.loggerStreamHandler?.event?("appSecret为空");
+              self.bleManager.loggerStreamHandler?.event?("appSecret为空")
               return;
           }
           guard let filePath = filePath else {
-              self.bleManager.loggerStreamHandler?.event?("filePath为空");
+              self.bleManager.loggerStreamHandler?.event?("filePath为空")
               return;
           }
           
@@ -85,7 +86,7 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
 
       } else if method == "setDeviceSetting" {
 
-          let deviceContent = params?["deviceContent"] as? String;
+          let deviceContent = params?["deviceContent"] as? String
 
           guard let deviceContent = deviceContent else {
               self.bleManager.loggerStreamHandler?.event?("deviceContent为空");
@@ -117,8 +118,8 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           bleManager.stopScan()
       } else if method == "connectDevice" {
           
-          let deviceMac = params?["deviceMac"] as? String;
-          let deviceName = params?["deviceName"] as? String;
+          let deviceMac = params?["deviceMac"] as? String
+          let deviceName = params?["deviceName"] as? String
           
           guard let deviceMac = deviceMac else {
               self.bleManager.loggerStreamHandler?.event?("deviceMac为空");
@@ -133,23 +134,29 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
       } else if method == "disconnect" {
 
-          self.bleManager.stopScan()
           self.bleManager.disconnect()
           
       } else if method == "fetchHistory" {
-          self.bleManager.fetchHistory()
+          
+          let userID = params?["userID"] as? String ?? ""
+          let memberID = params?["memberID"] as? String ?? ""
+
+          let model = PPTorreSettingModel()
+          model.userID = userID
+          model.memberID = memberID
+          self.bleManager.fetchHistory(model: model)
       } else if method == "deleteHistory" {
           self.bleManager.deleteHistory()
       } else if method == "syncUnit" {
           
-          let unit = params?["unit"] as? Int;
-          let sex = params?["sex"] as? Int;
-          let age = params?["age"] as? Int;
-          let height = params?["height"] as? Int;
-          let isPregnantMode = params?["isPregnantMode"] as? Bool;
-          let isAthleteMode = params?["isAthleteMode"] as? Bool;
+          let unit = params?["unit"] as? Int
+          let sex = params?["sex"] as? Int
+          let age = params?["age"] as? Int
+          let height = params?["height"] as? Int
+          let isPregnantMode = params?["isPregnantMode"] as? Bool
+          let isAthleteMode = params?["isAthleteMode"] as? Bool
           
-          self.bleManager.loggerStreamHandler?.event?("同步单位，参数：\(params ?? [:])")
+//           self.bleManager.loggerStreamHandler?.event?("同步单位，参数：\(params ?? [:])")
           
           let model = PPBluetoothDeviceSettingModel()
           model.unit = PPDeviceUnit(rawValue: UInt(unit ?? 0)) ?? .unitKG
@@ -163,26 +170,26 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
       } else if method == "syncTime" {
           
-          let is24Hour = params?["sex"] as? Bool ?? true;
+          let is24Hour = params?["sex"] as? Bool ?? true
           self.bleManager.syncTime(is24Hour: is24Hour, callBack: result)
           
       } else if method == "configWifi" {
-          let domain = params?["domain"] as? String;
-          let ssId = params?["ssId"] as? String;
-          let password = params?["password"] as? String;
+          let domain = params?["domain"] as? String
+          let ssId = params?["ssId"] as? String
+          let password = params?["password"] as? String
           
           guard let domain = domain else {
-              result(["success":false,"errorCode":-1]);
+              result(["success":false,"errorCode":-1])
               return
           }
           
           guard let ssId = ssId else {
-              result(["success":false,"errorCode":-1]);
+              result(["success":false,"errorCode":-1])
               return
           }
           
           guard let password = password else {
-              result(["success":false,"errorCode":-1]);
+              result(["success":false,"errorCode":-1])
               return
           }
           
@@ -206,7 +213,141 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "addBlePermissionListener" {
           
           self.bleManager.addBlePermissionListener()
+      } else if method == "fetchWifiMac" {
+          
+          self.bleManager.fetchWifiMac(result)
+      } else if method == "scanWifiNetworks" {
+          
+          self.bleManager.scanWifiNetworks(result)
+      } else if method == "wifiOTA" {
+          
+          self.bleManager.wifiOTA(result)
+      } else if method == "heartRateSwitchControl" {
+          
+          let open = params?["open"] as? Bool ?? false
+          self.bleManager.heartRateSwitchControl(open: open, result)
+      } else if method == "fetchHeartRateSwitch" {
+          
+          self.bleManager.fetchHeartRateSwitch(result)
+      } else if method == "impedanceSwitchControl" {
+          
+          let open = params?["open"] as? Bool ?? false
+          self.bleManager.impedanceSwitchControl(open: open, result)
+      } else if method == "fetchImpedanceSwitch" {
+          
+          self.bleManager.fetchImpedanceSwitch(result)
+      } else if method == "setBindingState" {
+          
+          let binding = params?["binding"] as? Bool ?? false
+          self.bleManager.setBindingState(binding: binding, result)
+      } else if method == "fetchBindingState" {
+          
+          self.bleManager.fetchBindingState(result)
+      } else if method == "setScreenBrightness" {
+          
+          let brightness = params?["brightness"] as? Int ?? 50;
+          self.bleManager.setScreenBrightness(brightness, result)
+      } else if method == "getScreenBrightness" {
+          
+          self.bleManager.getScreenBrightness(result)
+      } else if method == "syncUserInfo" {
+          
+          let model = getUserInfo(params: params)
+          
+          self.bleManager.syncUserInfo(model, callBack: result)
+      } else if method == "syncUserList" {
+          
+          var userArray = [PPTorreSettingModel]()
+          
+          let array = params?["userList"] as? [[String:Any?]] ?? []
+          for item in array {
+              let model = getUserInfo(params: item)
+              userArray.append(model)
+          }
+          
+          self.bleManager.loggerStreamHandler?.event?("下发用户数量:\(userArray.count)")
+          self.bleManager.syncUserList(userArray, callBack: result)
+      } else if method == "fetchUserIDList" {
+          
+          self.bleManager.fetchUserIDList(result)
+      } else if method == "selectUser" {
+          
+          let userID = params?["userID"] as? String ?? ""
+          let memberID = params?["memberID"] as? String ?? ""
+          
+          let user = PPTorreSettingModel()
+          user.userID = userID
+          user.memberID = memberID
+          
+          self.bleManager.selectUser(user: user, callBack: result)
+          
+      } else if method == "deleteUser" {
+          
+          let userID = params?["userID"] as? String ?? ""
+          let memberID = params?["memberID"] as? String ?? ""
+          
+          let user = PPTorreSettingModel()
+          user.userID = userID
+          user.memberID = memberID
+          
+          self.bleManager.deleteUser(user: user, callBack: result)
+      } else if method == "startMeasure" {
+          
+          self.bleManager.startMeasure(result)
+      } else if method == "stopMeasure" {
+          
+          self.bleManager.stopMeasure(result)
       }
       
   }
+    
+    
+    
+    func getUserInfo(params:[String:Any?]?)->PPTorreSettingModel {
+        
+        let userID = params?["userID"] as? String ?? ""
+        let memberID = params?["memberID"] as? String ?? ""
+        let isPregnantMode = params?["isPregnantMode"] as? Bool ?? false
+        let isAthleteMode = params?["isAthleteMode"] as? Bool ?? false
+        let unitType = params?["unitType"] as? Int ?? 0
+        let age = params?["age"] as? Int ?? 0
+        let sex = params?["sex"] as? Int ?? 0
+        let userHeight = params?["userHeight"] as? Int ?? 0
+        let userName = params?["userName"] as? String ?? ""
+        let deviceHeaderIndex = params?["deviceHeaderIndex"] as? Int ?? 0
+        let currentWeight = params?["currentWeight"] as? CGFloat ?? 0
+        let targetWeight = params?["targetWeight"] as? CGFloat ?? 0
+        let idealWeight = params?["idealWeight"] as? CGFloat ?? 0
+        let recentData = params?["recentData"] as? [[String:Any?]] ?? []
+        
+        var historyList = [PPUserHistoryData]()
+        for item in recentData {
+            let weightKg = item["weightKg"] as? CGFloat ?? 0
+            let timeStamp = item["timeStamp"] as? Double ?? 0
+            
+            let history = PPUserHistoryData()
+            history.weightKg = weightKg
+            history.timeStamp = timeStamp
+            
+            historyList.append(history)
+        }
+        
+        let model = PPTorreSettingModel()
+        model.isPregnantMode = isPregnantMode
+        model.isAthleteMode = isAthleteMode
+        model.unit = PPDeviceUnit(rawValue: UInt(unitType)) ?? .unitKG
+        model.age = age
+        model.gender = PPDeviceGenderType(rawValue: UInt(sex)) ?? .female
+        model.height = userHeight
+        model.userID = userID
+        model.memberID = memberID
+        model.userName = userName
+        model.deviceHeaderIndex = deviceHeaderIndex
+        model.currentWeight = currentWeight
+        model.targetWeight = targetWeight
+        model.idealWeight = idealWeight
+        model.recentData = historyList
+        
+        return model
+    }
 }

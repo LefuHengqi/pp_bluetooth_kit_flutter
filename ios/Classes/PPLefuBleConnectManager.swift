@@ -39,6 +39,7 @@ class PPLefuBleConnectManager:NSObject {
     
     private var appleControl : PPBluetoothPeripheralApple?
     private var coconutControl : PPBluetoothPeripheralCoconut?
+    private var torreControl : PPBluetoothPeripheralTorre?
     
     func startScan() {
         
@@ -89,6 +90,9 @@ class PPLefuBleConnectManager:NSObject {
         if let coconut = self.coconutControl?.peripheral {
             self.scaleManager.disconnect(coconut)
         }
+        if let torreControl = self.torreControl?.peripheral {
+            self.scaleManager.disconnect(torreControl)
+        }
         
         self.clearData()
     }
@@ -119,7 +123,7 @@ class PPLefuBleConnectManager:NSObject {
         
     }
     
-    func fetchHistory() {
+    func fetchHistory(model:PPTorreSettingModel) {
         guard let currentDevice = self.currentDevice else {
             self.loggerStreamHandler?.event?("当前无连接设备")
             return
@@ -131,6 +135,15 @@ class PPLefuBleConnectManager:NSObject {
         } else if currentDevice.peripheralType == .peripheralCoconut {
             self.tempScaleHistoryList = []
             self.coconutControl?.fetchDeviceHistoryData()
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.dataFetchHistoryData(model, withHandler: {[weak self] models in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.sendHistoryData(models)
+            })
         }
     }
     
@@ -141,7 +154,11 @@ class PPLefuBleConnectManager:NSObject {
         }
         
         if currentDevice.peripheralType == .peripheralApple {
-            self.appleControl?.deleteDeviceHistoryData(handler: { state in
+            self.appleControl?.deleteDeviceHistoryData(handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
                 self.loggerStreamHandler?.event?("删除历史数据-状态:\(state)")
             })
         } else if currentDevice.peripheralType == .peripheralCoconut {
@@ -160,6 +177,15 @@ class PPLefuBleConnectManager:NSObject {
             self.appleControl?.syncDeviceSetting(model)
         } else if currentDevice.peripheralType == .peripheralCoconut {
             self.coconutControl?.syncDeviceSetting(model)
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            let unit = model.unit
+            self.torreControl?.codeChange(unit, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.loggerStreamHandler?.event?("Torre-同步单位状态:\(status)")
+            })
         }
     }
     
@@ -172,12 +198,14 @@ class PPLefuBleConnectManager:NSObject {
         }
         
         if currentDevice.peripheralType == .peripheralApple {
-            self.appleControl?.syncDeviceTime(handler: { state in
-                let ret = state == 0 ? 1 : 0
-                self.loggerStreamHandler?.event?("同步时间-状态:\(ret)")
-                let param = ["state":ret]
+            self.appleControl?.syncDeviceTime(handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
                 
-                callBack(param)
+                let success = state == 0
+                
+                self.sendCommonState(success, callBack: callBack)
             })
         } else if currentDevice.peripheralType == .peripheralCoconut {
             self.coconutControl?.syncDeviceTime()
@@ -185,6 +213,21 @@ class PPLefuBleConnectManager:NSObject {
             let param = ["state":1]
             
             callBack(param)
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            let code:Int = is24Hour ? 0 : 1;
+            let format = PPTimeFormat(rawValue: code) ?? .format24HourClock
+            self.torreControl?.codeSyncTime(with: format, handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let ret = state == 0 ? 1 : 0
+                self.loggerStreamHandler?.event?("同步时间-状态:\(ret)")
+                let param = ["state":ret]
+                
+                callBack(param)
+            })
+
         }
     }
     
@@ -211,23 +254,32 @@ class PPLefuBleConnectManager:NSObject {
                 }
                 
                 
-                self.appleControl?.configNetWork(withSSID: ssId, password: password, handler: { sn, configState in
+                self.appleControl?.configNetWork(withSSID: ssId, password: password, handler: {[weak self] sn, configState in
+                    guard let `self` = self else {
+                        return
+                    }
                     let success:Bool = configState == .success
 
-                    let dict:[String:Any?] = [
-                        "success":success,
-                        "errorCode":configState.rawValue,
-                        "sn":sn
-                    ]
-                    
-                    let filtedDict = dict.compactMapValues { $0 }
-                    
-                    callBack(filtedDict);
+                    self.sendWIFIResult(isSuccess: success, sn: sn, errorCode: Int(configState.rawValue), callBack: callBack)
                     
                 })
                 
             })
             
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            let wifi = PPWifiInfoModel()
+            wifi.ssid = ssId
+            wifi.password = password
+            self.torreControl?.dataConfigNetWork(wifi, domain: domain, withHandler: {[weak self] state, data in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let isSuccess = state == .registSuccess
+                let errorCode = state.rawValue
+                self.sendWIFIResult(isSuccess: isSuccess, sn: nil, errorCode: Int(errorCode), callBack: callBack);
+                
+            })
         }
 
     }
@@ -241,12 +293,431 @@ class PPLefuBleConnectManager:NSObject {
         }
         
         if currentDevice.peripheralType == .peripheralApple {
-            self.appleControl?.queryWifiConfig(handler: { model in
-                let ssId = model?.ssid
+            self.appleControl?.queryWifiConfig(handler: {[weak self] model in
+                guard let `self` = self else {
+                    return
+                }
                 
-                let retDict = ssId == nil ? [:] : ["ssId": ssId]
+                let ssId = model?.ssid
+                let connected = (ssId?.count ?? 0) > 0
+                
+                self.sendWIFISSID(ssId, isConnectWIFI: connected, callBack: callBack)
+            })
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.codeFetchWifiConfig({[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let connected = state == 1
+                
+                self.sendWIFISSID(nil, isConnectWIFI: connected, callBack: callBack)
+            })
+        }
+    }
+    
+    func fetchWifiMac(_ callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.codeFetchWifiMac({ wifiMac in
+                
+                let dict:[String:Any?] = ["wifiMac":wifiMac]
+                let filtedDict:[String:Any] = dict.compactMapValues { $0 }
+                
+                callBack(filtedDict);
+                
+            })
+        }
+    }
+    
+    func scanWifiNetworks(_ callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.dataFindSurroundDevice({[weak self] wifiList in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.sendWifiList(wifiList, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    func wifiOTA(_ callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.codeOtaUpdate(handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = state == 0
+                self.sendWifiOTA(isSuccess: success, errorCode: state, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    func heartRateSwitchControl(open:Bool, _ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            if open {
+                
+                self.torreControl?.codeOpenHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.torreControl?.codeCloseHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
+        }
+    }
+    
+    func fetchHeartRateSwitch(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeFetchHeartRateSwitch({ state in
+                
+                let success = state == 0
+                callBack(["open":success])
+            })
+        }
+    }
+    
+    func impedanceSwitchControl(open:Bool, _ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            if open {
+                
+                self.torreControl?.codeOpenImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.torreControl?.codeCloseImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
+        }
+    }
+    
+    func fetchImpedanceSwitch(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.fetchImpedanceTestMode({ open in
+                
+                let open = open == 0
+                callBack(["open":open])
+            })
+        }
+    }
+    
+    func setBindingState(binding:Bool, _ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            if binding {
+                
+                self.torreControl?.codeSetBindingState({[weak self] status in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    let success = status == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else {
+                
+                self.torreControl?.codeSetUnbindingState({[weak self] status in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    let success = status == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
+        }
+    }
+    
+    func fetchBindingState(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeFetchBindingState({ status in
+                
+                let binding = status == 1
+                callBack(["binding":binding])
+            })
+        }
+    }
+    
+    func setScreenBrightness(_ brightness:Int, _ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeSetScreenLuminance(brightness, handler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+        }
+    }
+    
+    func getScreenBrightness(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeFetchScreenLuminance({ brightness in
+                let dict = [
+                    "brightness":brightness
+                ]
+                callBack(dict)
+            })
+        }
+    }
+    
+    func syncUserInfo(_ info:PPTorreSettingModel, callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let successs = state == 0
+                self.sendCommonState(successs, callBack: callBack)
+            })
+        }
+    }
+    
+    
+    func syncUserList(_ userList:[PPTorreSettingModel], callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.dataSyncUserList(userList, withHandler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let successs = state == 0
+                self.sendCommonState(successs, callBack: callBack)
+            })
+        }
+    }
+
+    func fetchUserIDList(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.dataFetchUserID({[weak self] IDS in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let retDict = [
+                    "userIDList":IDS
+                ]
                 
                 callBack(retDict)
+            })
+        }
+    }
+    
+    func selectUser(user:PPTorreSettingModel, callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.dataSelectUser(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    func deleteUser(user:PPTorreSettingModel, callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.dataDeleteUser(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    func startMeasure(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeStartMeasure({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    func stopMeasure(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeStopMeasure({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
             })
         }
     }
@@ -293,6 +764,18 @@ class PPLefuBleConnectManager:NSObject {
             })
             
             return
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            self.torreControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+            
+            return
         }
         
         
@@ -310,6 +793,10 @@ class PPLefuBleConnectManager:NSObject {
             self.appleControl?.fetchDeviceBatteryInfo()
         } else if currentDevice.peripheralType == .peripheralCoconut {
             self.coconutControl?.fetchDeviceBatteryInfo()
+        } else if currentDevice.peripheralType == .peripheralTorre {
+            // 在代理方法中统一持续回调
+            self.torreControl?.fetchDeviceBatteryInfo(completion: { power in
+            })
         }
     }
     
@@ -395,7 +882,7 @@ class PPLefuBleConnectManager:NSObject {
     func convertMeasurementDict(_ model:PPBluetoothScaleBaseModel)->[String:Any] {
         
         let dateTimeInterval = Int(model.dateTimeInterval * 1000)
-        var memberId = model.memberId
+        let memberId = model.memberId
         
         let dict:[String:Any?] = [
             "weight":model.weight,
@@ -443,7 +930,18 @@ class PPLefuBleConnectManager:NSObject {
         self.measureStreamHandler?.event?(dict)
     }
     
-    func sendHistoryData(dataList:[Any]) {
+    func sendHistoryData(_ models:[PPBluetoothScaleBaseModel]) {
+        
+        var array:[[String:Any]] = []
+        
+        for model in models {
+            let dict = self.convertMeasurementDict(model)
+            array.append(dict)
+        }
+
+        let dataList = array
+        
+        
         self.loggerStreamHandler?.event?("历史数据-数量:\(dataList.count)")
         let dict = [
             "dataList":dataList
@@ -467,6 +965,56 @@ class PPLefuBleConnectManager:NSObject {
         ]
         
         self.blePermissionStreamHandler?.event?(dict)
+    }
+    
+    func sendWIFIResult(isSuccess:Bool, sn:String?, errorCode:Int?, callBack: @escaping FlutterResult) {
+        
+        let dict:[String:Any?] = [
+            "success":isSuccess,
+            "errorCode":errorCode,
+            "sn":sn
+        ]
+        
+        let filtedDict = dict.compactMapValues { $0 }
+        
+        callBack(filtedDict)
+    }
+    
+    func sendWIFISSID(_ ssId:String?, isConnectWIFI:Bool, callBack: @escaping FlutterResult) {
+        
+        let dict:[String:Any?] = ["ssId": ssId, "isConnectWIFI":isConnectWIFI]
+        let filtedDict = dict.compactMapValues { $0 }
+        
+        callBack(filtedDict)
+    }
+    
+    func sendWifiList(_ wifiList:[PPWifiInfoModel], callBack: @escaping FlutterResult) {
+        
+        var array = [String]()
+        for model in wifiList {
+            array.append(model.ssid)
+        }
+        let dict:[String:Any] = ["wifiList":array]
+        callBack(dict)
+    }
+    
+    func sendWifiOTA(isSuccess:Bool, errorCode:Int, callBack: @escaping FlutterResult) {
+
+        let dict:[String:Any] = [
+            "isSuccess":isSuccess,
+            "errorCode":errorCode
+        ]
+        
+        callBack(dict)
+    }
+    
+    func sendCommonState(_ state:Bool, callBack: @escaping FlutterResult) {
+        
+        let dict:[String:Any] = [
+            "state":state
+        ]
+        
+        callBack(dict)
     }
 
 }
@@ -522,6 +1070,13 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
                 self.coconutControl = PPBluetoothPeripheralCoconut(peripheral: peripheral, andDevice: device)
                 self.coconutControl?.serviceDelegate = self
                 self.coconutControl?.cmdDelegate = self
+            } else if device.peripheralType == .peripheralTorre {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.torreControl = PPBluetoothPeripheralTorre(peripheral: peripheral, andDevice: device)
+                self.torreControl?.serviceDelegate = self
+
             }
             
             
@@ -554,6 +1109,9 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
         } else if self.currentDevice?.peripheralType == .peripheralCoconut {
             
             self.coconutControl?.discoverFFF0Service()
+        } else if self.currentDevice?.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.discoverFFF0Service()
         }
 
     }
@@ -577,16 +1135,27 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
     }
     
     func discoverFFF0ServiceSuccess() {
-        self.sendConnectState(1)
         
         self.loggerStreamHandler?.event?("发现FFF0成功")
         
         if self.currentDevice?.peripheralType == .peripheralApple {
             
             self.appleControl?.scaleDataDelegate = self
+            self.sendConnectState(1)
         } else if self.currentDevice?.peripheralType == .peripheralCoconut {
             
             self.coconutControl?.scaleDataDelegate = self
+            self.sendConnectState(1)
+        } else if self.currentDevice?.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeUpdateMTU({[weak self] mtu in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.torreControl?.scaleDataDelegate = self
+                self.sendConnectState(1)
+            })
         }
     }
     
@@ -597,14 +1166,8 @@ extension PPLefuBleConnectManager: PPBluetoothCMDDataDelegate{
     func syncDeviceHistorySuccess() { //同步历史数据成功
         
         if let models = self.tempScaleHistoryList {
-            var array:[[String:Any]] = []
-            
-            for model in models {
-                let dict = self.convertMeasurementDict(model)
-                array.append(dict)
-            }
 
-            self.sendHistoryData(dataList: array)
+            self.sendHistoryData(models)
         }
         
         self.tempScaleHistoryList = []

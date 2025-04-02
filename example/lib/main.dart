@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
@@ -196,7 +197,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                             _updateText('连接状态:$state ${device.deviceMac}');
                           });
                         } else if (index == 3) {
-                          PPPeripheralApple.fetchHistoryData(callBack: (dataList){
+                          PPPeripheralApple.fetchHistoryData(callBack: (dataList, bool isSuccess){
                             print('历史数据-数量:${dataList.length}');
                             _updateText('历史数据-数量:${dataList.length}');
 

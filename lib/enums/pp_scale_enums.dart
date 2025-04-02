@@ -13,21 +13,32 @@ enum PPDeviceConnectType {
 }
 
 enum PPDevicePeripheralType {
-  PeripheralApple,
-  PeripheralBanana,
-  PeripheralCoconut,
-  PeripheralDurian,
-  PeripheralEgg,
-  PeripheralFish,
-  PeripheralGrapes,
-  PeripheralHamburger,
-  PeripheralTorre,
-  PeripheralIce,
-  PeripheralJambul,
-  PeripheralKiwifruit,
-  PeripheralBorre,
-  PeripheralDorre,
-  PeripheralForre,
+  PeripheralApple(0),
+  PeripheralBanana(1),
+  PeripheralCoconut(2),
+  PeripheralDurian(3),
+  PeripheralEgg(4),
+  PeripheralFish(5),
+  PeripheralGrapes(6),
+  PeripheralHamburger(7),
+  PeripheralTorre(8),
+  PeripheralIce(9),
+  PeripheralJambul(10),
+  PeripheralKiwifruit(11),
+  PeripheralBorre(12),
+  PeripheralDorre(13),
+  PeripheralForre(14);
+
+  final int value;
+  const PPDevicePeripheralType(this.value);
+
+  static PPDevicePeripheralType? fromValue(int value) {
+    try {
+      return values.firstWhere((e) => e.value == value);
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 enum PPDeviceType {
@@ -208,7 +219,6 @@ enum PPBlePermissionState {
   off(3); // 蓝牙-关
 
   final int state;
-
   const PPBlePermissionState(this.state);
 
   static PPBlePermissionState fromInt(int value) {

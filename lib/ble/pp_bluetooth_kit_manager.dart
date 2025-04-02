@@ -67,15 +67,16 @@ class PPBluetoothKitManager {
     });
   }
 
+  /// 获取已连接设备
+  static Future<PPDeviceModel?> fetchConnectedDevice() async {
+    return PPBluetoothKitFlutterPlatform.instance.fetchConnectedDevice();
+  }
+
   /// 设置设备配置信息
   /// [deviceContent] 设备配置的JSON字符串
   static void setDeviceSetting(String deviceContent) {
     PPBluetoothKitFlutterPlatform.instance.setDeviceSetting(deviceContent);
   }
 
-  /// 获取已连接设备
-  static Future<PPDeviceModel?> fetchConnectedDevice() async {
-    return PPBluetoothKitFlutterPlatform.instance.fetchConnectedDevice();
-  }
 
 }

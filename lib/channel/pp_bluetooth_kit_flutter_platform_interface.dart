@@ -4,6 +4,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'pp_bluetooth_kit_flutter_method_channel.dart';
 
@@ -67,39 +68,43 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('addMeasurementListener has not been implemented.');
   }
 
-  Future<void> fetchHistoryData({required Function(List<PPBodyBaseModel> dataList) callBack}) {
+  Future<void> fetchHistoryData({String? userID, String? memberID,required int peripheralType,required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
     throw UnimplementedError('fetchHistoryData has not been implemented.');
   }
 
-  Future<void> deleteHistoryData() {
+  Future<void> deleteHistoryData(int peripheralType) {
     throw UnimplementedError('deleteHistoryData has not been implemented.');
   }
 
-  Future<void> syncUnit(PPDeviceUser deviceUser) {
+  Future<void> syncUnit(int peripheralType,PPDeviceUser deviceUser) {
     throw UnimplementedError('syncUnit has not been implemented.');
   }
 
-  Future<bool?> syncTime({bool is24Hour = true}) {
+  Future<bool?> syncTime(int peripheralType,{bool is24Hour = true}) {
     throw UnimplementedError('syncTime has not been implemented.');
   }
 
-  Future<PPWifiResult> configWifi({required String domain, required String ssId, required String password}) {
+  Future<PPWifiResult> configWifi(int peripheralType,{required String domain, required String ssId, required String password}) {
     throw UnimplementedError('configWifi has not been implemented.');
   }
 
-  Future<String?> fetchWifiInfo() {
+  Future<String?> fetchWifiInfo(int peripheralType) {
     throw UnimplementedError('fetchWifiInfo has not been implemented.');
   }
 
-  Future<PPDevice180AModel?> fetchDeviceInfo() {
+  Future<bool?> isConnectWIFI(int peripheralType) {
+    throw UnimplementedError('isConnectWIFI has not been implemented.');
+  }
+
+  Future<PPDevice180AModel?> fetchDeviceInfo(int peripheralType,) {
     throw UnimplementedError('fetchDeviceInfo has not been implemented.');
   }
 
-  Future<void> fetchBatteryInfo({required bool continuity, required Function(int power) callBack}) {
+  Future<void> fetchBatteryInfo(int peripheralType,{required bool continuity, required Function(int power) callBack}) {
     throw UnimplementedError('fetchBatteryInfo has not been implemented.');
   }
 
-  Future<void> resetDevice() {
+  Future<void> resetDevice(int peripheralType) {
     throw UnimplementedError('resetDevice has not been implemented.');
   }
 
@@ -109,6 +114,74 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
 
   Future<void> blePermissionListener({required Function (PPBlePermissionState state) callBack}) {
     throw UnimplementedError('fetchConnectedDevice has not been implemented.');
+  }
+
+  Future<String?> fetchWifiMac(int peripheralType) {
+    throw UnimplementedError('fetchWifiMac has not been implemented.');
+  }
+
+  Future<List<String>?> scanWifiNetworks(int peripheralType) {
+    throw UnimplementedError('scanWifiNetworks has not been implemented.');
+  }
+
+  Future<bool> wifiOTA(int peripheralType) {
+    throw UnimplementedError('wifiOTA has not been implemented.');
+  }
+
+  Future<bool> heartRateSwitchControl(int peripheralType, bool open) {
+    throw UnimplementedError('heartRateSwitchControl has not been implemented.');
+  }
+
+  Future<bool> fetchHeartRateSwitch(int peripheralType) {
+    throw UnimplementedError('fetchHeartRateSwitch has not been implemented.');
+  }
+
+  Future<bool> impedanceSwitchControl(int peripheralType, bool open) {
+    throw UnimplementedError('impedanceSwitchControl has not been implemented.');
+  }
+
+  Future<bool> fetchImpedanceSwitch(int peripheralType) {
+    throw UnimplementedError('fetchImpedanceSwitch has not been implemented.');
+  }
+
+  Future<bool> setBindingState(int peripheralType, bool binding) {
+    throw UnimplementedError('setBindingState has not been implemented.');
+  }
+
+  Future<bool> fetchBindingState(int peripheralType) {
+    throw UnimplementedError('fetchBindingState has not been implemented.');
+  }
+
+  Future<bool> setScreenBrightness(int peripheralType, int brightness) {
+    throw UnimplementedError('setScreenBrightness has not been implemented.');
+  }
+
+  Future<bool> syncUserInfo(int peripheralType, PPTorreUserModel userModel) {
+    throw UnimplementedError('syncUserInfo has not been implemented.');
+  }
+
+  Future<bool> syncUserList(int peripheralType, List<PPTorreUserModel> userList) {
+    throw UnimplementedError('syncUserList has not been implemented.');
+  }
+
+  Future<List<String>> fetchUserIDList(int peripheralType) {
+    throw UnimplementedError('fetchUserIDList has not been implemented.');
+  }
+
+  Future<bool> selectUser(int peripheralType, String userID, String memberID) {
+    throw UnimplementedError('selectUser has not been implemented.');
+  }
+
+  Future<bool> deleteUser(int peripheralType, String userID, String memberID) {
+    throw UnimplementedError('deleteUser has not been implemented.');
+  }
+
+  Future<bool> startMeasure(int peripheralType) {
+    throw UnimplementedError('startMeasure has not been implemented.');
+  }
+
+  Future<bool> stopMeasure(int peripheralType) {
+    throw UnimplementedError('stopMeasure has not been implemented.');
   }
 
 }
