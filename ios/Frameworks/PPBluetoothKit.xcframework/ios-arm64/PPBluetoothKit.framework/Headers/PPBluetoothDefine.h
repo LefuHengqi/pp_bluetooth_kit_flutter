@@ -55,6 +55,7 @@ typedef NS_ENUM(NSUInteger, PPDeviceProtocolType) {
     PPDeviceProtocolTypeBorre, // Borre版本
     PPDeviceProtocolTypeDorre, // Dorre版本
     PPDeviceProtocolTypeForre, // Forre版本
+    PPDeviceProtocolTypeBorre_A, // Borre-A，属于Borre子集，CF625_PRO专用
 };
 
 

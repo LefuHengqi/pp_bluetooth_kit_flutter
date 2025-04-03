@@ -11,6 +11,8 @@ import PPBaseKit
 import PPBluetoothKit
 import Flutter
 
+
+
 enum PPLefuScanType:Int {
     case scan = 0
     case connect
@@ -25,6 +27,8 @@ class PPLefuBleConnectManager:NSObject {
     var historyStreamHandler:PPLefuStreamHandler?
     var batteryStreamHandler:PPLefuStreamHandler?
     var blePermissionStreamHandler:PPLefuStreamHandler?
+    var dfuStreamHandler:PPLefuStreamHandler?
+    var deviceLogStreamHandler:PPLefuStreamHandler?
     
     lazy var scaleManager:PPBluetoothConnectManager = PPBluetoothConnectManager()
     
@@ -40,6 +44,9 @@ class PPLefuBleConnectManager:NSObject {
     private var appleControl : PPBluetoothPeripheralApple?
     private var coconutControl : PPBluetoothPeripheralCoconut?
     private var torreControl : PPBluetoothPeripheralTorre?
+    
+    private var unzipFilePath : String?
+    private var dfuConfig : PPDfuPackageModel?
     
     func startScan() {
         
@@ -722,6 +729,171 @@ class PPLefuBleConnectManager:NSObject {
         }
     }
     
+    
+    func startBabyModel(step:Int, weight:Int, _ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeEnableBabyModel(step, weight: weight, withHandler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    
+    func exitBabyModel(_ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeExitBabyModel({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        }
+    }
+    
+    func dfuStart(filePath:String, deviceFirmwareVersion:String, isForceCompleteUpdate:Bool, _ callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            var deviceVersion = deviceFirmwareVersion
+            if isForceCompleteUpdate {
+                deviceVersion = "0.0.0"
+            }
+            
+            if let desPath = PPLefuScaleTools.loadDFUZipFile(path: filePath){
+
+                do {
+                    
+                    try traverseDirectory(desPath)
+                } catch {
+                    self.loggerStreamHandler?.event?("遍历压缩包异常: \(error)")
+                    self.sendDfuResult(progress: 0, isSuccess: false)
+                    
+                    return
+                }
+                
+                if let config = self.dfuConfig, let unzipPath = self.unzipFilePath {
+                   
+                    let mcuPath = "\(unzipPath)/\(config.packages.mcu?.filename ?? "")"
+                    let blePath = "\(unzipPath)/\(config.packages.ble?.filename ?? "")"
+                    let resPath = "\(unzipPath)/\(config.packages.res?.filename ?? "")"
+
+                    let package = PPTorreDFUPackageModel()
+                    package.mcuVersion = "000"
+                    package.bleVersion = "000"
+                    package.resVersion = "000"
+
+                    package.mcuPath = mcuPath
+                    package.blePath = blePath
+                    package.resPath = resPath
+                    
+                    if (config.packages.mcu?.version.count ?? 0) > 0 {
+                        package.mcuVersion = config.packages.mcu?.version ?? ""
+                    }
+                    
+                    if (config.packages.ble?.version.count ?? 0) > 0 {
+                        package.bleVersion = config.packages.ble?.version ?? ""
+                    }
+
+                    if (config.packages.res?.version.count ?? 0) > 0 {
+                        package.resVersion = config.packages.res?.version ?? ""
+                    }
+                    
+                    self.torreControl?.dataDFUStart { [weak self]  size in
+                        
+                        guard let `self` = self else {return}
+                        let tSize = size
+                        
+                        self.torreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
+                            guard let `self` = self else { return }
+                            
+                            let status = 1
+                            
+                            self.torreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, deviceVersion: deviceVersion,handler: {[weak self] (progress, isSuccess) in
+                                
+                                guard let `self` = self else { return }
+                                
+                                self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
+                                
+                            })
+                            
+                        })
+                    }
+                   
+                } else {
+                    
+                    self.loggerStreamHandler?.event?("dfu失败-config或unzipPath为空")
+                    self.sendDfuResult(progress: 0, isSuccess: false)
+                }
+
+            } else {
+                
+                self.loggerStreamHandler?.event?("解压路径为空")
+                self.sendDfuResult(progress: 0, isSuccess: false)
+            }
+        }
+    }
+    
+    func syncDeviceLog(logFolder:String) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            self.deviceLogStreamHandler?.event?(["isSuccess":false])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.dataSyncLog(withLogFolder: logFolder, handler: {[weak self] progress, filePath, isFailed in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict:[String:Any?] = [
+                    "isSuccess":!isFailed,
+                    "progress":progress,
+                    "filePath":filePath
+                ]
+                
+                let filtedDict = dict.compactMapValues { $0 }
+                self.deviceLogStreamHandler?.event?(filtedDict)
+            })
+            
+        }
+        
+    }
+
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         
         guard let currentDevice = self.currentDevice else {
@@ -835,6 +1007,38 @@ class PPLefuBleConnectManager:NSObject {
             
             self.scaleManager = PPBluetoothConnectManager()
             self.scaleManager.updateStateDelegate = self
+        }
+    }
+    
+    func traverseDirectory(_ path: String) throws {
+        let fileManager = FileManager.default
+        
+        let files = try fileManager.contentsOfDirectory(atPath: path)
+        for file in files {
+            let fullPath = "\(path)/\(file)"
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: fullPath, isDirectory: &isDirectory) {
+                if isDirectory.boolValue {
+                    // 如果是目录，则递归遍历
+                    self.unzipFilePath = path + "/" + file
+                    try traverseDirectory(fullPath)
+                } else {
+                    // 如果是文件，则输出文件名
+
+                    if file == "package.json"{
+                        let fileURL = URL(fileURLWithPath: fullPath)
+
+                        // 读取 JSON 文件数据
+                        let jsonData = try! Data(contentsOf: fileURL)
+
+                        let decoder = JSONDecoder()
+                        let config = try! decoder.decode(PPDfuPackageModel.self, from: jsonData)
+                        self.dfuConfig = config
+                        
+                    }
+                    
+                }
+            }
         }
     }
     
@@ -1015,6 +1219,16 @@ class PPLefuBleConnectManager:NSObject {
         ]
         
         callBack(dict)
+    }
+    
+    func sendDfuResult(progress:Float, isSuccess:Bool) {
+        
+        let dict:[String:Any] = [
+            "progress":progress,
+            "isSuccess":isSuccess,
+        ]
+        
+        self.dfuStreamHandler?.event?(dict)
     }
 
 }

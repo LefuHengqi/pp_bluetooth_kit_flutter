@@ -21,12 +21,12 @@ class PPDeviceModel {
   String? serialNumber = ""; //序列号
   String? modelNumber = ""; //时区编号
   String? calculateVersion = ""; //计算版本
-  PPDeviceType? deviceType = PPDeviceType.PPDeviceTypeUnknow; //设备类型
-  PPDeviceProtocolType? deviceProtocolType = PPDeviceProtocolType.PPDeviceProtocolTypeUnknow; //协议模式
-  PPDeviceCalculateType? deviceCalculateType = PPDeviceCalculateType.PPDeviceCalculateTypeAlternate; //计算方式
-  PPDeviceAccuracyType? deviceAccuracyType = PPDeviceAccuracyType.PPDeviceAccuracyTypePoint01; //精度
-  PPDevicePowerType? devicePowerType = PPDevicePowerType.PPDevicePowerTypeBattery; //供电模式
-  PPDeviceConnectType? deviceConnectType = PPDeviceConnectType.PPDeviceConnectTypeDirect; //设备连接类型
+  PPDeviceType? deviceType = PPDeviceType.unknown; //设备类型
+  PPDeviceProtocolType? deviceProtocolType = PPDeviceProtocolType.unknown; //协议模式
+  PPDeviceCalculateType? deviceCalculateType = PPDeviceCalculateType.alternate; //计算方式
+  PPDeviceAccuracyType? deviceAccuracyType = PPDeviceAccuracyType.point01; //精度
+  PPDevicePowerType? devicePowerType = PPDevicePowerType.battery; //供电模式
+  PPDeviceConnectType? deviceConnectType = PPDeviceConnectType.direct; //设备连接类型
   int? deviceFuncType = 0; //功能类型
   String? deviceUnitType = ""; //支持的单位
   int? mtu = 20; //协议单包的长度
@@ -42,50 +42,50 @@ class PPDeviceModel {
   PPDeviceModel(this.deviceName, this.deviceMac);
 
   PPDevicePeripheralType getDevicePeripheralType() {
-    if (deviceConnectType == PPDeviceConnectType.PPDeviceConnectTypeLte) {
-      return PPDevicePeripheralType.PeripheralKiwifruit;
-    } else if (deviceConnectType == PPDeviceConnectType.PPDeviceConnectTypeDirect) {
-      if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeV2) {
-        if (deviceType == PPDeviceType.PPDeviceTypeCA) {
-          return PPDevicePeripheralType.PeripheralEgg;
-        } else if (deviceCalculateType == PPDeviceCalculateType.PPDeviceCalculateTypeInScale) {
-          return PPDevicePeripheralType.PeripheralDurian;
+    if (deviceConnectType == PPDeviceConnectType.Lte) {
+      return PPDevicePeripheralType.kiwifruit;
+    } else if (deviceConnectType == PPDeviceConnectType.direct) {
+      if (deviceProtocolType == PPDeviceProtocolType.v2) {
+        if (deviceType == PPDeviceType.ca) {
+          return PPDevicePeripheralType.egg;
+        } else if (deviceCalculateType == PPDeviceCalculateType.inScale) {
+          return PPDevicePeripheralType.durian;
         } else {
-          return PPDevicePeripheralType.PeripheralApple;
+          return PPDevicePeripheralType.apple;
         }
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeV3) {
-        if (deviceType == PPDeviceType.PPDeviceTypeCA) {
-          return PPDevicePeripheralType.PeripheralFish;
+      } else if (deviceProtocolType == PPDeviceProtocolType.v3) {
+        if (deviceType == PPDeviceType.ca) {
+          return PPDevicePeripheralType.fish;
         } else {
-          return PPDevicePeripheralType.PeripheralCoconut;
+          return PPDevicePeripheralType.coconut;
         }
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeV4) {
-        return PPDevicePeripheralType.PeripheralIce;
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeTorre) {
-        return PPDevicePeripheralType.PeripheralTorre;
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeBorre) {
-        return PPDevicePeripheralType.PeripheralBorre;
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeDorre) {
-        return PPDevicePeripheralType.PeripheralDorre;
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeForre) {
-        return PPDevicePeripheralType.PeripheralForre;
+      } else if (deviceProtocolType == PPDeviceProtocolType.v4) {
+        return PPDevicePeripheralType.ice;
+      } else if (deviceProtocolType == PPDeviceProtocolType.torre) {
+        return PPDevicePeripheralType.torre;
+      } else if (deviceProtocolType == PPDeviceProtocolType.borre) {
+        return PPDevicePeripheralType.borre;
+      } else if (deviceProtocolType == PPDeviceProtocolType.dorre) {
+        return PPDevicePeripheralType.dorre;
+      } else if (deviceProtocolType == PPDeviceProtocolType.forre) {
+        return PPDevicePeripheralType.forre;
       }
     } else {
-      if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeV2) {
-        if (deviceType == PPDeviceType.PPDeviceTypeCA) {
-          return PPDevicePeripheralType.PeripheralGrapes;
+      if (deviceProtocolType == PPDeviceProtocolType.v2) {
+        if (deviceType == PPDeviceType.ca) {
+          return PPDevicePeripheralType.grapes;
         } else {
-          return PPDevicePeripheralType.PeripheralBanana;
+          return PPDevicePeripheralType.banana;
         }
-      } else if (deviceProtocolType == PPDeviceProtocolType.PPDeviceProtocolTypeV3) {
-        if (deviceType == PPDeviceType.PPDeviceTypeCA) {
-          return PPDevicePeripheralType.PeripheralHamburger;
+      } else if (deviceProtocolType == PPDeviceProtocolType.v3) {
+        if (deviceType == PPDeviceType.ca) {
+          return PPDevicePeripheralType.hamburger;
         } else {
-          return PPDevicePeripheralType.PeripheralJambul;
+          return PPDevicePeripheralType.jambul;
         }
       }
     }
-    return PPDevicePeripheralType.PeripheralApple;
+    return PPDevicePeripheralType.apple;
   }
 
   @override

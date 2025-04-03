@@ -184,4 +184,21 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('stopMeasure has not been implemented.');
   }
 
+  Future<bool> startBabyModel(int peripheralType, PPBabyModelStep step, int weight) {
+    throw UnimplementedError('startBabyModel has not been implemented.');
+  }
+
+  Future<bool> exitBabyModel(int peripheralType) {
+    throw UnimplementedError('exitBabyModel has not been implemented.');
+  }
+
+  void dfuStart(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) {
+    throw UnimplementedError('dfuStart has not been implemented.');
+  }
+
+  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isSuccess, String? filePath)callBack}) {
+    throw UnimplementedError('syncDeviceLog has not been implemented.');
+  }
+
+
 }

@@ -13,8 +13,8 @@ class PPScaleHelper {
   /// 是否支持历史数据
   static bool isSupportHistoryData(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeHistory.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeHistory.type);
+      return (deviceFuncType & PPDeviceFuncType.history.type ==
+          PPDeviceFuncType.history.type);
     }
     return false;
   }
@@ -22,8 +22,8 @@ class PPScaleHelper {
   /// 是否支持Wifi
   static bool isFuncTypeWifi(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeWifi.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeWifi.type);
+      return (deviceFuncType & PPDeviceFuncType.Wifi.type ==
+          PPDeviceFuncType.Wifi.type);
     }
     return false;
   }
@@ -31,8 +31,8 @@ class PPScaleHelper {
   /// 是否支持时间制式
   static bool isFuncTypeTimeFormat(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeTimeFormat.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeTimeFormat.type);
+      return (deviceFuncType & PPDeviceFuncType.timeFormat.type ==
+          PPDeviceFuncType.timeFormat.type);
     }
     return false;
   }
@@ -40,8 +40,8 @@ class PPScaleHelper {
   /// 是否支持语言切换
   static bool isFuncTypeLanguageSwitch(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeLanguageSwitch.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeLanguageSwitch.type);
+      return (deviceFuncType & PPDeviceFuncType.languageSwitch.type ==
+          PPDeviceFuncType.languageSwitch.type);
     }
     return false;
   }
@@ -49,8 +49,8 @@ class PPScaleHelper {
   /// 语音播报-四电极
   static bool isVoiceTypeH4(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeVoiceType4.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeVoiceType4.type);
+      return (deviceFuncType & PPDeviceFuncType.voiceType4.type ==
+          PPDeviceFuncType.voiceType4.type);
     }
     return false;
   }
@@ -58,8 +58,8 @@ class PPScaleHelper {
   /// 是否支持8电极
   static bool isVoiceTypeH8(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeVoiceType8.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeVoiceType8.type);
+      return (deviceFuncType & PPDeviceFuncType.voiceType8.type ==
+          PPDeviceFuncType.voiceType8.type);
     }
     return false;
   }
@@ -67,8 +67,8 @@ class PPScaleHelper {
   /// CF610
   static bool isVoiceTypeCf610(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeVoiceTypecf610.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeVoiceTypecf610.type);
+      return (deviceFuncType & PPDeviceFuncType.voiceTypecf610.type ==
+          PPDeviceFuncType.voiceTypecf610.type);
     }
     return false;
   }
@@ -76,8 +76,8 @@ class PPScaleHelper {
   /// 下发体重信息类型(条)
   static bool isSevenWeightInfoType(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeWeightInfoType.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeWeightInfoType.type);
+      return (deviceFuncType & PPDeviceFuncType.weightInfoType.type ==
+          PPDeviceFuncType.weightInfoType.type);
     }
     return false;
   }
@@ -85,8 +85,8 @@ class PPScaleHelper {
   /// 是否支持呼吸灯
   static bool isFuncTypeLight(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeLight.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeLight.type);
+      return (deviceFuncType & PPDeviceFuncType.light.type ==
+          PPDeviceFuncType.light.type);
     }
     return false;
   }
@@ -94,16 +94,16 @@ class PPScaleHelper {
   /// Apple系列是否支持用户信息下发
   static bool isFuncTypeUserInfo(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeUserInfo.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeUserInfo.type);
+      return (deviceFuncType & PPDeviceFuncType.userInfo.type ==
+          PPDeviceFuncType.userInfo.type);
     }
     return false;
   }
 
   static bool isFuncTypeTwoBroadcast(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeBidirectional.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeBidirectional.type);
+      return (deviceFuncType & PPDeviceFuncType.bidirectional.type ==
+          PPDeviceFuncType.bidirectional.type);
     }
     return false;
   }
@@ -111,8 +111,8 @@ class PPScaleHelper {
   /// 是否支持测脂
   static bool isFat(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeFat.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeFat.type);
+      return (deviceFuncType & PPDeviceFuncType.fat.type ==
+          PPDeviceFuncType.fat.type);
     }
     return false;
   }
@@ -120,26 +120,26 @@ class PPScaleHelper {
   /// 是否支持心率
   static bool isHeartRate(int? deviceFuncType) {
     if (deviceFuncType != null) {
-      return (deviceFuncType & PPDeviceFuncType.PPDeviceFuncTypeHeartRate.type ==
-          PPDeviceFuncType.PPDeviceFuncTypeHeartRate.type);
+      return (deviceFuncType & PPDeviceFuncType.heartRate.type ==
+          PPDeviceFuncType.heartRate.type);
     }
     return false;
   }
 
   /// 是否是8电极
   static bool isCalcute8(int? calcuteType) {
-    return calcuteType == PPDeviceCalculateType.PPDeviceCalculateTypeAlternate8.index ||
-        calcuteType == PPDeviceCalculateType.PPDeviceCalculateTypeAlternate8_0.index ||
-        calcuteType == PPDeviceCalculateType.PPDeviceCalculateTypeAlternate8_1.index ||
-        calcuteType == PPDeviceCalculateType.PPDeviceCalculateTypeAlternate8_2.index ||
-        calcuteType == PPDeviceCalculateType.PPDeviceCalculateTypeAlternate8_3.index ||
-        calcuteType == PPDeviceCalculateType.PPDeviceCalculateTypeAlternate8_4.index;
+    return calcuteType == PPDeviceCalculateType.alternate8.index ||
+        calcuteType == PPDeviceCalculateType.alternate8_0.index ||
+        calcuteType == PPDeviceCalculateType.alternate8_1.index ||
+        calcuteType == PPDeviceCalculateType.alternate8_2.index ||
+        calcuteType == PPDeviceCalculateType.alternate8_3.index ||
+        calcuteType == PPDeviceCalculateType.alternate8_4.index;
   }
 
   /// 是否支持光能充电
   static bool isFuncTypeSolar(int? devicePowerType) {
     if (devicePowerType != null) {
-      return (devicePowerType  == PPDevicePowerType.PPDevicePowerTypeSolar.index);
+      return (devicePowerType  == PPDevicePowerType.solar.index);
     }
     return false;
   }

@@ -8,7 +8,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 
 
 class PPPeripheralApple {
-  static final _peripheralType = PPDevicePeripheralType.PeripheralApple.value;
+  static final _peripheralType = PPDevicePeripheralType.apple.value;
 
 
   /// 获取历史数据-获取历史数据后，调用 deleteHistoryData 删除设备中的历史数据

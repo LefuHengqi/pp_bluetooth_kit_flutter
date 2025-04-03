@@ -6,7 +6,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 
 class PPPeripheralCoconut {
-  static final _peripheralType = PPDevicePeripheralType.PeripheralCoconut.value;
+  static final _peripheralType = PPDevicePeripheralType.coconut.value;
   
   
   /// 获取历史数据-获取历史数据后，调用 deleteHistoryData 删除设备中的历史数据

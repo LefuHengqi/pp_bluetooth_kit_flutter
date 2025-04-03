@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
@@ -22,6 +23,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   StreamSubscription? _historySubscription;
   StreamSubscription? _batterySubscription;
   StreamSubscription? _blePermissionSubscription;
+  StreamSubscription? _dfuSubscription;
+  StreamSubscription? _deviceLogSubscription;
 
   final methodChannel = const MethodChannel('pp_bluetooth_kit_flutter');
 
@@ -34,6 +37,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   final _historyDataEvent = const EventChannel('pp_history_data_streams');
   final _batteryEvent = const EventChannel('pp_battery_streams');
   final _blePermissionEvent = const EventChannel('pp_ble_permission_streams');
+  final _dfuEvent = const EventChannel('pp_dfu_streams');
+  final _deviceLogEvent = const EventChannel('device_log_streams');
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -190,7 +195,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   @override
   Future<void> fetchHistoryData({String? userID = "", String? memberID = "", required int peripheralType, required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) async {
 
-    if (peripheralType == PPDevicePeripheralType.PeripheralTorre.value) {
+    if (peripheralType == PPDevicePeripheralType.torre.value) {
       if (userID == null || userID.isEmpty) {
         PPBluetoothKitLogger.i('历史数据-userID 为空');
         callBack([], false);
@@ -867,4 +872,127 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       return false;
     }
   }
+
+  @override
+  Future<bool> startBabyModel(int peripheralType, PPBabyModelStep step, int weight) async {
+
+    PPBluetoothKitLogger.i('开始抱婴模式-step:$step weight:$weight');
+
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('startBabyModel',<String, dynamic>{
+        'peripheralType':peripheralType,
+        'step':step,
+        'weight':weight
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      return state;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('开始抱婴模式-异常:$e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> exitBabyModel(int peripheralType) async {
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('startBabyModel',<String, dynamic>{
+        'peripheralType':peripheralType
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      return state;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('退出抱婴模式-异常:$e');
+      return false;
+    }
+  }
+
+
+  @override
+  void dfuStart(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
+
+    if (filePath.isEmpty) {
+      PPBluetoothKitLogger.i('蓝牙DFU-失败-升级包路径为空');
+      callBack(0, false);
+      return;
+    }
+
+    if (deviceFirmwareVersion.isEmpty) {
+      deviceFirmwareVersion = '000.000.000.000';
+    }
+
+    _dfuSubscription?.cancel();
+    _dfuSubscription = _dfuEvent.receiveBroadcastStream().listen((event) {
+
+      if (event is Map){
+        try {
+
+          final retJson = event.cast<String, dynamic>();
+          final progress = retJson['progress'] as double? ?? 0;
+          final isSuccess = retJson['isSuccess'] as bool? ?? false;
+
+          callBack(progress, isSuccess);
+        } catch(e) {
+
+          PPBluetoothKitLogger.i('蓝牙DFU-返回结果异常:$e');
+          callBack(0, false);
+        }
+      } else {
+
+        PPBluetoothKitLogger.i('蓝牙DFU-返回数据格式不正确');
+        callBack(0, false);
+      }
+
+    });
+
+    await _bleChannel.invokeMethod<Map>('dfuStart',<String, dynamic>{
+      'peripheralType':peripheralType,
+      'filePath':filePath,
+      'deviceFirmwareVersion':deviceFirmwareVersion,
+      'isForceCompleteUpdate':isForceCompleteUpdate
+    });
+  }
+
+  @override
+  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isSuccess, String? filePath) callBack}) async {
+
+    if (logFolder.isEmpty) {
+      PPBluetoothKitLogger.i('同步设备日志-失败-日志文件夹为空');
+      callBack(0, false, null);
+      return;
+    }
+
+    _deviceLogSubscription?.cancel();
+    _deviceLogSubscription = _deviceLogEvent.receiveBroadcastStream().listen((event) {
+
+      try {
+
+        final retJson = event.cast<String, dynamic>();
+        final progress = retJson['progress'] as double? ?? 0;
+        final filePath = retJson['filePath'] as String?;
+        final isSuccess = retJson['isSuccess'] as bool? ?? false;
+        callBack(progress, isSuccess, filePath);
+
+      } catch(e) {
+        PPBluetoothKitLogger.i('获取设备日志-返回结果异常:$e');
+        callBack(0, false, null);
+      }
+
+    });
+
+    await _bleChannel.invokeMethod<Map>('syncDeviceLog',<String, dynamic>{
+      'peripheralType':peripheralType,
+      'logFolder':logFolder
+    });
+  }
+
 }

@@ -277,6 +277,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dataSyncLog:(void(^)(CGFloat progress, NSString *filePath, BOOL isFailed))handler;
 
 
+/// 获取设备中日志
+/// - Parameter folderPath 需要存放设备日志的文件夹路径，如:  沙盒路径//Log/DeviceLog
+///  handler
+/// - Parameter filePath: 设备日志文件路径，该日志文件保存在 folderPath 路径下
+/// - Parameter progress 获取设备日志的进度
+/// - Parameter isFailed  是否失败
+- (void)dataSyncLogWithLogFolder:(NSString *)folderPath handler:(void(^)(CGFloat progress, NSString *filePath, BOOL isFailed))handler;
+
+
 #pragma mark - DFU
 
 

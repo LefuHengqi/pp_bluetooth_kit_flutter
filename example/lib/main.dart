@@ -7,12 +7,14 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,12 +109,16 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('恢复出厂设置'),
     GridItem('获取已连接的设备'),
     GridItem('同步单位'),
+    GridItem('同步设备日志'),
+    GridItem('开始测量'),
+    GridItem('停止测量'),
   ];
 
   void _updateText(String newText) {
     setState(() {
       final text = newText.isNotEmpty ? newText : "内容已清空";
       _dynamicText = '$text\n';
+
     });
   }
 
@@ -185,7 +191,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
+                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
@@ -243,9 +250,30 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           print(str);
                           _updateText(str);
                         } else if (index == 11) {
-                          _unit = _unit == PPUnitType.Unit_KG ? PPUnitType.PPUnitJin : PPUnitType.Unit_KG;
-                          final deviceUser = PPDeviceUser(unitType: _unit,age: 20, userHeight: 170, sex: PPUserGender.PPUserGenderFemale);
+                          _unit = _unit == PPUnitType.Unit_KG ? PPUnitType.UnitJin : PPUnitType.Unit_KG;
+                          final deviceUser = PPDeviceUser(unitType: _unit,age: 20, userHeight: 170, sex: PPUserGender.female);
                           PPPeripheralApple.syncUnit(deviceUser);
+
+                        } else if (index == 12) {
+                          String zrPath = '';
+                          try {
+                            final PathProviderPlatform provider = PathProviderPlatform.instance;
+                            final documentPath = await provider.getApplicationDocumentsPath();
+                            zrPath = '$documentPath/DeviceLog';
+
+                            PPPeripheralTorre.syncDeviceLog(zrPath, callBack: (progress, isSuccess, filePath) {
+                              _updateText('进度:$progress 是否成功：$isSuccess 日志路径:$filePath');
+                              print('进度:$progress 是否成功：$isSuccess 日志路径:$filePath');
+                            });
+                          } catch (e) {
+                            _updateText('获取路径失败:$e');
+                          }
+
+                        } else if (index == 13) {
+                          PPPeripheralTorre.startMeasure();
+
+                        } else if (index == 14) {
+                          PPPeripheralTorre.stopMeasure();
 
                         }
                       },

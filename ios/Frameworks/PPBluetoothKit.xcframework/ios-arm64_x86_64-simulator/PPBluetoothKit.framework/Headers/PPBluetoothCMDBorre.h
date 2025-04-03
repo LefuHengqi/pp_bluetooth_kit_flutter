@@ -9,6 +9,7 @@
 #import "PPTorreSettingModel+Borre.h"
 #import "PPUserRecentBodyData.h"
 #import "PPBluetoothDefine.h"
+#import "PPBluetoothAdvDeviceModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - fff2
 
-- (NSArray *)userInfo608:(PPTorreSettingModel *)userModel;
+- (NSArray *)userInfo608:(PPTorreSettingModel *)userModel device:(PPBluetoothAdvDeviceModel *)deviceAdv;
 
 - (NSArray *)userInfo:(PPTorreSettingModel *)userModel;
 
@@ -43,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)colorModeWithLightEnable:(BOOL)lightEnable lightMode:(NSInteger)lightMode normalColor:(NSString *)normalColor gainColor:(NSString *)gainColor lossColor:(NSString *)lossColor;
 
-- (NSArray *)bodyData7Days:(NSArray <PPUserRecentBodyData *> *)recentData type:(PPUserBodyDataType)type lastRecentBodyData:(PPUserRecentBodyData*)lastBodyData user:(PPTorreSettingModel *)userModel;
+- (NSArray *)bodyData7Days:(NSArray <PPUserRecentBodyData *> *)recentData type:(PPUserBodyDataType)type lastRecentBodyData:(PPUserRecentBodyData*)lastBodyData user:(PPTorreSettingModel *)userModel device:(PPBluetoothAdvDeviceModel *)device;
 
 @end
 

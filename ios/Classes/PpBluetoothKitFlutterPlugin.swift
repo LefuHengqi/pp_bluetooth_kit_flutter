@@ -51,7 +51,18 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       instance.bleManager.blePermissionStreamHandler = blePermissionStreamHandler
       let blePermissionEventChannel = FlutterEventChannel(name: "pp_ble_permission_streams", binaryMessenger: registrar.messenger())
       blePermissionEventChannel.setStreamHandler(blePermissionStreamHandler)
-
+      
+      
+      let dfuStreamHandler = PPLefuStreamHandler()
+      instance.bleManager.dfuStreamHandler = dfuStreamHandler
+      let dfuEventChannel = FlutterEventChannel(name: "pp_dfu_streams", binaryMessenger: registrar.messenger())
+      dfuEventChannel.setStreamHandler(dfuStreamHandler)
+      
+      let deviceLogStreamHandler = PPLefuStreamHandler()
+      instance.bleManager.deviceLogStreamHandler = deviceLogStreamHandler
+      let deviceLogEventChannel = FlutterEventChannel(name: "device_log_streams", binaryMessenger: registrar.messenger())
+      deviceLogEventChannel.setStreamHandler(deviceLogStreamHandler)
+      
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -297,6 +308,27 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "stopMeasure" {
           
           self.bleManager.stopMeasure(result)
+      } else if method == "startBabyModel" {
+          
+          let step = params?["step"] as? Int ?? 0
+          let weight = params?["weight"] as? Int ?? 0
+          
+          self.bleManager.startBabyModel(step: step, weight: weight, result)
+      } else if method == "exitBabyModel" {
+          
+          self.bleManager.exitBabyModel(result)
+      } else if method == "dfuStart" {
+          
+          let filePath = params?["filePath"] as? String ?? ""
+          let deviceFirmwareVersion = params?["deviceFirmwareVersion"] as? String ?? ""
+          let isForceCompleteUpdate = params?["isForceCompleteUpdate"] as? Bool ?? false
+          
+          self.bleManager.dfuStart(filePath: filePath, deviceFirmwareVersion: deviceFirmwareVersion, isForceCompleteUpdate: isForceCompleteUpdate, result)
+          
+      } else if method == "syncDeviceLog" {
+          
+          let logFolder = params?["logFolder"] as? String ?? ""
+          self.bleManager.syncDeviceLog(logFolder: logFolder)
       }
       
   }

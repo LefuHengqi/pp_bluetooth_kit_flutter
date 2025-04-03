@@ -1,21 +1,35 @@
 PODS:
   - Flutter (1.0.0)
-  - pp_bluetooth_kit_flutter (0.0.1):
+  - path_provider_foundation (0.0.1):
     - Flutter
+    - FlutterMacOS
+  - pp_bluetooth_kit_flutter (0.0.2):
+    - Flutter
+    - SSZipArchive
+  - SSZipArchive (2.4.3)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/ios`)
   - pp_bluetooth_kit_flutter (from `.symlinks/plugins/pp_bluetooth_kit_flutter/ios`)
+
+SPEC REPOS:
+  trunk:
+    - SSZipArchive
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/ios"
   pp_bluetooth_kit_flutter:
     :path: ".symlinks/plugins/pp_bluetooth_kit_flutter/ios"
 
 SPEC CHECKSUMS:
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  pp_bluetooth_kit_flutter: 98bfb5e5ef3b868b223eddd4dd2e935d6a105ce5
+  path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
+  pp_bluetooth_kit_flutter: 4bc3b12d257bb967687b11988f3f0397669ad417
+  SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
 

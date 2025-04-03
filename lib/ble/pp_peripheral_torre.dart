@@ -8,7 +8,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 
 class PPPeripheralTorre {
-  static final _peripheralType = PPDevicePeripheralType.PeripheralTorre.value;
+  static final _peripheralType = PPDevicePeripheralType.torre.value;
 
 
   /// 获取指定用户历史数据
@@ -166,5 +166,36 @@ class PPPeripheralTorre {
   /// 停止测量
   static Future<bool> stopMeasure() async {
     return PPBluetoothKitFlutterPlatform.instance.stopMeasure(_peripheralType);
+  }
+
+  /// 开始"抱婴模式"测量
+  /// [step]：标识第几次上称，PPBabyModelStep.one 第一次上秤，PPBabyModelStep.two 第二次上秤
+  /// [weight]：上次上秤重量，step 为 PPBabyModelStep.one时，传0
+  static Future<bool> startBabyModel(PPBabyModelStep step, int weight) async {
+    return PPBluetoothKitFlutterPlatform.instance.startBabyModel(_peripheralType, step, weight);
+  }
+
+  /// 退出"抱婴模式"测量
+  static Future<bool> exitBabyModel() async {
+    return PPBluetoothKitFlutterPlatform.instance.exitBabyModel(_peripheralType);
+  }
+
+  /// 蓝牙DFU升级
+  /// [filePath] 固件zip包完整路径
+  /// [deviceFirmwareVersion] 设备当前版本号，可以通过 fetchDeviceInfo 方法获取 “firmwareRevision”
+  /// [isForceCompleteUpdate] 是否强制全量升级，true：每个包都升级，false:增量升级，根据版本号判定升级哪个包
+  static void dfuStart(String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
+    PPBluetoothKitFlutterPlatform.instance.dfuStart(_peripheralType, filePath, deviceFirmwareVersion, isForceCompleteUpdate, callBack: callBack);
+  }
+
+
+  /// 获取设备日志
+  /// [logFolder] 存放设备日志的文件夹路径，如:  沙盒路径//Log/DeviceLog
+  /// [callBack]
+  /// - progress 进度
+  /// - isSuccess 是否成功，true：同步设备日志成功，false：同步设备日志失败
+  /// - filePath 设备日志路径
+  static void syncDeviceLog(String logFolder, {required Function(double progress, bool isSuccess, String? filePath) callBack}) async {
+    PPBluetoothKitFlutterPlatform.instance.syncDeviceLog(_peripheralType, logFolder, callBack: callBack);
   }
 }
