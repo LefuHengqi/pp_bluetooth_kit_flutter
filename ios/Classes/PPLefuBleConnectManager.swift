@@ -123,7 +123,7 @@ class PPLefuBleConnectManager:NSObject {
         let mac = self.currentDevice?.deviceMac ?? ""
         let params:[String:Any] = [
             "deviceMac":mac,
-            "state":1
+            "state":state
         ]
 
         self.connectStateStreamHandler?.event?(params)
@@ -1236,9 +1236,14 @@ class PPLefuBleConnectManager:NSObject {
 extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurroundDeviceDelegate{
 
     func centralManagerDidUpdate(_ state: PPBluetoothState) {
-        self.bluetoothState = state
         
-        self.sendBlePermissionState(state: state)
+        if self.bluetoothState != state {
+            
+            self.sendBlePermissionState(state: state)
+            
+        }
+        
+        self.bluetoothState = state
         
         self.loggerStreamHandler?.event?("蓝牙状态:\(state)")
         
@@ -1254,6 +1259,7 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
     }
     
     func centralManagerDidFoundSurroundDevice(_ device: PPBluetoothAdvDeviceModel!, andPeripheral peripheral: CBPeripheral!) {
+//        self.loggerStreamHandler?.event?("SDK中搜索到:\(device.deviceName) mac:\(device.deviceMac) \(device.peripheralType)")
         
         if self.scanType == .scan {
 

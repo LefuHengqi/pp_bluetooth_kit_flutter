@@ -147,6 +147,8 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
 
           self.bleManager.disconnect()
           
+          result([:])
+          
       } else if method == "fetchHistory" {
           
           let userID = params?["userID"] as? String ?? ""

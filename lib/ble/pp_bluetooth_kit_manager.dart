@@ -79,4 +79,8 @@ class PPBluetoothKitManager {
   }
 
 
+  /// 断开当前设备连接
+  static void disconnect() {
+    PPBluetoothKitFlutterPlatform.instance.disconnect();
+  }
 }
