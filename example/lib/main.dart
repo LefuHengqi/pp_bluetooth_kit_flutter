@@ -96,6 +96,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
   // 动态文本内容（可外部修改）
   String _dynamicText = '初始化SDK';
   PPUnitType _unit = PPUnitType.Unit_KG;
+  bool _impedanceOpen = true;
+  bool _heartRateOpen = true;
 
   final _userID = "12345678";
   final _memberID = "999999";
@@ -119,6 +121,16 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('同步用户列表'),    // 15
     GridItem('删除用户'),    // 16
     GridItem('获取用户列表'),    // 17
+    GridItem('抱婴模式-step1'),    // 18
+    GridItem('抱婴模式-step2'),    // 19
+    GridItem('退出抱婴模式'),    // 20
+    GridItem('wifi-OTA'),    // 21
+    GridItem('设置绑定状态'),    // 22
+    GridItem('获取绑定状态'),    // 23
+    GridItem('阻抗开关'),    // 24
+    GridItem('获取阻抗开关状态'),    // 25
+    GridItem('心率开关'),    // 26
+    GridItem('获取心率开关状态'),    // 27
   ];
 
   void _updateText(String newText) {
@@ -323,6 +335,51 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                             text += '$userID\n';
                           }
                           _updateText('获取用户列表-$text');
+
+                        } else if (index == 18) {
+                          final ret = await PPPeripheralTorre.startBabyModel(PPBabyModelStep.one, 0);
+                          final ret1 = await PPPeripheralTorre.startMeasure();
+                          _updateText('抱婴模式-1-结果$ret $ret1');
+
+                        } else if (index == 19) {
+                          final ret = await PPPeripheralTorre.startBabyModel(PPBabyModelStep.two, 50);
+                          _updateText('抱婴模式-2-结果$ret');
+
+                        } else if (index == 20) {
+                          final ret = await PPPeripheralTorre.stopMeasure();
+                          final ret1 = await PPPeripheralTorre.exitBabyModel();
+                          _updateText('退出抱婴模式-结果$ret $ret1');
+
+                        } else if (index == 21) {
+                          final ret = await PPPeripheralTorre.wifiOTA();
+                          _updateText('wifi-OTA-结果$ret');
+
+                        } else if (index == 22) {
+                          final ret = await PPPeripheralTorre.setBindingState(true);
+                          _updateText('设置绑定状态-结果$ret');
+
+                        } else if (index == 23) {
+                          final ret = await PPPeripheralTorre.fetchBindingState();
+                          _updateText('获取绑定状态-结果$ret');
+
+                        } else if (index == 24) {
+                          _impedanceOpen = !_impedanceOpen;
+                          final ret = await PPPeripheralTorre.impedanceSwitchControl(_impedanceOpen);
+                          _updateText('阻抗开关设置-结果$ret');
+
+                        } else if (index == 25) {
+                          final ret = await PPPeripheralTorre.fetchImpedanceSwitch();
+                          _updateText('获取阻抗开关-结果$ret');
+
+                        } else if (index == 26) {
+                          _heartRateOpen = !_heartRateOpen;
+
+                          final ret = await PPPeripheralTorre.heartRateSwitchControl(_heartRateOpen);
+                          _updateText('设置心率开关-结果$ret');
+
+                        } else if (index == 27) {
+                          final ret = await PPPeripheralTorre.fetchHeartRateSwitch();
+                          _updateText('获取心率开关-结果$ret');
 
                         }
                       },

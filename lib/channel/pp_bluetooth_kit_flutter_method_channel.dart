@@ -907,7 +907,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final ret = await _bleChannel.invokeMethod<Map>('startBabyModel',<String, dynamic>{
         'peripheralType':peripheralType,
-        'step':step,
+        'step':step.value,
         'weight':weight
       });
 

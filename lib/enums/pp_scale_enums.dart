@@ -233,13 +233,13 @@ enum PPBabyModelStep {
   one(0), // 第一步
   two(1); // 第二步
 
-  final int step;
+  final int value;
 
-  const PPBabyModelStep(this.step);
+  const PPBabyModelStep(this.value);
 
-  static PPBabyModelStep fromInt(int value) {
+  static PPBabyModelStep fromInt(int value1) {
     return values.firstWhere(
-          (e) => e.step == value,
+          (e) => e.value == value1,
       orElse: () => PPBabyModelStep.one,
     );
   }
