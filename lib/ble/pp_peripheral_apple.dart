@@ -36,8 +36,8 @@ class PPPeripheralApple {
   /// sex 性别，必传
   /// isAthleteMode 运动员模式，可以不传
   /// isPregnantMode 孕妇模式，可以不传
-  static void syncUnit(PPDeviceUser deviceUser) {
-    PPBluetoothKitFlutterPlatform.instance.syncUnit(_peripheralType, deviceUser);
+  static Future<bool?> syncUnit(PPDeviceUser deviceUser) async {
+    return PPBluetoothKitFlutterPlatform.instance.syncUnit(_peripheralType, deviceUser);
   }
 
   /// 配网（Wi-Fi）

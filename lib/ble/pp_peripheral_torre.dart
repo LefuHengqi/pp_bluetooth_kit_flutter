@@ -11,24 +11,23 @@ class PPPeripheralTorre {
   static final _peripheralType = PPDevicePeripheralType.torre.value;
 
 
-  /// 获取指定用户历史数据
+  /// 获取指定用户下所有成员历史数据
   /// userID：下发给设备的 userID
-  /// memberID：下发给设备的 memberID
   /// [callBack] 返回的是设备离线测量的数据
-  static void fetchUserHistoryData(String userID, String memberID, {required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.fetchHistoryData(userID: userID, memberID: memberID, peripheralType:_peripheralType,callBack: callBack);
+  static void fetchUserHistoryData(String userID, {required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance.fetchHistoryData(userID: userID, peripheralType:_peripheralType,callBack: callBack);
   }
 
   /// 获取游客历史数据
   /// [callBack] 返回的是设备离线测量的数据
   static void fetchTouristsHistoryData({required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.fetchHistoryData(userID: "30", memberID: "", peripheralType:_peripheralType,callBack: callBack);
+    PPBluetoothKitFlutterPlatform.instance.fetchHistoryData(userID: "30", peripheralType:_peripheralType,callBack: callBack);
   }
 
   /// 同步时间
   /// 返回值：true:成功
-  static Future<bool?> syncTime() async {
-    return PPBluetoothKitFlutterPlatform.instance.syncTime(_peripheralType);
+  static Future<bool?> syncTime({bool is24Hour = true}) async {
+    return PPBluetoothKitFlutterPlatform.instance.syncTime(_peripheralType, is24Hour:is24Hour);
   }
 
   /// 同步单位
@@ -39,8 +38,9 @@ class PPPeripheralTorre {
   /// sex 性别，必传
   /// isAthleteMode 运动员模式，可以不传
   /// isPregnantMode 孕妇模式，可以不传
-  static void syncUnit(PPDeviceUser deviceUser) {
-    PPBluetoothKitFlutterPlatform.instance.syncUnit(_peripheralType, deviceUser);
+  static Future<bool?> syncUnit(PPUnitType unitType) async {
+    final deviceUser = PPDeviceUser(userHeight: 175, age: 20, sex: PPUserGender.female, unitType: unitType);
+    return PPBluetoothKitFlutterPlatform.instance.syncUnit(_peripheralType, deviceUser);
   }
 
   /// 配网（Wi-Fi）
@@ -64,14 +64,14 @@ class PPPeripheralTorre {
 
   /// 获取 WIFI MAC 地址
   /// 举例：MAC 地址：01:02:03:04:05:06
-  static Future<String?> fetchWifiMac(int peripheralType) async {
-    return PPBluetoothKitFlutterPlatform.instance.fetchWifiMac(peripheralType);
+  static Future<String?> fetchWifiMac() async {
+    return PPBluetoothKitFlutterPlatform.instance.fetchWifiMac(_peripheralType);
   }
 
   /// 获取周围Wi-Fi热点
   /// 返回：获取到的Wi-Fi热点列表
-  static Future<List<String>?> scanWifiNetworks(int peripheralType) async {
-    return PPBluetoothKitFlutterPlatform.instance.scanWifiNetworks(peripheralType);
+  static Future<List<String>?> scanWifiNetworks() async {
+    return PPBluetoothKitFlutterPlatform.instance.scanWifiNetworks(_peripheralType);
   }
 
   /// 获取设备信息
@@ -132,10 +132,22 @@ class PPPeripheralTorre {
     return PPBluetoothKitFlutterPlatform.instance.setScreenBrightness(_peripheralType, brightness);
   }
 
+  /// 获取屏幕亮度
+  /// 0-100的数值用来表示屏幕亮度
+  static Future<int> fetchScreenBrightness() async {
+    return PPBluetoothKitFlutterPlatform.instance.fetchScreenBrightness(_peripheralType);
+  }
+
   /// 同步单个用户到设备
   /// userModel：用户信息
   static Future<bool> syncUserInfo(PPTorreUserModel userModel) async {
     return PPBluetoothKitFlutterPlatform.instance.syncUserInfo(_peripheralType, userModel);
+  }
+
+  /// 同步用户列表到设备
+  /// userList:用户列表
+  static Future<bool> syncUserList(List<PPTorreUserModel> userList) async {
+    return PPBluetoothKitFlutterPlatform.instance.syncUserList(_peripheralType, userList);
   }
 
   /// 获取设备中用户ID列表
@@ -151,7 +163,7 @@ class PPPeripheralTorre {
     return PPBluetoothKitFlutterPlatform.instance.selectUser(_peripheralType, userID, memberID);
   }
 
-  /// 设备中用户
+  /// 删除设备中用户
   /// userID ：下发给设备的 userID
   /// memberID：下发给设备的 memberID，如果传“”空字符串，则删除 userID 下所有成员，否则只删除 memberID 匹配的成员
   static Future<bool> deleteDeviceUser(String userID, String memberID) async {
@@ -197,5 +209,10 @@ class PPPeripheralTorre {
   /// - filePath 设备日志路径
   static void syncDeviceLog(String logFolder, {required Function(double progress, bool isSuccess, String? filePath) callBack}) async {
     PPBluetoothKitFlutterPlatform.instance.syncDeviceLog(_peripheralType, logFolder, callBack: callBack);
+  }
+
+  /// 保活指令
+  static void keepAlive() async {
+    PPBluetoothKitFlutterPlatform.instance.keepAlive(_peripheralType);
   }
 }

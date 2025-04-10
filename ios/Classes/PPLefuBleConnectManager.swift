@@ -222,16 +222,20 @@ class PPLefuBleConnectManager:NSObject {
         }
     }
     
-    func syncUnit(model:PPBluetoothDeviceSettingModel) {
+    func syncUnit(model:PPBluetoothDeviceSettingModel, callBack: @escaping FlutterResult) {
         guard let currentDevice = self.currentDevice else {
             self.loggerStreamHandler?.event?("当前无连接设备")
             return
         }
 
         if currentDevice.peripheralType == .peripheralApple {
+            
             self.appleControl?.syncDeviceSetting(model)
+            self.sendCommonState(true, callBack: callBack)
         } else if currentDevice.peripheralType == .peripheralCoconut {
+            
             self.coconutControl?.syncDeviceSetting(model)
+            self.sendCommonState(true, callBack: callBack)
         } else if currentDevice.peripheralType == .peripheralTorre {
             let unit = model.unit
             self.torreControl?.codeChange(unit, withHandler: {[weak self] status in
@@ -240,7 +244,14 @@ class PPLefuBleConnectManager:NSObject {
                 }
                 
                 self.loggerStreamHandler?.event?("Torre-同步单位状态:\(status)")
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
             })
+        } else {
+            
+            sendCommonState(false, callBack: callBack)
+            
         }
     }
     
@@ -937,6 +948,23 @@ class PPLefuBleConnectManager:NSObject {
                 let filtedDict = dict.compactMapValues { $0 }
                 self.deviceLogStreamHandler?.event?(filtedDict)
             })
+            
+        }
+        
+    }
+    
+    func keepAlive() {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            self.deviceLogStreamHandler?.event?(["isSuccess":false])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.sendKeepAliveCode()
             
         }
         

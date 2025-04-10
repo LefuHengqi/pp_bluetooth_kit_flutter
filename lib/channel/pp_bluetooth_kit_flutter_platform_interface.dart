@@ -68,7 +68,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('addMeasurementListener has not been implemented.');
   }
 
-  Future<void> fetchHistoryData({String? userID, String? memberID,required int peripheralType,required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
+  Future<void> fetchHistoryData({String? userID,required int peripheralType,required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
     throw UnimplementedError('fetchHistoryData has not been implemented.');
   }
 
@@ -76,7 +76,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('deleteHistoryData has not been implemented.');
   }
 
-  Future<void> syncUnit(int peripheralType,PPDeviceUser deviceUser) {
+  Future<bool?> syncUnit(int peripheralType,PPDeviceUser deviceUser) {
     throw UnimplementedError('syncUnit has not been implemented.');
   }
 
@@ -156,6 +156,10 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('setScreenBrightness has not been implemented.');
   }
 
+  Future<int> fetchScreenBrightness(int peripheralType) {
+    throw UnimplementedError('fetchScreenBrightness has not been implemented.');
+  }
+
   Future<bool> syncUserInfo(int peripheralType, PPTorreUserModel userModel) {
     throw UnimplementedError('syncUserInfo has not been implemented.');
   }
@@ -202,5 +206,9 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
 
   void addScanStateListener({required Function(bool isScanning)callBack}) {
     throw UnimplementedError('syncDeviceLog has not been implemented.');
+  }
+
+  Future<void> keepAlive(int peripheralType) {
+    throw UnimplementedError('keepAlive has not been implemented.');
   }
 }

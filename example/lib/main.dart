@@ -196,8 +196,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 2) {
 
                           // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
-                          final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
+                          // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
+                          final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -262,7 +263,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 11) {
                           _unit = _unit == PPUnitType.Unit_KG ? PPUnitType.UnitJin : PPUnitType.Unit_KG;
                           final deviceUser = PPDeviceUser(unitType: _unit,age: 20, userHeight: 170, sex: PPUserGender.female);
-                          PPPeripheralApple.syncUnit(deviceUser);
+                          final ret = await PPPeripheralApple.syncUnit(deviceUser);
+                          _updateText('同步单位-结果:$ret');
 
                         } else if (index == 12) {
                           String zrPath = '';

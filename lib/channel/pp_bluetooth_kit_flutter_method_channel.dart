@@ -195,17 +195,11 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   
   
   @override
-  Future<void> fetchHistoryData({String? userID = "", String? memberID = "", required int peripheralType, required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) async {
+  Future<void> fetchHistoryData({String? userID = "", required int peripheralType, required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) async {
 
     if (peripheralType == PPDevicePeripheralType.torre.value) {
       if (userID == null || userID.isEmpty) {
         PPBluetoothKitLogger.i('历史数据-userID 为空');
-        callBack([], false);
-        return;
-      }
-
-      if (memberID == null || memberID.isEmpty) {
-        PPBluetoothKitLogger.i('历史数据-memberID 为空');
         callBack([], false);
         return;
       }
@@ -250,8 +244,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     // PPBluetoothKitLogger.i('执行fetchHistoryData');
     await _bleChannel.invokeMethod('fetchHistory',<String, dynamic>{
       'peripheralType': peripheralType,
-      'userID': userID,
-      'memberID': memberID,
+      'userID': userID
     });
   }
 
@@ -264,18 +257,30 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
   
   @override
-  Future<void> syncUnit(int peripheralType, PPDeviceUser deviceUser) async {
+  Future<bool?> syncUnit(int peripheralType, PPDeviceUser deviceUser) async {
     // PPBluetoothKitLogger.i('执行 同步单位');
 
-    await _bleChannel.invokeMethod("syncUnit",<String, dynamic>{
-      'unit': deviceUser.unitType.type,
-      'sex': deviceUser.sex.type,
-      'age':deviceUser.age,
-      'height':deviceUser.userHeight,
-      'isPregnantMode':deviceUser.isPregnantMode,
-      'isAthleteMode':deviceUser.isAthleteMode,
-      'peripheralType':peripheralType
-    });
+    try {
+
+      final ret = await _bleChannel.invokeMethod("syncUnit",<String, dynamic>{
+        'unit': deviceUser.unitType.type,
+        'sex': deviceUser.sex.type,
+        'age':deviceUser.age,
+        'height':deviceUser.userHeight,
+        'isPregnantMode':deviceUser.isPregnantMode,
+        'isAthleteMode':deviceUser.isAthleteMode,
+        'peripheralType':peripheralType
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool?;
+
+      return state;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('同步单位-返回结果异常:$e');
+      return false;
+    }
 
   }
   
@@ -706,6 +711,24 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
+  Future<int> fetchScreenBrightness(int peripheralType) async {
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('peripheralType',peripheralType);
+
+      final retJson = ret?.cast<String, dynamic>();
+      final brightness = retJson?["brightness"] as int? ?? 0;
+
+      return brightness;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('获取屏幕亮度-异常:$e');
+      return 0;
+    }
+
+  }
+
+  @override
   Future<bool> syncUserInfo(int peripheralType, PPTorreUserModel userModel) async {
 
     if (userModel.userID.isEmpty || userModel.memberID.isEmpty) {
@@ -1013,6 +1036,11 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
         callBack(false);
       }
     });
+  }
+  
+  @override
+  Future<void> keepAlive(int peripheralType) async {
+    await _bleChannel.invokeMethod('keepAlive');
   }
 
 }

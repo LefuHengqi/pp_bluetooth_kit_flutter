@@ -184,7 +184,7 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           model.isPregnantMode = isPregnantMode ?? false
           model.isAthleteMode = isAthleteMode ?? false
           
-          self.bleManager.syncUnit(model: model)
+          self.bleManager.syncUnit(model: model, callBack: result)
           
       } else if method == "syncTime" {
           
@@ -336,6 +336,9 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
           let logFolder = params?["logFolder"] as? String ?? ""
           self.bleManager.syncDeviceLog(logFolder: logFolder)
+      } else if method == "keepAlive" {
+
+          self.bleManager.keepAlive()
       }
       
   }
