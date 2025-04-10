@@ -339,6 +339,17 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "keepAlive" {
 
           self.bleManager.keepAlive()
+      } else if method == "clearDeviceData" {
+          
+          let type = params?["type"] as? Int ?? 0
+          self.bleManager.clearDeviceData(type: type, callBack: result)
+      } else if method == "setDeviceLanguage" {
+          
+          let type = params?["type"] as? Int ?? 0
+          self.bleManager.setDeviceLanguage(type: type, callBack: result)
+          
+      } else if method == "fetcgDeviceLanguage" {
+          self.bleManager.fetchDeviceLanguage(callBack: result)
       }
       
   }

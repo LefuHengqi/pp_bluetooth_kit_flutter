@@ -244,3 +244,63 @@ enum PPBabyModelStep {
     );
   }
 }
+
+
+enum PPClearDeviceDataType {
+  /// 清除所有设备数据（包括：用户信息、历史数据、配网状态、设置信息）
+  all(0),
+  /// 仅清除用户信息（如用户账号、个性化设置等）
+  userInfo(1),
+  /// 仅清除历史记录数据（如测量记录、操作日志等）
+  historyData(2),
+  /// 仅清除网络配置信息（如Wi-Fi配网状态、网络凭证等）
+  networkConfig(3),
+  /// 仅清除设备设置信息（如单位设置、报警阈值等）
+  settings(4);
+
+
+  final int value;
+
+  const PPClearDeviceDataType(this.value);
+
+
+  static PPClearDeviceDataType fromValue(int value) {
+    return values.firstWhere(
+          (e) => e.value == value,
+      orElse: () => throw ArgumentError('无效的类型值: $value'),
+    );
+  }
+}
+
+
+
+enum PPDeviceLanguage {
+  /// 中文简体 (简体中文)
+  chineseSimplified(0),
+  /// 英文 (English)
+  english(1),
+  /// 中文繁体 (繁體中文)
+  chineseTraditional(2),
+  /// 日语 (日本語)
+  japanese(3),
+  /// 西班牙语 (Español)
+  spanish(4),
+  /// 葡萄牙语 (Português)
+  portuguese(5),
+  /// 阿拉伯语 (العربية)
+  arabic(6),
+  /// 韩语 (한국어)
+  korean(7);
+
+  final int value;
+
+  const PPDeviceLanguage(this.value);
+
+  static PPDeviceLanguage fromValue(int value) {
+    return values.firstWhere(
+          (e) => e.value == value,
+      orElse: () => throw ArgumentError('Invalid language value: $value'),
+    );
+  }
+
+}

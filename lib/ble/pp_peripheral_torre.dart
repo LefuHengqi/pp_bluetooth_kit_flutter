@@ -215,4 +215,20 @@ class PPPeripheralTorre {
   static void keepAlive() async {
     PPBluetoothKitFlutterPlatform.instance.keepAlive(_peripheralType);
   }
+
+  /// 清除设备数据
+  static Future<bool> clearDeviceData(PPClearDeviceDataType type) async {
+    return PPBluetoothKitFlutterPlatform.instance.clearDeviceData(_peripheralType, type);
+  }
+
+  /// 设置设备语言
+  static Future<bool> setDeviceLanguage(PPDeviceLanguage type) async {
+    return PPBluetoothKitFlutterPlatform.instance.setDeviceLanguage(_peripheralType, type);
+  }
+
+  /// 获取设备语言
+  static void fetchDeviceLanguage({required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance.fetchDeviceLanguage(_peripheralType, callBack: callBack);
+  }
+
 }

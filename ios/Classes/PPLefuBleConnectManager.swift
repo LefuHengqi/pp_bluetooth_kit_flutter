@@ -957,7 +957,6 @@ class PPLefuBleConnectManager:NSObject {
         
         guard let currentDevice = self.currentDevice else {
             self.loggerStreamHandler?.event?("当前无连接设备")
-            self.deviceLogStreamHandler?.event?(["isSuccess":false])
             
             return
         }
@@ -969,6 +968,83 @@ class PPLefuBleConnectManager:NSObject {
         }
         
     }
+    
+    func clearDeviceData(type:Int, callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.codeClearDeviceData(type, withHandler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                let success = state == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+            
+        }
+        
+    }
+    
+    func setDeviceLanguage(type:Int, callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            let lan = PPTorreLanguage(rawValue: UInt(type)) ?? .simplifiedChinese
+            self.torreControl?.setLanguage(lan, completion: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = state == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+            
+        }
+        
+    }
+    
+    func fetchDeviceLanguage(callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.getLanguageWithCompletion({ [weak self] (status, lang) in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                
+                let dict:[String:Any?] = [
+                    "type":lang.rawValue,
+                    "state":success
+                ]
+                let filtedDict = dict.compactMapValues { $0 }
+                
+                callBack(filtedDict)
+                
+            })
+            
+        }
+        
+    }
+    
 
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         

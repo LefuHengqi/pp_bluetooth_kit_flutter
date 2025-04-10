@@ -211,4 +211,17 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   Future<void> keepAlive(int peripheralType) {
     throw UnimplementedError('keepAlive has not been implemented.');
   }
+
+  Future<bool> clearDeviceData(int peripheralType, PPClearDeviceDataType type) {
+    throw UnimplementedError('clearDeviceData has not been implemented.');
+  }
+
+  Future<bool> setDeviceLanguage(int peripheralType, PPDeviceLanguage type) {
+    throw UnimplementedError('setDeviceLanguage has not been implemented.');
+  }
+
+  Future<void> fetchDeviceLanguage(int peripheralType, {required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) {
+    throw UnimplementedError('fetchDeviceLanguage has not been implemented.');
+  }
+
 }

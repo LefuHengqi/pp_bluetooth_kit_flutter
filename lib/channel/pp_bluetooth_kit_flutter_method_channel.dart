@@ -1043,4 +1043,70 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     await _bleChannel.invokeMethod('keepAlive');
   }
 
+  @override
+  Future<bool> clearDeviceData(int peripheralType, PPClearDeviceDataType type) async {
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('clearDeviceData',<String, dynamic>{
+        'peripheralType':peripheralType,
+        'type':type.value
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      return state;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('清除设备数据-异常:$e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> setDeviceLanguage(int peripheralType, PPDeviceLanguage type) async {
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('setDeviceLanguage',<String, dynamic>{
+        'peripheralType':peripheralType,
+        'type':type.value
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      return state;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('设置设备语言-异常:$e');
+      return false;
+    }
+  }
+
+  @override
+  Future<void> fetchDeviceLanguage(int peripheralType, {required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) async {
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('fetcgDeviceLanguage',<String, dynamic>{
+        'peripheralType':peripheralType,
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+      final typeCode = retJson?["type"] as int?;
+
+      PPDeviceLanguage? type;
+      if (typeCode != null) {
+        type = PPDeviceLanguage.fromValue(typeCode);
+      }
+
+      callBack(type, state);
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('获取设备语言-异常:$e');
+
+    }
+  }
+
 }
