@@ -1,4 +1,5 @@
 
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
 import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platform_interface.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
@@ -82,5 +83,9 @@ class PPBluetoothKitManager {
   /// 断开当前设备连接
   static void disconnect() {
     PPBluetoothKitFlutterPlatform.instance.disconnect();
+  }
+
+  static void addScanStateListener({required Function(bool isScanning) callBack}) async {
+    PPBluetoothKitFlutterPlatform.instance.addScanStateListener(callBack: callBack);
   }
 }

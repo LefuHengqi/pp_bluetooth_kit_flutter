@@ -200,5 +200,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('syncDeviceLog has not been implemented.');
   }
 
-
+  void addScanStateListener({required Function(bool isScanning)callBack}) {
+    throw UnimplementedError('syncDeviceLog has not been implemented.');
+  }
 }

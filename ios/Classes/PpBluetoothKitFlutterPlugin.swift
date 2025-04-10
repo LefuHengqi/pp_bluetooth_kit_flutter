@@ -63,6 +63,11 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       let deviceLogEventChannel = FlutterEventChannel(name: "device_log_streams", binaryMessenger: registrar.messenger())
       deviceLogEventChannel.setStreamHandler(deviceLogStreamHandler)
       
+      let scanStateStreamHandler = PPLefuStreamHandler()
+      instance.bleManager.scanStateStreamHandler = scanStateStreamHandler
+      let scanStateEventChannel = FlutterEventChannel(name: "pp_scan_state_streams", binaryMessenger: registrar.messenger())
+      scanStateEventChannel.setStreamHandler(scanStateStreamHandler)
+      
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

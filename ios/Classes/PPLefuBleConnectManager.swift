@@ -15,7 +15,7 @@ import Flutter
 
 enum PPLefuScanType:Int {
     case scan = 0
-    case connect
+
 }
 
 class PPLefuBleConnectManager:NSObject {
@@ -29,13 +29,13 @@ class PPLefuBleConnectManager:NSObject {
     var blePermissionStreamHandler:PPLefuStreamHandler?
     var dfuStreamHandler:PPLefuStreamHandler?
     var deviceLogStreamHandler:PPLefuStreamHandler?
+    var scanStateStreamHandler:PPLefuStreamHandler?
     
     lazy var scaleManager:PPBluetoothConnectManager = PPBluetoothConnectManager()
     
     private var bluetoothState:PPBluetoothState?
     private var needScan = false
     private var scanType:PPLefuScanType = .scan
-    private var needConnectMac = ""
     private var currentDevice: PPBluetoothAdvDeviceModel?
     private var current180A:PPBluetooth180ADeviceModel?
     private var connectState:Int = 0
@@ -47,16 +47,21 @@ class PPLefuBleConnectManager:NSObject {
     
     private var unzipFilePath : String?
     private var dfuConfig : PPDfuPackageModel?
+    private var isScaning:Bool = false
+    
+    private var tempDeviceDict = [String:(PPBluetoothAdvDeviceModel,CBPeripheral)]()
     
     func startScan() {
         
         self.stopScan()
         self.disconnect()
         
-        scan(type: .scan)
+        self.tempDeviceDict.removeAll()
+        
+        scanDevice(type: .scan)
     }
     
-    func scan(type:PPLefuScanType) {
+    func scanDevice(type:PPLefuScanType) {
         
         self.scanType = type
         self.needScan = true
@@ -77,9 +82,49 @@ class PPLefuBleConnectManager:NSObject {
 
         self.stopScan()
         self.disconnect()
+
         
-        self.needConnectMac = deviceMac
-        scan(type: .connect);
+        if let model = self.tempDeviceDict[deviceMac] {
+            
+            let device = model.0
+            let peripheral = model.1
+            
+            self.currentDevice = device
+            self.scaleManager.connectDelegate = self
+            
+            self.loggerStreamHandler?.event?("开始连接设备:\(device.deviceName) mac:\(device.deviceMac) \(device.peripheralType)")
+            
+            if device.peripheralType == .peripheralApple {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.appleControl = PPBluetoothPeripheralApple(peripheral: peripheral, andDevice: device)
+                self.appleControl?.serviceDelegate = self
+                self.appleControl?.cmdDelegate = self
+            } else if device.peripheralType == .peripheralCoconut {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.coconutControl = PPBluetoothPeripheralCoconut(peripheral: peripheral, andDevice: device)
+                self.coconutControl?.serviceDelegate = self
+                self.coconutControl?.cmdDelegate = self
+            } else if device.peripheralType == .peripheralTorre {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.torreControl = PPBluetoothPeripheralTorre(peripheral: peripheral, andDevice: device)
+                self.torreControl?.serviceDelegate = self
+
+            }
+            
+        } else {
+            
+            self.loggerStreamHandler?.event?("找不到设备-\(deviceMac)")
+            sendConnectState(2)
+            
+        }
+        
+        
     }
     
     
@@ -87,6 +132,10 @@ class PPLefuBleConnectManager:NSObject {
         
         self.scaleManager.stopSearch()
         
+        if self.isScaning {
+            self.isScaning = false
+            sendScanState(scaning: false)
+        }
     }
     
     func disconnect() {
@@ -110,7 +159,6 @@ class PPLefuBleConnectManager:NSObject {
         self.coconutControl = nil
         
         self.needScan = false
-        self.needConnectMac = ""
         self.currentDevice = nil
         self.current180A = nil
     }
@@ -1230,6 +1278,11 @@ class PPLefuBleConnectManager:NSObject {
         
         self.dfuStreamHandler?.event?(dict)
     }
+    
+    func sendScanState(scaning:Bool) {
+        let code:Int = scaning ? 1 : 0
+        self.scanStateStreamHandler?.event?(["state":code])
+    }
 
 }
 
@@ -1251,9 +1304,16 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
             
             self.needScan = false
             self.scaleManager.searchSurroundDevice()
+            self.isScaning = true
+            sendScanState(scaning: true)
             
         } else if (state == .poweredOff) {
             self.needScan = false
+            
+            if self.isScaning {
+                self.isScaning = false
+                sendScanState(scaning: false)
+            }
         }
         
     }
@@ -1262,43 +1322,12 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
 //        self.loggerStreamHandler?.event?("SDK中搜索到:\(device.deviceName) mac:\(device.deviceMac) \(device.peripheralType)")
         
         if self.scanType == .scan {
+            
+            self.tempDeviceDict[device.deviceMac] = (device,peripheral)
 
             let dict:[String:Any] = self.convertDeviceDict(device)
             
             self.scanResultStreamHandler?.event?(dict)
-            
-        } else if self.scanType == .connect, self.needConnectMac == device.deviceMac {
-            
-            self.stopScan()
-            
-            self.currentDevice = device
-            self.scaleManager.connectDelegate = self
-            
-            self.loggerStreamHandler?.event?("开始连接设备:\(device.deviceName) mac:\(device.deviceMac) \(device.peripheralType)")
-            
-            if device.peripheralType == .peripheralApple {
-                
-                self.scaleManager.connect(peripheral, withDevice: device)
-                
-                self.appleControl = PPBluetoothPeripheralApple(peripheral: peripheral, andDevice: device)
-                self.appleControl?.serviceDelegate = self
-                self.appleControl?.cmdDelegate = self
-            } else if device.peripheralType == .peripheralCoconut {
-                
-                self.scaleManager.connect(peripheral, withDevice: device)
-                
-                self.coconutControl = PPBluetoothPeripheralCoconut(peripheral: peripheral, andDevice: device)
-                self.coconutControl?.serviceDelegate = self
-                self.coconutControl?.cmdDelegate = self
-            } else if device.peripheralType == .peripheralTorre {
-                
-                self.scaleManager.connect(peripheral, withDevice: device)
-                
-                self.torreControl = PPBluetoothPeripheralTorre(peripheral: peripheral, andDevice: device)
-                self.torreControl?.serviceDelegate = self
-
-            }
-            
             
         }
         

@@ -130,6 +130,10 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     PPBluetoothKitManager.addLoggerListener(callBack: (content) {
       print('SDK的日志:$content');
     });
+
+    PPBluetoothKitManager.addScanStateListener(callBack: (isScanning) {
+      print('扫描状态:$isScanning');
+    });
   }
 
   @override
@@ -200,9 +204,15 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                             _updateText('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                           });
 
-                          PPBluetoothKitManager.connectDevice(device, callBack: (state){
-                            _updateText('连接状态:$state ${device.deviceMac}');
+                          PPBluetoothKitManager.startScan((ppDevice){
+                            if (ppDevice.deviceMac == device.deviceMac) {
+                              PPBluetoothKitManager.connectDevice(ppDevice, callBack: (state){
+                                _updateText('连接状态:$state ${device.deviceMac}');
+                              });
+                            }
                           });
+
+
                         } else if (index == 3) {
                           PPPeripheralApple.fetchHistoryData(callBack: (dataList, bool isSuccess){
                             print('历史数据-数量:${dataList.length}');

@@ -25,6 +25,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   StreamSubscription? _blePermissionSubscription;
   StreamSubscription? _dfuSubscription;
   StreamSubscription? _deviceLogSubscription;
+  StreamSubscription? _scanStateSubscription;
 
   final methodChannel = const MethodChannel('pp_bluetooth_kit_flutter');
 
@@ -39,6 +40,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   final _blePermissionEvent = const EventChannel('pp_ble_permission_streams');
   final _dfuEvent = const EventChannel('pp_dfu_streams');
   final _deviceLogEvent = const EventChannel('device_log_streams');
+  final _scanStateEvent = const EventChannel('pp_scan_state_streams');
 
   @override
   Future<String?> getPlatformVersion() async {
@@ -992,6 +994,24 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     await _bleChannel.invokeMethod<Map>('syncDeviceLog',<String, dynamic>{
       'peripheralType':peripheralType,
       'logFolder':logFolder
+    });
+  }
+
+  @override
+  void addScanStateListener({required Function(bool isScanning) callBack}) async {
+    _scanStateSubscription?.cancel();
+    _scanStateSubscription = _scanStateEvent.receiveBroadcastStream().listen((event) {
+      try {
+
+        final retJson = event.cast<String, dynamic>();
+        final state = retJson['state'] as int? ?? 0;
+        bool isScanning = state == 1;
+        callBack(isScanning);
+
+      } catch(e) {
+        PPBluetoothKitLogger.i('扫描状态-返回结果异常:$e');
+        callBack(false);
+      }
     });
   }
 
