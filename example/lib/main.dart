@@ -11,6 +11,7 @@ import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
@@ -96,22 +97,28 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
   String _dynamicText = '初始化SDK';
   PPUnitType _unit = PPUnitType.Unit_KG;
 
+  final _userID = "12345678";
+  final _memberID = "999999";
+
   final List<GridItem> _gridItems = [
-    GridItem('扫描设备'),
-    GridItem('停止扫描'),
-    GridItem('连接指定设备'),
-    GridItem('获取历史数据'),
-    GridItem('同步时间'),
-    GridItem('配网'),
-    GridItem('获取配网信息'),
-    GridItem('获取设备信息'),
-    GridItem('获取电量'),
-    GridItem('恢复出厂设置'),
-    GridItem('获取已连接的设备'),
-    GridItem('同步单位'),
-    GridItem('同步设备日志'),
-    GridItem('开始测量'),
-    GridItem('停止测量'),
+    GridItem('扫描设备'),    // 0
+    GridItem('停止扫描'),    // 1
+    GridItem('连接指定设备'), // 2
+    GridItem('获取历史数据'), // 3
+    GridItem('同步时间'),    // 4
+    GridItem('配网'),        // 5
+    GridItem('获取配网信息'), // 6
+    GridItem('获取设备信息'), // 7
+    GridItem('获取电量'),    // 8
+    GridItem('恢复出厂设置'), // 9
+    GridItem('获取已连接的设备'), // 10
+    GridItem('同步单位'),       // 11
+    GridItem('同步设备日志'),    // 12
+    GridItem('开始测量'),       // 13
+    GridItem('停止测量'),       // 14
+    GridItem('同步用户列表'),    // 15
+    GridItem('删除用户'),    // 16
+    GridItem('获取用户列表'),    // 17
   ];
 
   void _updateText(String newText) {
@@ -195,10 +202,10 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
-                          final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
+                          // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -283,9 +290,39 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
 
                         } else if (index == 13) {
                           PPPeripheralTorre.startMeasure();
+                          final ret = PPPeripheralTorre.selectDeviceUser(_userID, _memberID);
+                          print('选中用户:$ret');
 
                         } else if (index == 14) {
                           PPPeripheralTorre.stopMeasure();
+
+                        } else if (index == 15) {
+
+                          final user = PPTorreUserModel(
+                              userName: 'sdk',
+                              userHeight: 170,
+                              age: 20,
+                              sex: PPUserGender.female,
+                              unitType: PPUnitType.Unit_KG,
+                              userID: _userID,
+                              memberID: _memberID,
+                              currentWeight: 45);
+
+                          final ret = await PPPeripheralTorre.syncUserList([user]);
+                          _updateText('同步用户列表结果-$ret');
+
+                        } else if (index == 16) {
+
+                          final ret = await PPPeripheralTorre.deleteDeviceUser(_userID,_memberID);
+                          _updateText('删除用户结果-$ret');
+
+                        } else if (index == 17) {
+                          final array = await PPPeripheralTorre.fetchUserIDList();
+                          var text = "";
+                          for (var userID in array) {
+                            text += '$userID\n';
+                          }
+                          _updateText('获取用户列表-$text');
 
                         }
                       },

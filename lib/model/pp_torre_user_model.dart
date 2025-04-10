@@ -70,7 +70,7 @@ class PPTorreUserModel extends PPDeviceUser {
       'sex': sex.index,
       'isAthleteMode': isAthleteMode,
       'isPregnantMode': isPregnantMode,
-      'unitType': unitType,
+      'unitType': unitType.type,
     };
   }
 }

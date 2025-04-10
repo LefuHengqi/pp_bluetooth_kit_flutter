@@ -798,7 +798,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       });
 
       final retJson = ret?.cast<String, dynamic>();
-      final userIDList = retJson?["userIDList"] as List<String>? ?? [];
+      final userIDList = retJson?["userIDList"]?.cast<String>().toList() ?? [];
 
       return userIDList;
     } catch(e) {
@@ -836,7 +836,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       return false;
     }
 
-    if (memberID.isEmpty) { // 删除 userID 下所有成员
+    if (memberID.isEmpty || peripheralType == PPDevicePeripheralType.torre.value) { // 删除 userID 下所有成员
       memberID = "ff";
     }
 
