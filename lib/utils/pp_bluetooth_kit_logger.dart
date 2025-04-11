@@ -1,3 +1,5 @@
+import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platform_interface.dart';
+
 ///@author liyp
 ///@email liyp520@foxmail.com
 ///@date 2025/1/10 11:15
@@ -5,26 +7,35 @@
 
 
 class PPBluetoothKitLogger {
-  static PPBluetoothKitLoggerListener? listener;
 
-  static bool enabled = false;
+  static bool _enabled = false;
+  static Function(String logStr)? _logListener;
+
+  /// 添加日志监听回调
+  /// [isDebug] true-调试模式，打印控制台日志，false-不打印控制台日志
+  /// @param callBack 日志内容回调
+  ///                 参数：[String] 日志内容
+  static void addListener({bool isDebug = false, required Function(String logStr) callBack}) {
+    PPBluetoothKitLogger._enabled = isDebug;
+    PPBluetoothKitLogger._logListener = callBack;
+
+
+    PPBluetoothKitFlutterPlatform.instance.loggerListener((content){
+      PPBluetoothKitLogger.i(content);
+    });
+
+  }
+
+
 
   static void i(String msg) {
-    PPBluetoothKitLogger.listener?.i("[PPSDK]:$msg");
-    if (PPBluetoothKitLogger.enabled) {
-      print("[PPSDK]:$msg");
+    PPBluetoothKitLogger._logListener?.call("[PPSdk]:$msg");
+
+    if (PPBluetoothKitLogger._enabled) {
+      print("[PPSdk]:$msg");
     }
   }
 
-  static void addListener(bool isDebug, PPBluetoothKitLoggerListener listener) {
-    PPBluetoothKitLogger.enabled = isDebug;
-    PPBluetoothKitLogger.listener = listener;
-  }
 }
 
-abstract class PPBluetoothKitLoggerListener {
-
-  void i(String msg);
-
-}
 

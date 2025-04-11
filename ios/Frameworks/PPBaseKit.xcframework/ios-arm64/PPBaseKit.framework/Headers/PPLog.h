@@ -19,6 +19,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface PPLog : NSObject
 @property(nonatomic,strong)NSMutableArray *PP_Log_MessagesArray;
 
+/// 日志回调，设置后，能接收日志回调
+/// 设置日志回调后，建议把 setLogEnable 设置为 NO，这样可以关闭控制台的日志输出
+@property (nonatomic, copy) void(^logBlock)(NSString *logStr);
+
 + (instancetype)sharedInstance;
 
 /**

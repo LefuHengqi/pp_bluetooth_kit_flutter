@@ -42,6 +42,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   final _deviceLogEvent = const EventChannel('device_log_streams');
   final _scanStateEvent = const EventChannel('pp_scan_state_streams');
 
+
+
   @override
   Future<String?> getPlatformVersion() async {
     final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
@@ -61,13 +63,13 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> initSDK(String appKey, String appSecret, String filePath) async {
-    // PPBluetoothKitLogger.i('执行initSDK appKey:$appKey appSecret:$appSecret filePath:$filePath');
+    PPBluetoothKitLogger.i('执行初始化-initSDK appKey:$appKey appSecret:$appSecret filePath:$filePath');
     await _bleChannel.invokeMethod('initSDK',<String, dynamic>{'appKey': appKey, 'appSecret': appSecret, 'filePath':filePath});
   }
 
   @override
   Future<void> setDeviceSetting(String deviceContent) async {
-    // PPBluetoothKitLogger.i('执行setDeviceSetting');
+    PPBluetoothKitLogger.i('执行初始化-setDeviceSetting');
     await _bleChannel.invokeMethod('setDeviceSetting',<String, dynamic>{'deviceContent':deviceContent});
   }
 
@@ -91,13 +93,13 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       }
     });
 
-    // PPBluetoothKitLogger.i('执行 开启扫描');
+    PPBluetoothKitLogger.i('开启扫描');
     await _bleChannel.invokeMethod('startScan');
   }
 
   @override
   Future<void> stopScan() async {
-    // PPBluetoothKitLogger.i('执行 停止扫描');
+    PPBluetoothKitLogger.i('停止扫描');
     await _bleChannel.invokeMethod('stopScan');
   }
 
@@ -142,20 +144,20 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       }
     });
 
-    // PPBluetoothKitLogger.i('执行connectDevice');
+    PPBluetoothKitLogger.i('开始连接设备-deviceMac:$deviceMac deviceName:$deviceName');
     await _bleChannel.invokeMethod('connectDevice',<String, dynamic>{'deviceMac': deviceMac, 'deviceName': deviceName});
 
   }
   
   @override
   Future<void> disconnect() async {
-    // PPBluetoothKitLogger.i('执行disconnect');
+    PPBluetoothKitLogger.i('执行-断开连接');
     await _bleChannel.invokeMethod("disconnect");
   }
 
   @override
   Future<void> addMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) async {
-    // PPBluetoothKitLogger.i('执行addMeasurementListener');
+    PPBluetoothKitLogger.i('添加测量监听-addMeasurementListener');
     _measurementSubscription?.cancel();
     _measurementSubscription = _measurementDataEvent.receiveBroadcastStream().listen((event) {
       if (event is Map){
@@ -241,7 +243,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
     });
 
-    // PPBluetoothKitLogger.i('执行fetchHistoryData');
+    PPBluetoothKitLogger.i('开始同步历史数据-$userID peripheralType:$peripheralType');
     await _bleChannel.invokeMethod('fetchHistory',<String, dynamic>{
       'peripheralType': peripheralType,
       'userID': userID
@@ -250,7 +252,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> deleteHistoryData(int peripheralType) async {
-    // PPBluetoothKitLogger.i('执行deleteHistoryData');
+    PPBluetoothKitLogger.i('删除历史数据-peripheralType:$peripheralType');
     await _bleChannel.invokeMethod('deleteHistory',<String, dynamic>{
       'peripheralType': peripheralType
     });
@@ -258,7 +260,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   
   @override
   Future<bool?> syncUnit(int peripheralType, PPDeviceUser deviceUser) async {
-    // PPBluetoothKitLogger.i('执行 同步单位');
+    PPBluetoothKitLogger.i('开始同步单位-${deviceUser.unitType} peripheralType:$peripheralType');
 
     try {
 
@@ -275,6 +277,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool?;
 
+      PPBluetoothKitLogger.i('同步单位结果-$state');
+
       return state;
     } catch(e) {
 
@@ -286,7 +290,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   
   @override
   Future<bool?> syncTime(int peripheralType,{bool is24Hour = true}) async {
-    // PPBluetoothKitLogger.i('执行 同步时间');
+    PPBluetoothKitLogger.i('开始同步时间-is24Hour:$is24Hour peripheralType:$peripheralType');
 
     try {
 
@@ -295,6 +299,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       });
       final retJson = ret?.cast<String, dynamic>();
       final state = (retJson?["state"] as bool? ) ?? false;
+
+      PPBluetoothKitLogger.i('同步时间-结果:$state');
 
       return state;
     } catch(e) {
@@ -307,7 +313,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<PPWifiResult> configWifi(int peripheralType, {required String domain, required String ssId, required String password}) async {
-    // PPBluetoothKitLogger.i('执行 配网-域名:$domain wifi:$ssId');
+    PPBluetoothKitLogger.i('开始配网-domain:$domain wifi:$ssId peripheralType:$peripheralType');
 
     try {
 
@@ -325,6 +331,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retObj = PPWifiResult(success:success, sn: sn, errorCode: errorCode);
 
+      PPBluetoothKitLogger.i('配网结果:${retObj.success} errorCode:${retObj.errorCode}');
+
       return retObj;
     } catch(e) {
 
@@ -335,7 +343,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<String?> fetchWifiInfo(int peripheralType) async {
-    // PPBluetoothKitLogger.i('执行 获取配网信息');
+    PPBluetoothKitLogger.i('获取配网信息-peripheralType:$peripheralType');
 
     try {
 
@@ -345,6 +353,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final ssId = retJson?["ssId"] as String?;
+
+      PPBluetoothKitLogger.i('获取配网信息结果-ssId:$ssId');
 
       return ssId;
     } catch(e) {
@@ -357,7 +367,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool?> isConnectWIFI(int peripheralType) async {
-    // PPBluetoothKitLogger.i('执行 获取配网信息');
+    PPBluetoothKitLogger.i('获取配网状态-peripheralType:$peripheralType');
 
     try {
 
@@ -367,6 +377,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final connectedWIFI = retJson?["isConnectWIFI"] as bool?;
+
+      PPBluetoothKitLogger.i('获取配网状态结果-$connectedWIFI');
 
       return connectedWIFI;
     } catch(e) {
@@ -379,7 +391,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<PPDevice180AModel?> fetchDeviceInfo(int peripheralType) async {
-    // PPBluetoothKitLogger.i('执行 获取设备信息');
+    PPBluetoothKitLogger.i('获取设备信息-peripheralType:$peripheralType');
 
     try {
 
@@ -401,6 +413,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
           serialNumber: serialNumber,
           manufacturerName:
           manufacturerName);
+
+      PPBluetoothKitLogger.i('获取设备信息结果-firmwareRevision:${retObj.firmwareRevision} modelNumber:${retObj.modelNumber}');
 
       return retObj;
     } catch(e) {
@@ -438,6 +452,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
     });
 
+    PPBluetoothKitLogger.i('获取电量信息-continuity:$continuity peripheralType:$peripheralType');
+
     await _bleChannel.invokeMethod<Map>('fetchBatteryInfo',<String, dynamic>{
       'peripheralType':peripheralType
     });
@@ -445,6 +461,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> resetDevice(int peripheralType) async {
+    PPBluetoothKitLogger.i('恢复出厂-peripheralType:$peripheralType');
     _bleChannel.invokeMethod<Map>('resetDevice',<String, dynamic>{
       'peripheralType':peripheralType
     });
@@ -452,6 +469,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<PPDeviceModel?> fetchConnectedDevice() async {
+
+    PPBluetoothKitLogger.i('获取当前连接设备');
     try {
 
       final ret = await _bleChannel.invokeMethod('fetchConnectedDevice');
@@ -459,6 +478,9 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
         final retJson = ret.cast<String, dynamic>();
         PPDeviceModel model =PPDeviceModel.fromJson(retJson);
+
+        PPBluetoothKitLogger.i('获取当前连接设备结果-deviceMac:${model.deviceMac}');
+
         if (model.deviceMac != null) {
 
           return model;
@@ -511,6 +533,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<String?> fetchWifiMac(int peripheralType) async {
+
+    PPBluetoothKitLogger.i('获取Wi-Fi Mac-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetchWifiMac',<String, dynamic>{
@@ -519,6 +543,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final wifiMac = retJson?["wifiMac"] as String?;
+
+      PPBluetoothKitLogger.i('获取Wi-Fi Mac 结果-$wifiMac');
 
       return wifiMac;
     } catch(e) {
@@ -530,6 +556,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<List<String>?> scanWifiNetworks(int peripheralType) async {
+    PPBluetoothKitLogger.i('搜索周围Wi-Fi热点-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('scanWifiNetworks',<String, dynamic>{
@@ -538,6 +565,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final wifiList = retJson?["wifiList"] as List<String>?;
+
+      PPBluetoothKitLogger.i('搜索周围Wi-Fi热点结果-数量:${wifiList?.length}');
 
       return wifiList;
     } catch(e) {
@@ -549,6 +578,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> wifiOTA(int peripheralType) async {
+    PPBluetoothKitLogger.i('Wi-Fi OTA-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('wifiOTA',<String, dynamic>{
@@ -558,6 +588,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final isSuccess = retJson?["isSuccess"] as bool? ?? false;
       final errorCode = retJson?["errorCode"] as int?;
+
       PPBluetoothKitLogger.i('Wi-Fi OTA 状态:$isSuccess errorCode:$errorCode');
 
       return isSuccess;
@@ -570,6 +601,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> heartRateSwitchControl(int peripheralType, bool open) async {
+    PPBluetoothKitLogger.i('设置心率控制开关-open:$open peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('heartRateSwitchControl',<String, dynamic>{
@@ -580,16 +612,19 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final isSuccess = retJson?["state"] as bool? ?? false;
 
+      PPBluetoothKitLogger.i('设置心率控制开关结果:$isSuccess');
+
       return isSuccess;
     } catch(e) {
 
-      PPBluetoothKitLogger.i('心率控制开关-异常:$e');
+      PPBluetoothKitLogger.i('设置心率控制开关-异常:$e');
       return false;
     }
   }
 
   @override
   Future<bool> fetchHeartRateSwitch(int peripheralType) async {
+    PPBluetoothKitLogger.i('获取心率控制开关-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetchHeartRateSwitch',<String, dynamic>{
@@ -598,6 +633,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final open = retJson?["open"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('获取心率控制开关 结果-$open');
 
       return open;
     } catch(e) {
@@ -609,6 +646,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> impedanceSwitchControl(int peripheralType, bool open) async {
+    PPBluetoothKitLogger.i('设置阻抗控制开关-open:$open peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('impedanceSwitchControl',<String, dynamic>{
@@ -618,6 +656,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final isSuccess = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('设置阻抗控制开关 结果-$isSuccess');
 
       return isSuccess;
     } catch(e) {
@@ -629,6 +669,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> fetchImpedanceSwitch(int peripheralType) async {
+    PPBluetoothKitLogger.i('获取阻抗控制开关-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetchImpedanceSwitch',<String, dynamic>{
@@ -637,6 +678,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final open = retJson?["open"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('获取阻抗控制开关-结果:$open');
 
       return open;
     } catch(e) {
@@ -648,6 +691,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> setBindingState(int peripheralType, bool binding) async {
+    PPBluetoothKitLogger.i('设置绑定状态-binding:$binding peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('setBindingState',<String, dynamic>{
@@ -657,6 +701,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final isSuccess = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('设置绑定状态 结果:$isSuccess');
 
       return isSuccess;
     } catch(e) {
@@ -668,6 +714,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> fetchBindingState(int peripheralType) async {
+    PPBluetoothKitLogger.i('获取绑定状态-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetchBindingState',<String, dynamic>{
@@ -676,6 +723,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final binding = retJson?["binding"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('获取绑定状态 结果-binding:$binding');
 
       return binding;
     } catch(e) {
@@ -687,8 +736,10 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> setScreenBrightness(int peripheralType, int brightness) async {
+    PPBluetoothKitLogger.i('设置屏幕亮度-brightness:$brightness peripheralType:$peripheralType');
+
     if (brightness < 0 || brightness > 100) {
-      PPBluetoothKitLogger.i('设置屏幕亮度-参数异常-brightness:$brightness');
+      PPBluetoothKitLogger.i('设置屏幕亮度-参数异常');
       return false;
     }
 
@@ -702,22 +753,29 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
 
+      PPBluetoothKitLogger.i('设置屏幕亮度 结果:$state');
+
       return state;
     } catch(e) {
 
-      PPBluetoothKitLogger.i('设置设备绑定状态-异常:$e');
+      PPBluetoothKitLogger.i('设置屏幕亮度-异常:$e');
       return false;
     }
   }
 
   @override
   Future<int> fetchScreenBrightness(int peripheralType) async {
+
+    PPBluetoothKitLogger.i('获取屏幕亮度-peripheralType:$peripheralType');
+
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('peripheralType',peripheralType);
 
       final retJson = ret?.cast<String, dynamic>();
       final brightness = retJson?["brightness"] as int? ?? 0;
+
+      PPBluetoothKitLogger.i('获取屏幕亮度 结果-brightness:$brightness');
 
       return brightness;
     } catch(e) {
@@ -730,6 +788,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> syncUserInfo(int peripheralType, PPTorreUserModel userModel) async {
+
+    PPBluetoothKitLogger.i('同步单个用户-userID:${userModel.userID} memberID:${userModel.memberID} peripheralType:$peripheralType');
 
     if (userModel.userID.isEmpty || userModel.memberID.isEmpty) {
       PPBluetoothKitLogger.i('同步用户- userID 或 memberID 为空');
@@ -746,6 +806,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
 
+    PPBluetoothKitLogger.i('同步单个用户 结果:$state');
+
       return state;
     } catch(e) {
 
@@ -757,6 +819,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> syncUserList(int peripheralType, List<PPTorreUserModel> userList) async {
+    PPBluetoothKitLogger.i('同步用户列表-数量:${userList.length} peripheralType:$peripheralType');
     try {
       List<Map<String, dynamic>> list = [];
 
@@ -781,6 +844,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
 
+      PPBluetoothKitLogger.i('同步用户列表 结果:$state');
+
       return state;
     } catch(e) {
 
@@ -791,6 +856,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<List<String>> fetchUserIDList(int peripheralType) async {
+    PPBluetoothKitLogger.i('获取用户列表-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetchUserIDList',<String, dynamic>{
@@ -799,6 +865,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final userIDList = retJson?["userIDList"]?.cast<String>().toList() ?? [];
+
+      PPBluetoothKitLogger.i('获取用户列表 结果-数量${userIDList.length}');
 
       return userIDList;
     } catch(e) {
@@ -810,6 +878,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> selectUser(int peripheralType, String userID, String memberID) async {
+    PPBluetoothKitLogger.i('选中用户-userID:$userID memberID:$memberID peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('selectUser',<String, dynamic>{
@@ -821,6 +890,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
 
+      PPBluetoothKitLogger.i('选中用户 结果:$state');
+
       return state;
     } catch(e) {
 
@@ -831,6 +902,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> deleteUser(int peripheralType, String userID, String memberID) async {
+
     if (userID.isEmpty) {
       PPBluetoothKitLogger.i('删除设备用户失败- userID 为空');
       return false;
@@ -839,6 +911,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     if (memberID.isEmpty || peripheralType == PPDevicePeripheralType.torre.value) { // 删除 userID 下所有成员
       memberID = "ff";
     }
+
+    PPBluetoothKitLogger.i('删除设备用户-userID:$userID memberID:$memberID peripheralType:$peripheralType');
 
     try {
 
@@ -851,6 +925,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
 
+      PPBluetoothKitLogger.i('删除设备用户 结果:$state');
+
       return state;
     } catch(e) {
 
@@ -861,6 +937,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> startMeasure(int peripheralType) async {
+    PPBluetoothKitLogger.i('开始测量-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('startMeasure',<String, dynamic>{
@@ -869,6 +946,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('开始测量 结果:$state');
 
       return state;
     } catch(e) {
@@ -881,6 +960,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> stopMeasure(int peripheralType) async {
+    PPBluetoothKitLogger.i('停止测量-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('stopMeasure',<String, dynamic>{
@@ -889,6 +969,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('停止测量 结果-$state');
 
       return state;
     } catch(e) {
@@ -901,7 +983,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   @override
   Future<bool> startBabyModel(int peripheralType, PPBabyModelStep step, int weight) async {
 
-    PPBluetoothKitLogger.i('开始抱婴模式-step:$step weight:$weight');
+    PPBluetoothKitLogger.i('开始抱婴模式-step:$step weight:$weight peripheralType:$peripheralType');
 
     try {
 
@@ -914,6 +996,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
 
+      PPBluetoothKitLogger.i('开始抱婴模式 结果:$state step:$step');
+
       return state;
     } catch(e) {
 
@@ -924,6 +1008,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> exitBabyModel(int peripheralType) async {
+    PPBluetoothKitLogger.i('退出抱婴模式-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('startBabyModel',<String, dynamic>{
@@ -932,6 +1017,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('退出抱婴模式 结果-$state');
 
       return state;
     } catch(e) {
@@ -944,7 +1031,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   void dfuStart(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
-
+    PPBluetoothKitLogger.i('蓝牙DFU升级-$isForceCompleteUpdate filePath:$filePath peripheralType:$peripheralType');
     if (filePath.isEmpty) {
       PPBluetoothKitLogger.i('蓝牙DFU-失败-升级包路径为空');
       callBack(0, false);
@@ -988,8 +1075,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
-  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isSuccess, String? filePath) callBack}) async {
-
+  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isFailed, String? filePath) callBack}) async {
+    PPBluetoothKitLogger.i('同步设备日志-logFolder:$logFolder peripheralType:$peripheralType');
     if (logFolder.isEmpty) {
       PPBluetoothKitLogger.i('同步设备日志-失败-日志文件夹为空');
       callBack(0, false, null);
@@ -1004,8 +1091,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
         final retJson = event.cast<String, dynamic>();
         final progress = retJson['progress'] as double? ?? 0;
         final filePath = retJson['filePath'] as String?;
-        final isSuccess = retJson['isSuccess'] as bool? ?? false;
-        callBack(progress, isSuccess, filePath);
+        final isFailed = retJson['isFailed'] as bool? ?? false;
+        callBack(progress, isFailed, filePath);
 
       } catch(e) {
         PPBluetoothKitLogger.i('获取设备日志-返回结果异常:$e');
@@ -1040,11 +1127,13 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   
   @override
   Future<void> keepAlive(int peripheralType) async {
+    PPBluetoothKitLogger.i('发送保活指令:peripheralType:$peripheralType');
     await _bleChannel.invokeMethod('keepAlive');
   }
 
   @override
   Future<bool> clearDeviceData(int peripheralType, PPClearDeviceDataType type) async {
+    PPBluetoothKitLogger.i('清除设备数据-type:$type peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('clearDeviceData',<String, dynamic>{
@@ -1054,6 +1143,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('清除设备数据 结果:$state');
 
       return state;
     } catch(e) {
@@ -1065,6 +1156,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<bool> setDeviceLanguage(int peripheralType, PPDeviceLanguage type) async {
+    PPBluetoothKitLogger.i('设置设备语言-type:$type peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('setDeviceLanguage',<String, dynamic>{
@@ -1074,6 +1166,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('设置设备语言 结果 $state');
 
       return state;
     } catch(e) {
@@ -1085,6 +1179,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> fetchDeviceLanguage(int peripheralType, {required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) async {
+    PPBluetoothKitLogger.i('获取设备语言-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetcgDeviceLanguage',<String, dynamic>{
@@ -1094,6 +1189,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final state = retJson?["state"] as bool? ?? false;
       final typeCode = retJson?["type"] as int?;
+
+      PPBluetoothKitLogger.i('获取设备语言 结果-typeCode:$typeCode');
 
       PPDeviceLanguage? type;
       if (typeCode != null) {
@@ -1109,4 +1206,46 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     }
   }
 
+  @override
+  Future<void> setDisplayBodyFat(int bodyFat, int peripheralType) async {
+    PPBluetoothKitLogger.i('设置设备回显的体脂率-peripheralType:$peripheralType');
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('setDisplayBodyFat',<String, dynamic>{
+        'peripheralType':peripheralType,
+        'bodyFat':bodyFat
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('设置设备回显的体脂率 结果-$state');
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('设置设备回显的体脂率-异常:$e');
+
+    }
+  }
+
+  @override
+  Future<void> exitScanWifiNetworks(int peripheralType) async {
+    PPBluetoothKitLogger.i('退出搜索周边Wi-Fi热点-peripheralType:$peripheralType');
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('exitScanWifiNetworks',<String, dynamic>{
+        'peripheralType':peripheralType
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('退出搜索周边Wi-Fi热点 结果-$state');
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('退出搜索周边Wi-Fi热点-异常:$e');
+
+    }
+  }
 }

@@ -44,12 +44,27 @@ class PPLefuBleConnectManager:NSObject {
     private var appleControl : PPBluetoothPeripheralApple?
     private var coconutControl : PPBluetoothPeripheralCoconut?
     private var torreControl : PPBluetoothPeripheralTorre?
+    private var iceControl : PPBluetoothPeripheralIce?
     
     private var unzipFilePath : String?
     private var dfuConfig : PPDfuPackageModel?
     private var isScaning:Bool = false
     
     private var tempDeviceDict = [String:(PPBluetoothAdvDeviceModel,CBPeripheral)]()
+    
+    override init() {
+        super.init()
+        
+        PPLog.setLogEnable(false)
+        PPLog.sharedInstance().logBlock = {[weak self] logStr in
+            guard let `self` = self else {
+                return
+            }
+            
+            self.loggerStreamHandler?.event?(logStr)
+            
+        }
+    }
     
     func startScan() {
         
@@ -115,6 +130,13 @@ class PPLefuBleConnectManager:NSObject {
                 self.torreControl = PPBluetoothPeripheralTorre(peripheral: peripheral, andDevice: device)
                 self.torreControl?.serviceDelegate = self
 
+            } else if device.peripheralType == .peripheralIce {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.iceControl = PPBluetoothPeripheralIce(peripheral: peripheral, andDevice: device)
+                self.iceControl?.serviceDelegate = self
+
             }
             
         } else {
@@ -163,6 +185,7 @@ class PPLefuBleConnectManager:NSObject {
         self.current180A = nil
     }
     
+    /// 连接状态 0:断开连接 1:连接成功 2:连接错误
     func sendConnectState(_ state:Int) {
         self.loggerStreamHandler?.event?("连接状态:\(state)")
         
@@ -199,6 +222,14 @@ class PPLefuBleConnectManager:NSObject {
                 
                 self.sendHistoryData(models)
             })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.dataFetchHistoryData(handler: {[weak self] (models, error) in
+                guard let `self` = self else {
+                    return
+                }
+                self.sendHistoryData(models)
+            })
         }
     }
     
@@ -213,12 +244,14 @@ class PPLefuBleConnectManager:NSObject {
                 guard let `self` = self else {
                     return
                 }
-                
-                self.loggerStreamHandler?.event?("删除历史数据-状态:\(state)")
+
             })
         } else if currentDevice.peripheralType == .peripheralCoconut {
             self.coconutControl?.deleteDeviceHistoryData()
-            self.loggerStreamHandler?.event?("Coconut删除历史数据")
+
+        } else if currentDevice.peripheralType == .peripheralIce {
+            self.iceControl?.deleteDeviceHistoryData()
+
         }
     }
     
@@ -231,11 +264,16 @@ class PPLefuBleConnectManager:NSObject {
         if currentDevice.peripheralType == .peripheralApple {
             
             self.appleControl?.syncDeviceSetting(model)
-            self.sendCommonState(true, callBack: callBack)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
+            
         } else if currentDevice.peripheralType == .peripheralCoconut {
             
             self.coconutControl?.syncDeviceSetting(model)
-            self.sendCommonState(true, callBack: callBack)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
         } else if currentDevice.peripheralType == .peripheralTorre {
             let unit = model.unit
             self.torreControl?.codeChange(unit, withHandler: {[weak self] status in
@@ -243,7 +281,15 @@ class PPLefuBleConnectManager:NSObject {
                     return
                 }
                 
-                self.loggerStreamHandler?.event?("Torre-同步单位状态:\(status)")
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            let unit = model.unit
+            self.iceControl?.change(unit, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
                 
                 let success = status == 0
                 self.sendCommonState(success, callBack: callBack)
@@ -275,10 +321,11 @@ class PPLefuBleConnectManager:NSObject {
             })
         } else if currentDevice.peripheralType == .peripheralCoconut {
             self.coconutControl?.syncDeviceTime()
-            self.loggerStreamHandler?.event?("Coconut同步时间")
-            let param = ["state":1]
-            
-            callBack(param)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
+
         } else if currentDevice.peripheralType == .peripheralTorre {
             let code:Int = is24Hour ? 0 : 1;
             let format = PPTimeFormat(rawValue: code) ?? .format24HourClock
@@ -287,11 +334,20 @@ class PPLefuBleConnectManager:NSObject {
                     return
                 }
                 
-                let ret = state == 0 ? 1 : 0
-                self.loggerStreamHandler?.event?("同步时间-状态:\(ret)")
-                let param = ["state":ret]
+                let success = state == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+
+        } else if currentDevice.peripheralType == .peripheralIce {
+
+            self.iceControl?.syncTime({[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
                 
-                callBack(param)
+                let success = state == 0
+                
+                self.sendCommonState(success, callBack: callBack)
             })
 
         }
@@ -346,6 +402,36 @@ class PPLefuBleConnectManager:NSObject {
                 self.sendWIFIResult(isSuccess: isSuccess, sn: nil, errorCode: Int(errorCode), callBack: callBack);
                 
             })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.changeDNS(domain, withReciveDataHandler: { [weak self] isSuccess in
+                guard let `self` = self else {
+                    return
+                }
+                
+                if !isSuccess {
+                    self.loggerStreamHandler?.event?("配置域名失败-ICE")
+                    self.sendWIFIResult(isSuccess: false, sn: nil, errorCode: -1, callBack: callBack);
+                    
+                    return
+                }
+                
+                let wifi = PPWifiInfoModel()
+                wifi.ssid = ssId
+                wifi.password = password
+                
+                self.iceControl?.dataConfigNetWork(wifi, withHandler: {[weak self] (isSuccess, sn) in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    let isSuccess = isSuccess
+                    let errorCode = 0
+                    self.sendWIFIResult(isSuccess: isSuccess, sn: sn, errorCode: nil, callBack: callBack);
+                })
+                
+            })
+
         }
 
     }
@@ -377,7 +463,18 @@ class PPLefuBleConnectManager:NSObject {
                 
                 let connected = state == 1
                 
-                self.sendWIFISSID(nil, isConnectWIFI: connected, callBack: callBack)
+                self.sendWIFISSID("", isConnectWIFI: connected, callBack: callBack)
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            self.iceControl?.queryWifiConfig(handler: {[weak self] wifiInfo in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let ssId = wifiInfo?.ssid
+                let connected = (ssId?.count ?? 0) > 0
+                
+                self.sendWIFISSID(ssId, isConnectWIFI: connected, callBack: callBack)
             })
         }
     }
@@ -421,6 +518,15 @@ class PPLefuBleConnectManager:NSObject {
                 self.sendWifiList(wifiList, callBack: callBack)
                 
             })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            self.iceControl?.dataFindSurroundDevice({[weak self] (wifiList, status) in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.sendWifiList(wifiList, callBack: callBack)
+                
+            })
         }
     }
     
@@ -441,6 +547,16 @@ class PPLefuBleConnectManager:NSObject {
                 
                 let success = state == 0
                 self.sendWifiOTA(isSuccess: success, errorCode: state, callBack: callBack)
+                
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            self.iceControl?.otaAction(reciveHandler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = state > 3
+                self.sendWifiOTA(isSuccess: success, errorCode: Int(state), callBack: callBack)
                 
             })
         }
@@ -475,6 +591,27 @@ class PPLefuBleConnectManager:NSObject {
                     self.sendCommonState(success, callBack: callBack)
                 })
             }
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            if open {
+                
+                self.iceControl?.openHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.iceControl?.closeHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
         }
     }
     
@@ -492,6 +629,16 @@ class PPLefuBleConnectManager:NSObject {
                 
                 let success = state == 0
                 callBack(["open":success])
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.fetchHeartRateSwitchAndImpedanceSwitchState({[weak self] (heartRateStatus, impedanceStatus) in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let open = heartRateStatus == 0
+                callBack(["open":open])
             })
         }
     }
@@ -525,6 +672,27 @@ class PPLefuBleConnectManager:NSObject {
                     self.sendCommonState(success, callBack: callBack)
                 })
             }
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            if open {
+                
+                self.iceControl?.openImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.iceControl?.closeImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
         }
     }
     
@@ -541,6 +709,16 @@ class PPLefuBleConnectManager:NSObject {
             self.torreControl?.fetchImpedanceTestMode({ open in
                 
                 let open = open == 0
+                callBack(["open":open])
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.fetchHeartRateSwitchAndImpedanceSwitchState({[weak self] (heartRateStatus, impedanceStatus) in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let open = impedanceStatus == 0
                 callBack(["open":open])
             })
         }
@@ -808,6 +986,17 @@ class PPLefuBleConnectManager:NSObject {
                 self.sendCommonState(success, callBack: callBack)
                 
             })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.enterBabyMode(handler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
         }
     }
     
@@ -823,6 +1012,17 @@ class PPLefuBleConnectManager:NSObject {
         if currentDevice.peripheralType == .peripheralTorre {
             
             self.torreControl?.codeExitBabyModel({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.exitBabyMode(handler: { [weak self] status in
                 guard let `self` = self else {
                     return
                 }
@@ -940,7 +1140,24 @@ class PPLefuBleConnectManager:NSObject {
                 }
                 
                 let dict:[String:Any?] = [
-                    "isSuccess":!isFailed,
+                    "isFailed":isFailed,
+                    "progress":progress,
+                    "filePath":filePath
+                ]
+                
+                let filtedDict = dict.compactMapValues { $0 }
+                self.deviceLogStreamHandler?.event?(filtedDict)
+            })
+            
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.dataSyncLog(withLogFolder: logFolder, handler: {[weak self] progress, filePath, isFailed in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict:[String:Any?] = [
+                    "isFailed":isFailed,
                     "progress":progress,
                     "filePath":filePath
                 ]
@@ -964,6 +1181,10 @@ class PPLefuBleConnectManager:NSObject {
         if currentDevice.peripheralType == .peripheralTorre {
             
             self.torreControl?.sendKeepAliveCode()
+            
+        } else if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.sendKeepAliveCode()
             
         }
         
@@ -1045,6 +1266,43 @@ class PPLefuBleConnectManager:NSObject {
         
     }
     
+    func setDisplayBodyFat(_ bodyFat:Int, callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.writeBodyFat(Int32(bodyFat))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
+            
+        }
+        
+    }
+    
+    func exitScanWifiNetworks(callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralIce {
+            
+            self.iceControl?.exitWifiQuery()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
+        }
+        
+    }
+    
 
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         
@@ -1100,9 +1358,20 @@ class PPLefuBleConnectManager:NSObject {
             })
             
             return
+        } else if currentDevice.peripheralType == .peripheralIce {
+            self.iceControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+            
+            return
         }
-        
-        
+
     }
     
     func fetchBatteryInfo() {
@@ -1121,6 +1390,11 @@ class PPLefuBleConnectManager:NSObject {
             // 在代理方法中统一持续回调
             self.torreControl?.fetchDeviceBatteryInfo(completion: { power in
             })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            // 在代理方法中统一持续回调
+            self.iceControl?.fetchDeviceBatteryInfo(completion: { info in
+                
+            })
         }
     }
     
@@ -1134,6 +1408,10 @@ class PPLefuBleConnectManager:NSObject {
         
         if currentDevice.peripheralType == .peripheralApple {
             self.appleControl?.restoreFactory(handler: {
+            })
+        } else if currentDevice.peripheralType == .peripheralIce {
+            self.iceControl?.restoreFactory(handler: {
+                
             })
         }
         
@@ -1465,6 +1743,9 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
         } else if self.currentDevice?.peripheralType == .peripheralTorre {
             
             self.torreControl?.discoverFFF0Service()
+        } else if self.currentDevice?.peripheralType == .peripheralIce {
+            
+            self.iceControl?.discoverFFF0Service()
         }
 
     }
@@ -1509,6 +1790,10 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
                 self.torreControl?.scaleDataDelegate = self
                 self.sendConnectState(1)
             })
+        } else if self.currentDevice?.peripheralType == .peripheralIce {
+            self.iceControl?.scaleDataDelegate = self
+            self.sendConnectState(1)
+            
         }
     }
     

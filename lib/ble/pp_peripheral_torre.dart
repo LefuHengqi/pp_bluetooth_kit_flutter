@@ -180,10 +180,10 @@ class PPPeripheralTorre {
     return PPBluetoothKitFlutterPlatform.instance.stopMeasure(_peripheralType);
   }
 
-  /// 开始"抱婴模式"测量
+  /// 开启"抱婴模式"测量
   /// [step]：标识第几次上称，PPBabyModelStep.one 第一次上秤，PPBabyModelStep.two 第二次上秤
   /// [weight]：上次上秤重量，step 为 PPBabyModelStep.one时，传0
-  static Future<bool> startBabyModel(PPBabyModelStep step, int weight) async {
+  static Future<bool> enterBabyModel(PPBabyModelStep step, int weight) async {
     return PPBluetoothKitFlutterPlatform.instance.startBabyModel(_peripheralType, step, weight);
   }
 
@@ -205,9 +205,9 @@ class PPPeripheralTorre {
   /// [logFolder] 存放设备日志的文件夹路径，如:  沙盒路径//Log/DeviceLog
   /// [callBack]
   /// - progress 进度
-  /// - isSuccess 是否成功，true：同步设备日志成功，false：同步设备日志失败
+  /// - isFailed 是否失败，true：同步设备日志失败
   /// - filePath 设备日志路径
-  static void syncDeviceLog(String logFolder, {required Function(double progress, bool isSuccess, String? filePath) callBack}) async {
+  static void syncDeviceLog(String logFolder, {required Function(double progress, bool isFailed, String? filePath) callBack}) async {
     PPBluetoothKitFlutterPlatform.instance.syncDeviceLog(_peripheralType, logFolder, callBack: callBack);
   }
 

@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_ice.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
@@ -16,13 +17,12 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-
-    PPBluetoothKitManager.setLoggerEnable(true);
 
     final path = 'config/Device.json';
     String jsonStr = await rootBundle.loadString(path);
@@ -93,6 +93,9 @@ class DynamicTextPage extends StatefulWidget {
 }
 
 class _DynamicTextPageState extends State<DynamicTextPage> {
+
+  final ScrollController _gridController = ScrollController();
+
   // 动态文本内容（可外部修改）
   String _dynamicText = '初始化SDK';
   PPUnitType _unit = PPUnitType.Unit_KG;
@@ -131,6 +134,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('获取阻抗开关状态'),    // 25
     GridItem('心率开关'),    // 26
     GridItem('获取心率开关状态'),    // 27
+    GridItem('保活指令'),    // 28
   ];
 
   void _updateText(String newText) {
@@ -146,13 +150,21 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     // TODO: implement initState
     super.initState();
 
-    PPBluetoothKitManager.addLoggerListener(callBack: (content) {
-      print('SDK的日志:$content');
+    PPBluetoothKitLogger.addListener(isDebug: false, callBack: (text) {
+      print('SDK的日志:$text');
     });
 
     PPBluetoothKitManager.addScanStateListener(callBack: (isScanning) {
       print('扫描状态:$isScanning');
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+
+    _gridController.dispose();
+    super.dispose();
   }
 
   @override
@@ -193,7 +205,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
               ),
               margin: const EdgeInsets.all(8),
               child: Scrollbar(
+                controller: _gridController,
                 child: GridView.builder(
+                  controller: _gridController,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
                     childAspectRatio: 1,
@@ -214,10 +228,11 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
+                          final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -292,9 +307,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                             final documentPath = await provider.getApplicationDocumentsPath();
                             zrPath = '$documentPath/DeviceLog';
 
-                            PPPeripheralTorre.syncDeviceLog(zrPath, callBack: (progress, isSuccess, filePath) {
-                              _updateText('进度:$progress 是否成功：$isSuccess 日志路径:$filePath');
-                              print('进度:$progress 是否成功：$isSuccess 日志路径:$filePath');
+                            PPPeripheralTorre.syncDeviceLog(zrPath, callBack: (progress, isFailed, filePath) {
+                              _updateText('进度:$progress 是否失败：$isFailed 日志路径:$filePath');
+                              // print('进度:$progress 是否失败：$isFailed 日志路径:$filePath');
                             });
                           } catch (e) {
                             _updateText('获取路径失败:$e');
@@ -337,12 +352,12 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           _updateText('获取用户列表-$text');
 
                         } else if (index == 18) {
-                          final ret = await PPPeripheralTorre.startBabyModel(PPBabyModelStep.one, 0);
+                          final ret = await PPPeripheralTorre.enterBabyModel(PPBabyModelStep.one, 0);
                           final ret1 = await PPPeripheralTorre.startMeasure();
                           _updateText('抱婴模式-1-结果$ret $ret1');
 
                         } else if (index == 19) {
-                          final ret = await PPPeripheralTorre.startBabyModel(PPBabyModelStep.two, 50);
+                          final ret = await PPPeripheralTorre.enterBabyModel(PPBabyModelStep.two, 50);
                           _updateText('抱婴模式-2-结果$ret');
 
                         } else if (index == 20) {
@@ -381,6 +396,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           final ret = await PPPeripheralTorre.fetchHeartRateSwitch();
                           _updateText('获取心率开关-结果$ret');
 
+                        } else if (index == 28) {
+                          PPPeripheralTorre.keepAlive();
                         }
                       },
                     );

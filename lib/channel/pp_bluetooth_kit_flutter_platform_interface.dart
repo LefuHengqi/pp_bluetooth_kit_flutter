@@ -200,7 +200,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('dfuStart has not been implemented.');
   }
 
-  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isSuccess, String? filePath)callBack}) {
+  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isFailed, String? filePath)callBack}) {
     throw UnimplementedError('syncDeviceLog has not been implemented.');
   }
 
@@ -223,5 +223,14 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   Future<void> fetchDeviceLanguage(int peripheralType, {required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) {
     throw UnimplementedError('fetchDeviceLanguage has not been implemented.');
   }
+
+  Future<void> setDisplayBodyFat(int bodyFat, int peripheralType) {
+    throw UnimplementedError('setDisplayBodyFat has not been implemented.');
+  }
+
+  Future<void> exitScanWifiNetworks(int peripheralType) {
+    throw UnimplementedError('exitScanWifiNetworks has not been implemented.');
+  }
+
 
 }

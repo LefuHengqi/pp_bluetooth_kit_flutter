@@ -350,6 +350,13 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
       } else if method == "fetcgDeviceLanguage" {
           self.bleManager.fetchDeviceLanguage(callBack: result)
+      } else if method == "setDisplayBodyFat" {
+          
+          let bodyFat = params?["bodyFat"] as? Int ?? 0
+          self.bleManager.setDisplayBodyFat(bodyFat, callBack: result)
+      } else if method == "exitScanWifiNetworks" {
+          
+          self.bleManager.exitScanWifiNetworks(callBack: result)
       }
       
   }

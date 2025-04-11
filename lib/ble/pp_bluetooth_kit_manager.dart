@@ -61,22 +61,6 @@ class PPBluetoothKitManager {
     PPBluetoothKitFlutterPlatform.instance.addMeasurementListener(callBack: callBack);
   }
 
-  /// 启用/禁用控制台日志
-  ///
-  /// @param enable true-开启日志输出 false-关闭日志输出
-  static void setLoggerEnable(bool enable) {
-    PPBluetoothKitLogger.enabled = enable;
-  }
-
-  /// 添加日志监听回调
-  ///
-  /// @param callBack 日志内容回调
-  ///                 参数：[String] 日志内容
-  static void addLoggerListener({required Function(String text) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.loggerListener((content) {
-      callBack(content);
-    });
-  }
 
   /// 获取当前已连接的设备
   ///
