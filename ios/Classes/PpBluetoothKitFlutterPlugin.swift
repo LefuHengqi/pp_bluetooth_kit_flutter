@@ -324,13 +324,13 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "exitBabyModel" {
           
           self.bleManager.exitBabyModel(result)
-      } else if method == "dfuStart" {
+      } else if method == "startDFU" {
           
           let filePath = params?["filePath"] as? String ?? ""
           let deviceFirmwareVersion = params?["deviceFirmwareVersion"] as? String ?? ""
           let isForceCompleteUpdate = params?["isForceCompleteUpdate"] as? Bool ?? false
           
-          self.bleManager.dfuStart(filePath: filePath, deviceFirmwareVersion: deviceFirmwareVersion, isForceCompleteUpdate: isForceCompleteUpdate, result)
+          self.bleManager.startDFU(filePath: filePath, deviceFirmwareVersion: deviceFirmwareVersion, isForceCompleteUpdate: isForceCompleteUpdate, result)
           
       } else if method == "syncDeviceLog" {
           
@@ -357,6 +357,33 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "exitScanWifiNetworks" {
           
           self.bleManager.exitScanWifiNetworks(callBack: result)
+      } else if method == "exitNetworkConfig" {
+          
+          self.bleManager.exitNetworkConfig(callBack: result)
+      } else if method == "receiveBroadcastData" {
+          
+          let deviceMac = params?["deviceMac"] as? String
+          
+          guard let deviceMac = deviceMac else {
+              self.bleManager.loggerStreamHandler?.event?("deviceMac为空")
+              self.bleManager.sendCommonState(false, callBack: result)
+              return;
+          }
+
+          self.bleManager.receiveBroadcastData(deviceMac: deviceMac, callBack: result)
+      } else if method == "sendBroadcastData" {
+          
+          let cmd = params?["cmd"] as? String
+          let unit = params?["unit"] as? Int
+          let unitType  = PPDeviceUnit(rawValue: UInt(unit ?? 0)) ?? .unitKG
+          
+          guard let cmd = cmd else {
+              self.bleManager.loggerStreamHandler?.event?("cmd为空")
+              self.bleManager.sendCommonState(false, callBack: result)
+              return
+          }
+
+          self.bleManager.sendBroadcastData(cmd: cmd, unitType: unitType, callBack: result)
       }
       
   }

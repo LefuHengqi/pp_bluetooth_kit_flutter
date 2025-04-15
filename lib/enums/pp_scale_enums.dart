@@ -304,3 +304,24 @@ enum PPDeviceLanguage {
   }
 
 }
+
+
+/// 设备命令枚举
+enum PPBroadcastCommand {
+  /// 退出安全模式
+  exitSafeMode('37'),
+  /// 设备进入安全模式，不会测量阻抗
+  enterSafeMode('38');
+
+  final String value;
+
+  const PPBroadcastCommand(this.value);
+
+  static PPBroadcastCommand fromValue(String value) {
+    return values.firstWhere(
+          (e) => e.value.toUpperCase() == value.toUpperCase(),
+      orElse: () => throw ArgumentError('无效的命令值: $value'),
+    );
+  }
+
+}

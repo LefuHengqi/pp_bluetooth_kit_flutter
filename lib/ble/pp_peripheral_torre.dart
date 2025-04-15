@@ -196,8 +196,8 @@ class PPPeripheralTorre {
   /// [filePath] 固件zip包完整路径
   /// [deviceFirmwareVersion] 设备当前版本号，可以通过 fetchDeviceInfo 方法获取 “firmwareRevision”
   /// [isForceCompleteUpdate] 是否强制全量升级，true：每个包都升级，false:增量升级，根据版本号判定升级哪个包
-  static void dfuStart(String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
-    PPBluetoothKitFlutterPlatform.instance.dfuStart(_peripheralType, filePath, deviceFirmwareVersion, isForceCompleteUpdate, callBack: callBack);
+  static void startDFU(String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
+    PPBluetoothKitFlutterPlatform.instance.startDFU(_peripheralType, filePath, deviceFirmwareVersion, isForceCompleteUpdate, callBack: callBack);
   }
 
 
@@ -229,6 +229,11 @@ class PPPeripheralTorre {
   /// 获取设备语言
   static void fetchDeviceLanguage({required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) {
     PPBluetoothKitFlutterPlatform.instance.fetchDeviceLanguage(_peripheralType, callBack: callBack);
+  }
+
+  /// 退出Wi-Fi配网
+  static Future<bool> exitNetworkConfig() async {
+    return PPBluetoothKitFlutterPlatform.instance.exitNetworkConfig(_peripheralType);
   }
 
 }

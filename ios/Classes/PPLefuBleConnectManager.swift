@@ -45,10 +45,13 @@ class PPLefuBleConnectManager:NSObject {
     private var coconutControl : PPBluetoothPeripheralCoconut?
     private var torreControl : PPBluetoothPeripheralTorre?
     private var iceControl : PPBluetoothPeripheralIce?
+    private var bananaControl : PPBluetoothPeripheralBanana?
+    private var jambulControl : PPBluetoothPeripheralJambul?
     
     private var unzipFilePath : String?
     private var dfuConfig : PPDfuPackageModel?
     private var isScaning:Bool = false
+    
     
     private var tempDeviceDict = [String:(PPBluetoothAdvDeviceModel,CBPeripheral)]()
     
@@ -69,7 +72,6 @@ class PPLefuBleConnectManager:NSObject {
     func startScan() {
         
         self.stopScan()
-        self.disconnect()
         
         self.tempDeviceDict.removeAll()
         
@@ -152,6 +154,7 @@ class PPLefuBleConnectManager:NSObject {
     
     func stopScan() {
         
+        self.needScan = false
         self.scaleManager.stopSearch()
         
         if self.isScaning {
@@ -179,10 +182,20 @@ class PPLefuBleConnectManager:NSObject {
         
         self.appleControl = nil
         self.coconutControl = nil
+        self.torreControl = nil
+        
+        self.bananaControl?.scaleDataDelegate = nil;
+        self.bananaControl?.updateStateDelegate = nil;
+        self.bananaControl?.stopSearch()
+        
+        self.jambulControl?.scaleDataDelegate = nil;
+        self.jambulControl?.updateStateDelegate = nil;
+        self.jambulControl?.stopSearch()
         
         self.needScan = false
         self.currentDevice = nil
         self.current180A = nil
+
     }
     
     /// 连接状态 0:断开连接 1:连接成功 2:连接错误
@@ -241,7 +254,7 @@ class PPLefuBleConnectManager:NSObject {
         
         if currentDevice.peripheralType == .peripheralApple {
             self.appleControl?.deleteDeviceHistoryData(handler: {[weak self] state in
-                guard let `self` = self else {
+                guard self != nil else {
                     return
                 }
 
@@ -426,7 +439,7 @@ class PPLefuBleConnectManager:NSObject {
                     }
                     
                     let isSuccess = isSuccess
-                    let errorCode = 0
+ 
                     self.sendWIFIResult(isSuccess: isSuccess, sn: sn, errorCode: nil, callBack: callBack);
                 })
                 
@@ -633,7 +646,7 @@ class PPLefuBleConnectManager:NSObject {
         } else if currentDevice.peripheralType == .peripheralIce {
             
             self.iceControl?.fetchHeartRateSwitchAndImpedanceSwitchState({[weak self] (heartRateStatus, impedanceStatus) in
-                guard let `self` = self else {
+                guard self != nil else {
                     return
                 }
                 
@@ -714,7 +727,7 @@ class PPLefuBleConnectManager:NSObject {
         } else if currentDevice.peripheralType == .peripheralIce {
             
             self.iceControl?.fetchHeartRateSwitchAndImpedanceSwitchState({[weak self] (heartRateStatus, impedanceStatus) in
-                guard let `self` = self else {
+                guard self != nil else {
                     return
                 }
                 
@@ -867,7 +880,7 @@ class PPLefuBleConnectManager:NSObject {
         
         if currentDevice.peripheralType == .peripheralTorre {
             self.torreControl?.dataFetchUserID({[weak self] IDS in
-                guard let `self` = self else {
+                guard self != nil else {
                     return
                 }
                 
@@ -1034,7 +1047,7 @@ class PPLefuBleConnectManager:NSObject {
         }
     }
     
-    func dfuStart(filePath:String, deviceFirmwareVersion:String, isForceCompleteUpdate:Bool, _ callBack: @escaping FlutterResult) {
+    func startDFU(filePath:String, deviceFirmwareVersion:String, isForceCompleteUpdate:Bool, _ callBack: @escaping FlutterResult) {
         guard let currentDevice = self.currentDevice else {
             self.loggerStreamHandler?.event?("当前无连接设备")
             callBack([:])
@@ -1246,7 +1259,7 @@ class PPLefuBleConnectManager:NSObject {
         if currentDevice.peripheralType == .peripheralTorre {
             
             self.torreControl?.getLanguageWithCompletion({ [weak self] (status, lang) in
-                guard let `self` = self else {
+                guard self != nil else {
                     return
                 }
                 
@@ -1303,6 +1316,29 @@ class PPLefuBleConnectManager:NSObject {
         
     }
     
+    
+    func exitNetworkConfig(callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        if currentDevice.peripheralType == .peripheralTorre {
+            
+            self.torreControl?.dataExitWifiConfig({[weak self] stauts in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = stauts == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+
+        }
+        
+    }
 
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         
@@ -1416,6 +1452,80 @@ class PPLefuBleConnectManager:NSObject {
         }
         
     }
+    
+    func receiveBroadcastData(deviceMac:String, callBack: @escaping FlutterResult) {
+        
+        guard let device = self.tempDeviceDict[deviceMac] else {
+            
+            self.loggerStreamHandler?.event?("找不到当前设备")
+            self.sendCommonState(false, callBack: callBack)
+            return
+        }
+        
+        let advDevice = device.0
+        
+        if advDevice.peripheralType != .peripheralBanana && advDevice.peripheralType != .peripheralJambul {
+            
+            self.loggerStreamHandler?.event?("\(advDevice.deviceName)-\(advDevice.deviceMac)不是广播秤")
+            self.sendCommonState(false, callBack: callBack)
+            return
+        }
+        
+        if self.bluetoothState == .poweredOff {
+            
+            self.loggerStreamHandler?.event?("接收广播失败-蓝牙权限未打开")
+            self.sendCommonState(false, callBack: callBack)
+            return
+            
+        }
+        
+        
+        self.disconnect()
+        
+        self.currentDevice = advDevice
+        
+        if advDevice.peripheralType == .peripheralBanana {
+            
+            let banana = PPBluetoothPeripheralBanana.init(device: advDevice)
+            banana.updateStateDelegate = self
+            banana.scaleDataDelegate = self
+            self.bananaControl = banana
+        } else if advDevice.peripheralType == .peripheralJambul {
+            
+            let jambul = PPBluetoothPeripheralJambul.init(device: advDevice)
+            jambul.updateStateDelegate = self
+            jambul.scaleDataDelegate = self
+            self.jambulControl = jambul
+        } else {
+            
+            self.currentDevice = nil
+        }
+        
+    }
+    
+    func sendBroadcastData(cmd:String, unitType:PPDeviceUnit, callBack: @escaping FlutterResult) {
+        
+        guard let device = self.currentDevice else {
+            
+            self.loggerStreamHandler?.event?("当前设备为空")
+            self.sendCommonState(false, callBack: callBack)
+            return
+        }
+        
+        if device.peripheralType == .peripheralJambul, let jambul = self.jambulControl {
+            
+            jambul.sendCBPeripheralDataCurrentUnit(unitType, scaleType: cmd)
+            self.sendCommonState(true, callBack: callBack)
+            
+        } else {
+            
+            self.loggerStreamHandler?.event?("发送广播失败-jambul:\(String(describing: self.jambulControl))-peripheralType:\(device.peripheralType)")
+            self.sendCommonState(false, callBack: callBack)
+        }
+        
+    }
+    
+    
     
     func fetchConnectedDevice(callBack: @escaping FlutterResult) {
         if let device = self.currentDevice {
@@ -1696,6 +1806,17 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
                 self.isScaning = false
                 sendScanState(scaning: false)
             }
+        } else if (self.currentDevice != nil && state == .poweredOn) {
+            
+            let peripheralType = self.currentDevice?.peripheralType
+            if peripheralType == .peripheralBanana {
+                
+                self.bananaControl?.receivedDeviceData()
+            } else if peripheralType == .peripheralJambul {
+                
+                self.jambulControl?.receivedDeviceData()
+            }
+            
         }
         
     }

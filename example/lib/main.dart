@@ -6,8 +6,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_banana.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_ice.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_jambul.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
@@ -135,6 +137,10 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('心率开关'),    // 26
     GridItem('获取心率开关状态'),    // 27
     GridItem('保活指令'),    // 28
+    GridItem('退出Wi-Fi配网'),    // 29
+    GridItem('蓝牙-DFU'),    // 30
+    GridItem('接收广播设备数据'),    // 31
+    GridItem('发送广播数据'),    // 32
   ];
 
   void _updateText(String newText) {
@@ -232,7 +238,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
-                          final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
+                          // final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
+                          final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -398,6 +405,58 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
 
                         } else if (index == 28) {
                           PPPeripheralTorre.keepAlive();
+                        } else if (index == 29) {
+                          final ret = PPPeripheralTorre.exitNetworkConfig();
+
+                          _updateText('退出Wi-Fi配网结果:$ret');
+                        } else if (index == 30) {
+
+                          try {
+
+                            final PathProviderPlatform provider = PathProviderPlatform.instance;
+                            final documentPath = await provider.getApplicationDocumentsPath();
+                            if (documentPath == null) {
+                              _updateText('获取沙盒路径为空');
+                              return;
+                            }
+
+                            final targetPath = '$documentPath/CF568_BGeneric_ALL_OTA_V109.331.40_20230721.zip';
+                            final targetFile = File(targetPath);
+                            final byteData = await rootBundle.load('config/CF568_BGeneric_ALL_OTA_V109.331.40_20230721.zip');
+                            await targetFile.writeAsBytes(byteData.buffer.asUint8List());
+
+                            print('文件已成功拷贝到: $targetPath');
+
+                            PPPeripheralTorre.startDFU(targetPath, '000.000.000', true, callBack: (progress, isSuccess) {
+
+                              _updateText('DFU进度:$progress 是否成功:$isSuccess');
+                            });
+
+                          } catch (e) {
+                            print('拷贝文件失败: $e');
+
+                          }
+                        } else if (index == 31) {
+
+                          // final device  = PPDeviceModel("FDScale", "ED:68:00:31:48:F2");
+                          final device  = PPDeviceModel("OVRM", "CF:E7:12:02:00:02");
+
+                          PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
+                            print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                            _updateText('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                          });
+
+                          PPBluetoothKitManager.startScan((ppDevice) async {
+                            if (ppDevice.deviceMac == device.deviceMac) {
+                              PPBluetoothKitManager.stopScan();
+
+                              final ret = await PPPeripheralBanana.receiveDeviceData(ppDevice);
+                              _updateText('接收广播设备数据-结果:$ret');
+                            }
+                          });
+                        } else if (index == 32) {
+                          _unit = _unit == PPUnitType.Unit_KG ? PPUnitType.Unit_LB : PPUnitType.Unit_KG;
+                          PPPeripheralJambul.sendBroadcastData(_unit, PPBroadcastCommand.exitSafeMode);
                         }
                       },
                     );

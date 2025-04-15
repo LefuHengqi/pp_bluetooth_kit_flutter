@@ -1030,7 +1030,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
 
   @override
-  void dfuStart(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
+  void startDFU(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) async {
     PPBluetoothKitLogger.i('蓝牙DFU升级-$isForceCompleteUpdate filePath:$filePath peripheralType:$peripheralType');
     if (filePath.isEmpty) {
       PPBluetoothKitLogger.i('蓝牙DFU-失败-升级包路径为空');
@@ -1066,7 +1066,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
     });
 
-    await _bleChannel.invokeMethod<Map>('dfuStart',<String, dynamic>{
+    await _bleChannel.invokeMethod<Map>('startDFU',<String, dynamic>{
       'peripheralType':peripheralType,
       'filePath':filePath,
       'deviceFirmwareVersion':deviceFirmwareVersion,
@@ -1248,4 +1248,93 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
     }
   }
+
+  @override
+  Future<bool> exitNetworkConfig(int peripheralType) async {
+    PPBluetoothKitLogger.i('退出Wi-Fi配网-peripheralType:$peripheralType');
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('exitNetworkConfig',<String, dynamic>{
+        'peripheralType':peripheralType
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('退出Wi-Fi配网 结果-$state');
+
+      return state;
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('退出Wi-Fi配网-异常:$e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> receiveBroadcastData(PPDeviceModel device, int peripheralType) async {
+    PPBluetoothKitLogger.i('接收广播设备数据-peripheralType:$peripheralType');
+
+    final deviceMac = device.deviceMac;
+    final deviceName = device.deviceName;
+
+    if (deviceMac == null || deviceMac.isEmpty) {
+      PPBluetoothKitLogger.i('deviceMac 为空');
+      return false;
+    }
+    if (deviceName == null || deviceName.isEmpty) {
+      PPBluetoothKitLogger.i('deviceName 为空');
+      return false;
+    }
+
+
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('receiveBroadcastData',<String, dynamic>{
+        'peripheralType':peripheralType,
+        'deviceMac': deviceMac,
+        'deviceName': deviceName
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('接收广播设备数据 结果-$state');
+
+      return state;
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('接收广播设备数据-异常:$e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> sendBroadcastData(PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) async {
+    PPBluetoothKitLogger.i('发送广播数据-unit:${unit.type} cmd:$cmd peripheralType:$peripheralType');
+
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('sendBroadcastData',<String, dynamic>{
+        'peripheralType':peripheralType,
+        'unit': unit.type,
+        'cmd': cmd.value
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('发送广播数据 结果-$state');
+
+      return state;
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('发送广播数据-异常:$e');
+      return false;
+    }
+  }
+
 }

@@ -4808,6 +4808,110 @@
       "brandLogo" : "https:\/\/unique.lefuenergy.com\/prod\/2023\/11\/23\/Property%201%3Dunique%403x_20231123185316A001.png",
       "brandName" : "Unique Health"
     }
+  },
+  {
+    "standardType" : 0,
+    "deviceConnectType" : 1,
+    "imgUrl" : null,
+    "brand" : {
+      "brandLogo" : "https:\/\/unique.lefuenergy.com\/prod\/2023\/12\/19\/Property%201%3DYafex%403x_20231219104959A001.png",
+      "brandName" : "亚飞"
+    },
+    "macAddressStart" : 7,
+    "devicePowerType" : 1,
+    "advLength" : 20,
+    "id" : 88,
+    "sdkCode" : 0,
+    "sign" : "CF0102",
+    "deviceFuncType" : 1091,
+    "deviceCalcuteType" : 2,
+    "deviceType" : 1,
+    "productModel" : null,
+    "deviceProtocolType" : 2,
+    "deviceUnitType" : "0,1",
+    "avatarType" : 0,
+    "customDeviceName" : "OVRM",
+    "brandId" : 5,
+    "deviceName" : "OVRM",
+    "deviceAccuracyType" : 1
+  },
+  {
+    "macAddressStart" : 7,
+    "deviceName" : "OVRM",
+    "deviceFuncType" : 1107,
+    "brandId" : 7,
+    "deviceConnectType" : 1,
+    "sdkCode" : 0,
+    "deviceProtocolType" : 2,
+    "standardType" : 0,
+    "deviceType" : 1,
+    "avatarType" : 0,
+    "imgUrl" : null,
+    "deviceCalcuteType" : 2,
+    "advLength" : 20,
+    "brand" : {
+      "brandLogo" : "https:\/\/unique.lefuenergy.com\/test\/2023\/12\/29\/Property%201%3DYafex%403x_20231229155300A004.png",
+      "brandName" : "Ovutek FitPal"
+    },
+    "id" : 91,
+    "deviceAccuracyType" : 1,
+    "deviceUnitType" : "0,1",
+    "devicePowerType" : 1,
+    "sign" : "CF0102",
+    "productModel" : null,
+    "customDeviceName" : "OVRM"
+  },
+  {
+    "imgUrl" : "https:\/\/unique.lefuenergy.com\/test\/2023\/12\/27\/Property%201%3D%E7%A7%A4%E5%9B%BE%E6%A0%87%2056%2C%20Property%202%3D%E4%BA%9A%E9%A3%9E_%E7%99%BD%E8%89%B2%403x_20231227171607A001.png",
+    "standardType" : 0,
+    "sdkCode" : 0,
+    "id" : 99,
+    "macAddressStart" : 7,
+    "productModel" : null,
+    "devicePowerType" : 1,
+    "customDeviceName" : "Royyt+Mini",
+    "deviceAccuracyType" : 1,
+    "deviceConnectType" : 1,
+    "deviceCalcuteType" : 2,
+    "sign" : "CF6102",
+    "deviceFuncType" : 1107,
+    "brand" : {
+      "brandLogo" : "https:\/\/unique.lefuenergy.com\/test\/2023\/12\/29\/Property%201%3DYafex%403x_20231229155300A004.png",
+      "brandName" : "Ovutek FitPal"
+    },
+    "brandId" : 7,
+    "advLength" : 20,
+    "avatarType" : 0,
+    "deviceProtocolType" : 2,
+    "deviceUnitType" : "0,1",
+    "deviceType" : 1,
+    "deviceName" : "OVRM"
+  },
+  {
+    "deviceProtocolType" : 2,
+    "standardType" : 0,
+    "deviceAccuracyType" : 1,
+    "macAddressStart" : 7,
+    "customDeviceName" : "Royyt+Mini",
+    "imgUrl" : "https:\/\/unique.lefuenergy.com\/test\/2023\/12\/27\/Property%201%3D%E7%A7%A4%E5%9B%BE%E6%A0%87%2056%2C%20Property%202%3D%E4%BA%9A%E9%A3%9E_%E7%B2%89%E8%89%B2%403x_20231227171626A002.png",
+    "productModel" : null,
+    "deviceCalcuteType" : 2,
+    "deviceUnitType" : "0,1",
+    "sign" : "CF6202",
+    "brand" : {
+      "brandLogo" : "https:\/\/unique.lefuenergy.com\/test\/2023\/12\/29\/Property%201%3DYafex%403x_20231229155300A004.png",
+      "brandName" : "Ovutek FitPal"
+    },
+    "brandId" : 7,
+    "avatarType" : 0,
+    "devicePowerType" : 1,
+    "deviceName" : "OVRM",
+    "deviceType" : 1,
+    "advLength" : 20,
+    "sdkCode" : 0,
+    "deviceConnectType" : 1,
+    "deviceFuncType" : 1107,
+    "id" : 100
   }
 ]
 

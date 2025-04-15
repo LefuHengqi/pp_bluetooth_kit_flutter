@@ -196,8 +196,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('exitBabyModel has not been implemented.');
   }
 
-  void dfuStart(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) {
-    throw UnimplementedError('dfuStart has not been implemented.');
+  void startDFU(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) {
+    throw UnimplementedError('startDFU has not been implemented.');
   }
 
   void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isFailed, String? filePath)callBack}) {
@@ -232,5 +232,16 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('exitScanWifiNetworks has not been implemented.');
   }
 
+  Future<bool> exitNetworkConfig(int peripheralType) {
+    throw UnimplementedError('exitNetworkConfig has not been implemented.');
+  }
+
+  Future<bool> receiveBroadcastData(PPDeviceModel device, int peripheralType) {
+    throw UnimplementedError('receiveBroadcastData has not been implemented.');
+  }
+
+  Future<bool> sendBroadcastData(PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) {
+    throw UnimplementedError('sendBroadcastData has not been implemented.');
+  }
 
 }

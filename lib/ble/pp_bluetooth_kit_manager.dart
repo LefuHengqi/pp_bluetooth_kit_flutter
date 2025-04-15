@@ -43,7 +43,8 @@ class PPBluetoothKitManager {
 
   /// 连接指定蓝牙设备
   ///
-  /// @param device   要连接的设备模型（需从扫描结果获取）
+  /// 注:需要先调用 PPBluetoothKitManager 的 startScan 方法 搜索到指定设备，再调用此方法连接该设备
+  /// @param device   要连接的设备模型，从扫描结果获取（startScan 方法）
   /// @param callBack 连接状态回调
   ///                 参数：[PPDeviceConnectionState] 连接状态枚举
   ///                 注意：连接成功/断开连接都会触发
