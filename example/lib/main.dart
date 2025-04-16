@@ -234,12 +234,12 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
                           // final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
-                          final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
+                          // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -247,6 +247,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           });
 
                           PPBluetoothKitManager.startScan((ppDevice){
+                            print('业务层搜到设备:${ppDevice.deviceName} mac:${ppDevice.deviceMac}');
                             if (ppDevice.deviceMac == device.deviceMac) {
                               PPBluetoothKitManager.connectDevice(ppDevice, callBack: (state){
                                 _updateText('连接状态:$state ${device.deviceMac}');
