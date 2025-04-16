@@ -770,7 +770,9 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
     try {
 
-      final ret = await _bleChannel.invokeMethod<Map>('peripheralType',peripheralType);
+      final ret = await _bleChannel.invokeMethod<Map>('getScreenBrightness',<String, dynamic>{
+        'peripheralType':peripheralType
+      });
 
       final retJson = ret?.cast<String, dynamic>();
       final brightness = retJson?["brightness"] as int? ?? 0;

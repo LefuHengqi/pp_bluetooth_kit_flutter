@@ -141,6 +141,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('蓝牙-DFU'),    // 30
     GridItem('接收广播设备数据'),    // 31
     GridItem('发送广播数据'),    // 32
+    GridItem('获取屏幕亮度'),    // 33
   ];
 
   void _updateText(String newText) {
@@ -458,6 +459,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 32) {
                           _unit = _unit == PPUnitType.Unit_KG ? PPUnitType.Unit_LB : PPUnitType.Unit_KG;
                           PPPeripheralJambul.sendBroadcastData(_unit, PPBroadcastCommand.exitSafeMode);
+                        } else if (index == 33) {
+                          final ret = await PPPeripheralTorre.fetchScreenBrightness();
+                          _updateText('屏幕亮度-$ret');
                         }
                       },
                     );
