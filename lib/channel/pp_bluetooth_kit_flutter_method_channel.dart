@@ -160,37 +160,34 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     PPBluetoothKitLogger.i('添加测量监听-addMeasurementListener');
     _measurementSubscription?.cancel();
     _measurementSubscription = _measurementDataEvent.receiveBroadcastStream().listen((event) {
-      if (event is Map){
-        try {
+      try {
 
-          final retJson = event.cast<String, dynamic>();
-          final stateCode = retJson['measurementState'] as int;
-          final device = retJson['device'].cast<String, dynamic>();
-          final data = retJson['data'].cast<String, dynamic>();
+        final retJson = event.cast<String, dynamic>();
 
-          var state = PPMeasurementDataState.processData;
-          switch (stateCode) {
-            case 1:
-              state = PPMeasurementDataState.measuringBodyFat;
-              break;
-            case 2:
-              state = PPMeasurementDataState.measuringHeartRate;
-              break;
-            case 10:
-              state = PPMeasurementDataState.completed;
-              break;
-          }
+        final stateCode = retJson['measurementState'] as int;
+        final device = retJson['device'].cast<String, dynamic>();
+        final data = retJson['data'].cast<String, dynamic>();
 
-          final model = PPBodyBaseModel.fromJson(data);
-          final deviceModel = PPDeviceModel.fromJson(device);
-
-          callBack(state, model, deviceModel);
-
-        } catch(e) {
-          PPBluetoothKitLogger.i('测量数据-返回结果异常:$e');
+        var state = PPMeasurementDataState.processData;
+        switch (stateCode) {
+          case 1:
+            state = PPMeasurementDataState.measuringBodyFat;
+            break;
+          case 2:
+            state = PPMeasurementDataState.measuringHeartRate;
+            break;
+          case 10:
+            state = PPMeasurementDataState.completed;
+            break;
         }
-      } else {
-        PPBluetoothKitLogger.i('测量数据-返回数据格式不正确');
+
+        final model = PPBodyBaseModel.fromJson(data);
+        final deviceModel = PPDeviceModel.fromJson(device);
+
+        callBack(state, model, deviceModel);
+
+      } catch(e) {
+        PPBluetoothKitLogger.i('测量数据-返回结果异常:$e');
       }
     });
   }

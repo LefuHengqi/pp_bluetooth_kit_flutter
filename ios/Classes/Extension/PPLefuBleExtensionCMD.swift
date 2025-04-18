@@ -61,6 +61,16 @@ extension PPLefuBleConnectManager {
                 let success = status == 0
                 self.sendCommonState(success, callBack: callBack)
             })
+        case .peripheralForre:
+            let unit = model.unit
+            self.forreControl?.codeChange(unit, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             sendCommonState(false, callBack: callBack)
@@ -117,6 +127,17 @@ extension PPLefuBleConnectManager {
             let code:Int = is24Hour ? 0 : 1;
             let format = PPTimeFormat(rawValue: code) ?? .format24HourClock
             self.borreControl?.codeSyncTime(with: format, handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = state == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+        case .peripheralForre:
+            let code:Int = is24Hour ? 0 : 1;
+            let format = PPTimeFormat(rawValue: code) ?? .format24HourClock
+            self.forreControl?.codeSyncTime(with: format, handler: {[weak self] state in
                 guard let `self` = self else {
                     return
                 }
@@ -477,6 +498,26 @@ extension PPLefuBleConnectManager {
                     self.sendCommonState(success, callBack: callBack)
                 })
             }
+        case .peripheralForre:
+            if open {
+                
+                self.forreControl?.codeOpenHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.forreControl?.codeCloseHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -508,6 +549,12 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeFetchHeartRateSwitch({ state in
+                
+                let success = state == 0
+                callBack(["open":success])
+            })
+        case .peripheralForre:
+            self.forreControl?.codeFetchHeartRateSwitch({ state in
                 
                 let success = state == 0
                 callBack(["open":success])
@@ -580,6 +627,26 @@ extension PPLefuBleConnectManager {
             } else  {
                 
                 self.borreControl?.codeCloseImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
+        case .peripheralForre:
+            if open {
+                
+                self.forreControl?.codeOpenImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.forreControl?.codeCloseImpedanceSwitch({[weak self] state in
                     guard let `self` = self else {
                         return
                     }
@@ -1121,15 +1188,81 @@ extension PPLefuBleConnectManager {
             deviceVersion = "0.0.0"
         }
         
-        switch currentDevice.peripheralType {
-        case .peripheralTorre:
-            self.startDFUTorre(filePath: filePath, isForceCompleteUpdate: isForceCompleteUpdate, deviceVersion: deviceVersion, callBack)
-        case .peripheralBorre:
-            self.startDFUBorre(filePath: filePath, isForceCompleteUpdate: isForceCompleteUpdate, deviceVersion: deviceVersion, callBack)
-        default:
-            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
-            callBack([:])
+        let dotCount = deviceVersion.filter { $0 == "." }.count
+        if dotCount < 3 {
+            for _ in 0..<(3 - dotCount) {
+                deviceVersion = deviceVersion + ".001"
+            }
+            
         }
+        
+        
+        if let desPath = PPLefuScaleTools.loadDFUZipFile(path: filePath){
+
+            do {
+                
+                try traverseDirectory(desPath)
+            } catch {
+                self.loggerStreamHandler?.event?("遍历压缩包异常: \(error)")
+                self.sendDfuResult(progress: 0, isSuccess: false)
+                
+                return
+            }
+            
+            if let config = self.dfuConfig, let unzipPath = self.unzipFilePath {
+               
+                let mcuPath = "\(unzipPath)/\(config.packages.mcu?.filename ?? "")"
+                let blePath = "\(unzipPath)/\(config.packages.ble?.filename ?? "")"
+                let resPath = "\(unzipPath)/\(config.packages.res?.filename ?? "")"
+
+                let package = PPTorreDFUPackageModel()
+                package.mcuVersion = "000"
+                package.bleVersion = "000"
+                package.resVersion = "000"
+
+                package.mcuPath = mcuPath
+                package.blePath = blePath
+                package.resPath = resPath
+                
+                if (config.packages.mcu?.version.count ?? 0) > 0 {
+                    package.mcuVersion = config.packages.mcu?.version ?? ""
+                }
+                
+                if (config.packages.ble?.version.count ?? 0) > 0 {
+                    package.bleVersion = config.packages.ble?.version ?? ""
+                }
+
+                if (config.packages.res?.version.count ?? 0) > 0 {
+                    package.resVersion = config.packages.res?.version ?? ""
+                }
+                
+                switch currentDevice.peripheralType {
+                case .peripheralTorre:
+                    self.startDFUTorre(package: package, deviceVersion: deviceVersion, callBack)
+                case .peripheralForre:
+                    self.startDFUForre(package: package, deviceVersion: deviceVersion, callBack)
+                case .peripheralBorre:
+                    self.startDFUBorre(package: package, deviceVersion: deviceVersion, callBack)
+                default:
+                    self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+                    callBack([:])
+                }
+               
+            } else {
+                
+                self.loggerStreamHandler?.event?("dfu失败-config或unzipPath为空")
+                self.sendDfuResult(progress: 0, isSuccess: false)
+            }
+
+        } else {
+            
+            self.loggerStreamHandler?.event?("解压路径为空")
+            self.sendDfuResult(progress: 0, isSuccess: false)
+        }
+        
+        
+        
+        
     }
 
     func syncDeviceLog(logFolder:String) {
@@ -1208,6 +1341,8 @@ extension PPLefuBleConnectManager {
             self.iceControl?.sendKeepAliveCode()
         case .peripheralBorre:
             self.borreControl?.sendKeepAliveCode()
+        case .peripheralForre:
+            self.forreControl?.sendKeepAliveCode()
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
         }
@@ -1435,6 +1570,16 @@ extension PPLefuBleConnectManager {
                 
                 callBack(dict);
             })
+        case .peripheralForre:
+            self.forreControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -1473,171 +1618,93 @@ extension PPLefuBleConnectManager {
         }
     }
     
-    private func startDFUTorre(filePath:String, isForceCompleteUpdate:Bool, deviceVersion:String, _ callBack: @escaping FlutterResult) {
+    private func startDFUTorre(package:PPTorreDFUPackageModel, deviceVersion:String, _ callBack: @escaping FlutterResult) {
         
-        if let desPath = PPLefuScaleTools.loadDFUZipFile(path: filePath){
-
-            do {
-                
-                try traverseDirectory(desPath)
-            } catch {
-                self.loggerStreamHandler?.event?("遍历压缩包异常: \(error)")
-                self.sendDfuResult(progress: 0, isSuccess: false)
-                
-                return
-            }
+        self.torreControl?.dataDFUStart { [weak self]  size in
             
-            if let config = self.dfuConfig, let unzipPath = self.unzipFilePath {
-               
-                let mcuPath = "\(unzipPath)/\(config.packages.mcu?.filename ?? "")"
-                let blePath = "\(unzipPath)/\(config.packages.ble?.filename ?? "")"
-                let resPath = "\(unzipPath)/\(config.packages.res?.filename ?? "")"
-
-                let package = PPTorreDFUPackageModel()
-                package.mcuVersion = "000"
-                package.bleVersion = "000"
-                package.resVersion = "000"
-
-                package.mcuPath = mcuPath
-                package.blePath = blePath
-                package.resPath = resPath
-                
-                if (config.packages.mcu?.version.count ?? 0) > 0 {
-                    package.mcuVersion = config.packages.mcu?.version ?? ""
-                }
-                
-                if (config.packages.ble?.version.count ?? 0) > 0 {
-                    package.bleVersion = config.packages.ble?.version ?? ""
-                }
-
-                if (config.packages.res?.version.count ?? 0) > 0 {
-                    package.resVersion = config.packages.res?.version ?? ""
-                }
-                
-                self.torreControl?.dataDFUStart { [weak self]  size in
-                    
-                    guard let `self` = self else {return}
-                    let tSize = size
-                    
-                    self.torreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
-                        guard let `self` = self else { return }
-                        
-                        let status = 1
-                        
-                        self.torreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, deviceVersion: deviceVersion,handler: {[weak self] (progress, isSuccess) in
-                            
-                            guard let `self` = self else { return }
-                            
-                            self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
-                            
-                        })
-                        
-                    })
-                }
-               
-            } else {
-                
-                self.loggerStreamHandler?.event?("dfu失败-config或unzipPath为空")
-                self.sendDfuResult(progress: 0, isSuccess: false)
-            }
-
-        } else {
+            guard let `self` = self else {return}
+            let tSize = size
             
-            self.loggerStreamHandler?.event?("解压路径为空")
-            self.sendDfuResult(progress: 0, isSuccess: false)
+            self.torreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
+                guard let `self` = self else { return }
+                
+                let status = 1
+                
+                self.torreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, deviceVersion: deviceVersion,handler: {[weak self] (progress, isSuccess) in
+                    
+                    guard let `self` = self else { return }
+                    
+                    self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
+                    
+                })
+                
+            })
         }
     }
     
     
-    private func startDFUBorre(filePath:String, isForceCompleteUpdate:Bool, deviceVersion:String, _ callBack: @escaping FlutterResult) {
+    private func startDFUBorre(package:PPTorreDFUPackageModel, deviceVersion:String, _ callBack: @escaping FlutterResult) {
         
-        if let desPath = PPLefuScaleTools.loadDFUZipFile(path: filePath){
-
-            do {
-                
-                try traverseDirectory(desPath)
-            } catch {
-                self.loggerStreamHandler?.event?("遍历压缩包异常: \(error)")
-                self.sendDfuResult(progress: 0, isSuccess: false)
-                
-                return
-            }
+        self.borreControl?.dataDFUStart { [weak self]  size in
             
-            if let config = self.dfuConfig, let unzipPath = self.unzipFilePath {
-               
-                let mcuPath = "\(unzipPath)/\(config.packages.mcu?.filename ?? "")"
-                let blePath = "\(unzipPath)/\(config.packages.ble?.filename ?? "")"
-                let resPath = "\(unzipPath)/\(config.packages.res?.filename ?? "")"
-
-                let package = PPTorreDFUPackageModel()
-                package.mcuVersion = "000"
-                package.bleVersion = "000"
-                package.resVersion = "000"
-
-                package.mcuPath = mcuPath
-                package.blePath = blePath
-                package.resPath = resPath
-                
-                if (config.packages.mcu?.version.count ?? 0) > 0 {
-                    package.mcuVersion = config.packages.mcu?.version ?? ""
-                }
-                
-                if (config.packages.ble?.version.count ?? 0) > 0 {
-                    package.bleVersion = config.packages.ble?.version ?? ""
-                }
-
-                if (config.packages.res?.version.count ?? 0) > 0 {
-                    package.resVersion = config.packages.res?.version ?? ""
-                }
-                
-                self.borreControl?.dataDFUStart { [weak self]  size in
-                    
-                    guard let `self` = self else {return}
-                    let tSize = size
-                    
-                    self.borreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
-                        guard let `self` = self else { return }
-                        
-                        let status = 1
-                        
-                        
-                        let XM_Versions = deviceVersion.components(separatedBy: ".")
-                        var XM_mcuVersion = ""
-                        var XM_bleVersion = ""
-                        var XM_resVersion = ""
-                        let XM_wifiVersion = ""
-                        if XM_Versions.count > 0 {
-                            XM_mcuVersion = XM_Versions[0]
-                        }
-                        if XM_Versions.count > 1 {
-                            XM_bleVersion = XM_Versions[1]
-                        }
-                        if XM_Versions.count > 2 {
-                            XM_resVersion = XM_Versions[2]
-                        }
-                        
-                        
-                        self.borreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, mcuVersion: XM_mcuVersion, bleVersion: XM_bleVersion, wifiVersion: XM_wifiVersion, resVersion: XM_resVersion, handler: {[weak self] (progress, isSuccess) in
-                            
-                            guard let `self` = self else { return }
-                            
-                            self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
-                            
-                        })
-                        
-                    })
-                }
-               
-            } else {
-                
-                self.loggerStreamHandler?.event?("dfu失败-config或unzipPath为空")
-                self.sendDfuResult(progress: 0, isSuccess: false)
-            }
-
-        } else {
+            guard let `self` = self else {return}
+            let tSize = size
             
-            self.loggerStreamHandler?.event?("解压路径为空")
-            self.sendDfuResult(progress: 0, isSuccess: false)
+            self.borreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
+                guard let `self` = self else { return }
+                
+                let status = 1
+                
+                
+                let XM_Versions = deviceVersion.components(separatedBy: ".")
+                var XM_mcuVersion = ""
+                var XM_bleVersion = ""
+                var XM_resVersion = ""
+                let XM_wifiVersion = ""
+                if XM_Versions.count > 0 {
+                    XM_mcuVersion = XM_Versions[0]
+                }
+                if XM_Versions.count > 1 {
+                    XM_bleVersion = XM_Versions[1]
+                }
+                if XM_Versions.count > 2 {
+                    XM_resVersion = XM_Versions[2]
+                }
+                
+                
+                self.borreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, mcuVersion: XM_mcuVersion, bleVersion: XM_bleVersion, wifiVersion: XM_wifiVersion, resVersion: XM_resVersion, handler: {[weak self] (progress, isSuccess) in
+                    
+                    guard let `self` = self else { return }
+                    
+                    self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
+                    
+                })
+                
+            })
+        }
+    }
+    
+    private func startDFUForre(package:PPTorreDFUPackageModel, deviceVersion:String, _ callBack: @escaping FlutterResult) {
+        
+        self.forreControl?.dataDFUStart { [weak self]  size in
+            
+            guard let `self` = self else {return}
+            let tSize = size
+            
+            self.forreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
+                guard let `self` = self else { return }
+                
+                let status = 1
+                
+                self.forreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, deviceVersion: deviceVersion,handler: {[weak self] (progress, isSuccess) in
+                    
+                    guard let `self` = self else { return }
+                    
+                    self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
+                    
+                })
+                
+            })
         }
     }
     

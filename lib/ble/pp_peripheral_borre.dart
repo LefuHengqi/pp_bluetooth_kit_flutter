@@ -30,13 +30,7 @@ class PPPeripheralBorre {
   }
 
   /// 同步单位
-  /// deviceUser 用户信息
   /// unitType 单位，必传
-  /// userHeight 身高，必传
-  /// age 年龄，必传
-  /// sex 性别，必传
-  /// isAthleteMode 运动员模式，可以不传
-  /// isPregnantMode 孕妇模式，可以不传
   static Future<bool?> syncUnit(PPUnitType unitType) async {
     final deviceUser = PPDeviceUser(userHeight: 175, age: 20, sex: PPUserGender.female, unitType: unitType);
     return PPBluetoothKitFlutterPlatform.instance.syncUnit(_peripheralType, deviceUser);

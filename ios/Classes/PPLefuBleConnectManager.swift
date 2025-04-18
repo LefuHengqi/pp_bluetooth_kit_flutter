@@ -49,6 +49,7 @@ public class PPLefuBleConnectManager:NSObject {
     var bananaControl : PPBluetoothPeripheralBanana?
     var jambulControl : PPBluetoothPeripheralJambul?
     var borreControl : PPBluetoothPeripheralBorre?
+    var forreControl : PPBluetoothPeripheralForre?
     
     var unzipFilePath : String?
     var dfuConfig : PPDfuPackageModel?
@@ -149,6 +150,12 @@ public class PPLefuBleConnectManager:NSObject {
                 self.borreControl = PPBluetoothPeripheralBorre(peripheral: peripheral, andDevice: device)
                 self.borreControl?.serviceDelegate = self
 
+            } else if device.peripheralType == .peripheralForre {
+                
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.forreControl = PPBluetoothPeripheralForre(peripheral: peripheral, andDevice: device)
+                self.forreControl?.serviceDelegate = self
             } else {
                 
                 self.loggerStreamHandler?.event?("不支持的设备类型-peripheralType:\(device.peripheralType)-\(deviceMac)")
@@ -194,6 +201,9 @@ public class PPLefuBleConnectManager:NSObject {
         if let borreControl = self.borreControl?.peripheral {
             self.scaleManager.disconnect(borreControl)
         }
+        if let forreControl = self.forreControl?.peripheral {
+            self.scaleManager.disconnect(forreControl)
+        }
         
         self.clearData()
     }
@@ -205,6 +215,7 @@ public class PPLefuBleConnectManager:NSObject {
         self.torreControl = nil
         self.iceControl = nil
         self.borreControl = nil
+        self.forreControl = nil
         
         self.bananaControl?.scaleDataDelegate = nil;
         self.bananaControl?.updateStateDelegate = nil;
@@ -322,12 +333,17 @@ public class PPLefuBleConnectManager:NSObject {
             })
         case .peripheralIce:
             // 在代理方法中统一持续回调
-            self.iceControl?.fetchDeviceBatteryInfo(completion: { info in
+            self.iceControl?.fetchDeviceBatteryInfo(completion: { power in
                 
             })
         case .peripheralBorre:
             // 在代理方法中统一持续回调
             self.borreControl?.fetchDeviceBatteryInfo(completion: { power in
+            })
+        case .peripheralForre:
+            // 在代理方法中统一持续回调
+            self.forreControl?.fetchDeviceBatteryInfo(completion: { power in
+                
             })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
@@ -548,6 +564,9 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
         } else if self.currentDevice?.peripheralType == .peripheralBorre {
             
             self.borreControl?.discoverFFF0Service()
+        } else if self.currentDevice?.peripheralType == .peripheralForre {
+            
+            self.forreControl?.discoverFFF0Service()
         }
 
     }
@@ -574,16 +593,15 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
         
         self.loggerStreamHandler?.event?("发现FFF0成功")
         
-        if self.currentDevice?.peripheralType == .peripheralApple {
-            
+        let peripheralType = self.currentDevice?.peripheralType
+        switch peripheralType {
+        case .peripheralApple:
             self.appleControl?.scaleDataDelegate = self
             self.sendConnectState(1)
-        } else if self.currentDevice?.peripheralType == .peripheralCoconut {
-            
+        case .peripheralCoconut:
             self.coconutControl?.scaleDataDelegate = self
             self.sendConnectState(1)
-        } else if self.currentDevice?.peripheralType == .peripheralTorre {
-            
+        case .peripheralTorre:
             self.torreControl?.codeUpdateMTU({[weak self] mtu in
                 guard let `self` = self else {
                     return
@@ -592,12 +610,10 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
                 self.torreControl?.scaleDataDelegate = self
                 self.sendConnectState(1)
             })
-        } else if self.currentDevice?.peripheralType == .peripheralIce {
+        case .peripheralIce:
             self.iceControl?.scaleDataDelegate = self
             self.sendConnectState(1)
-            
-        } else if self.currentDevice?.peripheralType == .peripheralBorre {
-            
+        case .peripheralBorre:
             self.borreControl?.codeUpdateMTU({[weak self] mtu in
                 guard let `self` = self else {
                     return
@@ -606,7 +622,19 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
                 self.borreControl?.scaleDataDelegate = self
                 self.sendConnectState(1)
             })
+        case .peripheralForre:
+            self.forreControl?.codeUpdateMTU({[weak self] mtu in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.forreControl?.scaleDataDelegate = self
+                self.sendConnectState(1)
+            })
+        default:
+            self.loggerStreamHandler?.event?("未知类型:\(String(describing: peripheralType))")
         }
+        
     }
     
 }

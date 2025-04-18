@@ -58,6 +58,7 @@ extension PPLefuBleConnectManager {
         
         let dateTimeInterval = Int(model.dateTimeInterval * 1000)
         let memberId = model.memberId
+        let isPowerOff = model.isPowerOff
         
         let dict:[String:Any?] = [
             "weight":model.weight,
@@ -81,6 +82,7 @@ extension PPLefuBleConnectManager {
             "z20KhzRightArmEnCode":model.z20KhzRightArmEnCode,
             "z20KhzRightLegEnCode":model.z20KhzRightLegEnCode,
             "z20KhzTrunkEnCode":model.z20KhzTrunkEnCode,
+            "isPowerOff":isPowerOff
                 
         ]
         
