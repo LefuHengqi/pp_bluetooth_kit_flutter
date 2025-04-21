@@ -10,11 +10,19 @@
 		</data>
 		<key>Headers/AESTool.h</key>
 		<data>
-		0JZXRLDc6GA4RNjbxeyHHKvZJKE=
+		zUFE+2R/UAAxBI5KWXTNmSaZXXQ=
 		</data>
 		<key>Headers/PPAnalysisResultModel.h</key>
 		<data>
 		Q9QH0lrv92gewnZCXMscO6R5aeg=
+		</data>
+		<key>Headers/PPAuthCommonCMD.h</key>
+		<data>
+		qbSA4FKxfc2LU9QJHakR5B5pp4w=
+		</data>
+		<key>Headers/PPAuthCommonDataAnalysis.h</key>
+		<data>
+		Vqrkg6detf/2i0/gOP2I86YygTg=
 		</data>
 		<key>Headers/PPBatteryInfoModel.h</key>
 		<data>
@@ -26,7 +34,7 @@
 		</data>
 		<key>Headers/PPBluetoothAdvDeviceModel.h</key>
 		<data>
-		GweCQviIWheliVyCOaPdFIsAbgE=
+		9+/7HkJKttqiM0OVrM/pXLI+hV8=
 		</data>
 		<key>Headers/PPBluetoothAppleDataAnalysis.h</key>
 		<data>
@@ -86,7 +94,7 @@
 		</data>
 		<key>Headers/PPBluetoothDefine.h</key>
 		<data>
-		dbGDcO4vsEsfQUSoKDMgt2YauEQ=
+		ck9j+cr/4NM7dEKkoDM1727LVGg=
 		</data>
 		<key>Headers/PPBluetoothDorreDataAnalysis.h</key>
 		<data>
@@ -126,7 +134,7 @@
 		</data>
 		<key>Headers/PPBluetoothInterface.h</key>
 		<data>
-		Mwk+HrM4I9eEsFrBpd67aoE8D5I=
+		E0boGyrfhjyWFi/NhchfcYKa0rg=
 		</data>
 		<key>Headers/PPBluetoothKit.h</key>
 		<data>
@@ -134,7 +142,7 @@
 		</data>
 		<key>Headers/PPBluetoothManager.h</key>
 		<data>
-		hWDPU6F+C7tCzcJhbAWxXdNZ85Y=
+		vuiJd3B4YXGMBnMViPLXkxf25kQ=
 		</data>
 		<key>Headers/PPBluetoothPeripheralApple.h</key>
 		<data>
@@ -214,7 +222,7 @@
 		</data>
 		<key>Headers/PPScaleFilter.h</key>
 		<data>
-		o/LW8hfBX6YE0f4NRN2xZd3Ws9w=
+		j6Ao+mtOai+r//STi8F3r/R/8BE=
 		</data>
 		<key>Headers/PPScaleFormatTool.h</key>
 		<data>
@@ -282,11 +290,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			0JZXRLDc6GA4RNjbxeyHHKvZJKE=
+			zUFE+2R/UAAxBI5KWXTNmSaZXXQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			5eq7YGUa0JiOQrkciQ0iMoACdOST7I/KnpvYbYxPoLo=
+			QNrLA0DRC1TR9LyoVUkO/jfXd0gz7NvbNbJi6v2gij8=
 			</data>
 		</dict>
 		<key>Headers/PPAnalysisResultModel.h</key>
@@ -298,6 +306,28 @@
 			<key>hash2</key>
 			<data>
 			gd/OzI8mZye5VaXrrMGF2YpAFq4CLicPd1HtA9VR0PY=
+			</data>
+		</dict>
+		<key>Headers/PPAuthCommonCMD.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			qbSA4FKxfc2LU9QJHakR5B5pp4w=
+			</data>
+			<key>hash2</key>
+			<data>
+			37EsZIojMbLd85Uv5VGfr8ImteKNHdCtSRnlH7YMX3k=
+			</data>
+		</dict>
+		<key>Headers/PPAuthCommonDataAnalysis.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			Vqrkg6detf/2i0/gOP2I86YygTg=
+			</data>
+			<key>hash2</key>
+			<data>
+			u16kRP/r41oQkCbpGNeOAa8+jnYx9JjjdQBEYicO7xE=
 			</data>
 		</dict>
 		<key>Headers/PPBatteryInfoModel.h</key>
@@ -326,11 +356,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			GweCQviIWheliVyCOaPdFIsAbgE=
+			9+/7HkJKttqiM0OVrM/pXLI+hV8=
 			</data>
 			<key>hash2</key>
 			<data>
-			lYBFjNl1dY1TnKPbRqm4cw3L1SSQVi8wLG36+eq/YPc=
+			FwktW9SdNr/tVdk1v+q1uosUen4DDqeeFgYpbvqXmMs=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothAppleDataAnalysis.h</key>
@@ -491,11 +521,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			dbGDcO4vsEsfQUSoKDMgt2YauEQ=
+			ck9j+cr/4NM7dEKkoDM1727LVGg=
 			</data>
 			<key>hash2</key>
 			<data>
-			7JKqq0OSDDfRV0TACorySYVvtGqrKVBG7hSbpg0//Co=
+			NfSL3LKVpmwyN1i/Me1ej3BspIVjtoxsMdj12rNu98k=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothDorreDataAnalysis.h</key>
@@ -601,11 +631,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			Mwk+HrM4I9eEsFrBpd67aoE8D5I=
+			E0boGyrfhjyWFi/NhchfcYKa0rg=
 			</data>
 			<key>hash2</key>
 			<data>
-			sb3FkwM2chrJGyyWgOTfOhZb53iC2GeVTnhjtz7RD8c=
+			p4/2Mu1MYqrxahUOLG1JuWND4yEuDIMO+hPlcDdU+ac=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothKit.h</key>
@@ -623,11 +653,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			hWDPU6F+C7tCzcJhbAWxXdNZ85Y=
+			vuiJd3B4YXGMBnMViPLXkxf25kQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			GaiZcUlU2uVve4bVG+2H9tyeMC6b8fq5Cc0SUb8IcTw=
+			HW2lK13F579E5y/asl8FoEXsddTKstHggoBD43Syhbo=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralApple.h</key>
@@ -843,11 +873,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			o/LW8hfBX6YE0f4NRN2xZd3Ws9w=
+			j6Ao+mtOai+r//STi8F3r/R/8BE=
 			</data>
 			<key>hash2</key>
 			<data>
-			kYH98RBk8jsTro5fmNW1F0XGyC+fZEzcFLOo2OHibDE=
+			c2Ctsl1xQ4UHLmMcDwqgZuFcqGBRFQiYJ3tZ7+8X+Vs=
 			</data>
 		</dict>
 		<key>Headers/PPScaleFormatTool.h</key>

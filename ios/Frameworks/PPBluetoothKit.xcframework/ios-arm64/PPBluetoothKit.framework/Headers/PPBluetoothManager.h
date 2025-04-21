@@ -53,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)loadDeviceWithAppKey:(NSString *)appKey appSecrect:(NSString *)appSecret filePath:(NSString *)path;
 
++ (void)loadDeviceWithAppKey:(NSString *)appKey appSecrect:(NSString *)appSecret configContent:(NSString *)configContent;
+
 + (NSInteger)getSDKCode;
 
 @end

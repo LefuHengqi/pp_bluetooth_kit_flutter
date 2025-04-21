@@ -252,5 +252,13 @@ typedef NS_ENUM(NSInteger, PPAvatarTypeType) {
 
 };
 
+// 鉴权状态，部分设备才有
+typedef NS_ENUM(NSUInteger, PPAuthState) {
+    PPAuthStateUnknown = 0,
+    PPAuthStateStart, // 开始鉴权
+    PPAuthStateSuccess, // 鉴权成功
+    PPAuthStateFail, // 鉴权失败
+};
+
 
 #endif /* PPBluetoothDefine_h */

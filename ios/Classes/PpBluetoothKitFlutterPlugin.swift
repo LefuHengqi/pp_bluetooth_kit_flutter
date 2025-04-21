@@ -83,7 +83,7 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
           let appKey = params?["appKey"] as? String
           let appSecret = params?["appSecret"] as? String
-          let filePath = params?["filePath"] as? String
+          let deviceContent = params?["deviceContent"] as? String
           
           guard let appKey = appKey else {
               self.bleManager.loggerStreamHandler?.event?("appKey为空")
@@ -93,12 +93,13 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
               self.bleManager.loggerStreamHandler?.event?("appSecret为空")
               return;
           }
-          guard let filePath = filePath else {
-              self.bleManager.loggerStreamHandler?.event?("filePath为空")
+          guard let deviceContent = deviceContent else {
+              self.bleManager.loggerStreamHandler?.event?("deviceContent为空")
               return;
           }
           
-          PPBluetoothManager.loadDevice(withAppKey: appKey, appSecrect: appSecret, filePath: filePath)
+          PPBluetoothManager.loadDevice(withAppKey: appKey, appSecrect: appSecret, configContent: deviceContent)
+          self.bleManager.sendCommonState(true, callBack: result)
 
       } else if method == "setDeviceSetting" {
 
@@ -128,10 +129,12 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
 
       } else if method == "startScan" {
           
-          bleManager.startScan()
+          bleManager.startScan(callBack: result)
+          
       } else if method == "stopScan" {
           
           bleManager.stopScan()
+          self.bleManager.sendCommonState(true, callBack: result)
       } else if method == "connectDevice" {
           
           let deviceMac = params?["deviceMac"] as? String

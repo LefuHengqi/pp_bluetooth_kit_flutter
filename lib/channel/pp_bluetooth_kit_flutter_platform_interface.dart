@@ -40,7 +40,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('stopScan has not been implemented.');
   }
 
-  Future<void> initSDK(String appKey, String appSecret, String filePath) {
+  Future<void> initSDK(String appKey, String appSecret, String configContent) {
     throw UnimplementedError('initSDK has not been implemented.');
   }
 

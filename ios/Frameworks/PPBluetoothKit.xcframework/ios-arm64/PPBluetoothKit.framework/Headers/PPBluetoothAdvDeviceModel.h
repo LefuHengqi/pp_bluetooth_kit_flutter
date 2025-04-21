@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) PPStandardType standardType;
 @property (nonatomic, assign) PPAvatarTypeType avatarType;
 @property (nonatomic, assign) NSInteger sdkCode;
+@property (nonatomic, assign) BOOL needAuth; // 是否需要鉴权
+@property (nonatomic, assign) int httpType; // 0-http,1-https
 
 @property (nonatomic, assign) PPDevicePeripheralType PeripheralType;
 

@@ -48,6 +48,9 @@
 
 - (void)discoverFFF0ServiceSuccess;
 
+@optional
+- (void)authState:(PPAuthState) authState;
+
 @end
 
 @protocol PPBluetoothCMDDataDelegate <NSObject>

@@ -47,6 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)forreMacAddressByCBAdvData:(NSData *)advData andMacAddressStart:(NSInteger )macAddressStart;
 
++ (void)analystAuthTorre:(NSData *)advData device:(PPBluetoothAdvDeviceModel *)advModel;
+
++ (void)analystAuthIce:(NSData *)advData device:(PPBluetoothAdvDeviceModel *)advModel;
 
 @end
 

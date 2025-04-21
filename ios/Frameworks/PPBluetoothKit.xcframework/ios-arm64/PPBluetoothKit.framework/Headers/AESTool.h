@@ -20,5 +20,10 @@
 + (NSData *)aesEncryptData:(NSData *)contentData keyData:(NSData *)keyData;
 + (NSData *)aesDecryptData:(NSData *)contentData keyData:(NSData *)keyData;
 
+
++ (NSData *)encryptData:(NSString *)dataText keyData:(NSData *)keyData ivString:(NSString *)ivString;
+
++ (NSData *)decryptData:(NSData *)encryptedData keyData:(NSData *)keyData ivString:(NSString *)ivString;
+
 @end
 

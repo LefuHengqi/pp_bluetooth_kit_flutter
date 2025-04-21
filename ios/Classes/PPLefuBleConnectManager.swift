@@ -72,17 +72,17 @@ public class PPLefuBleConnectManager:NSObject {
         }
     }
     
-    func startScan() {
+    func startScan(callBack: @escaping FlutterResult) {
         
         self.stopScan()
         self.disconnect()
         
         self.tempDeviceDict.removeAll()
         
-        scanDevice(type: .scan)
+        scanDevice(type: .scan, callBack: callBack)
     }
     
-    func scanDevice(type:PPLefuScanType) {
+    func scanDevice(type:PPLefuScanType,callBack: @escaping FlutterResult) {
         
         self.scanType = type
         self.needScan = true
@@ -90,6 +90,8 @@ public class PPLefuBleConnectManager:NSObject {
         self.scaleManager = PPBluetoothConnectManager()
         self.scaleManager.updateStateDelegate = self
         self.scaleManager.surroundDeviceDelegate = self
+        
+        self.sendCommonState(true, callBack: callBack)
     }
     
     func connectDevice(deviceMac:String, deviceName:String) {

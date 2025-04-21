@@ -15,22 +15,22 @@ class PPBluetoothKitManager {
   ///
   /// @param appKey    应用唯一标识
   /// @param appSecret 应用安全密钥
-  /// @param filePath  配置文件存储路径
-  static void initSDK(String appKey, String appSecret, String filePath) {
-    PPBluetoothKitFlutterPlatform.instance.initSDK(appKey, appSecret, filePath);
+  /// @param configContent  配置文件内容(加密内容)
+  static void initSDK(String appKey, String appSecret, String configContent) {
+    PPBluetoothKitFlutterPlatform.instance.initSDK(appKey, appSecret, configContent);
   }
 
   /// 开始扫描蓝牙设备
   ///
   /// @param callBack 设备发现回调
   ///                 参数：[PPDeviceModel] 发现的设备模型
-  static void startScan(Function(PPDeviceModel device) callBack) {
-    PPBluetoothKitFlutterPlatform.instance.startScan(callBack);
+  static Future<void> startScan(Function(PPDeviceModel device) callBack) async {
+    await PPBluetoothKitFlutterPlatform.instance.startScan(callBack);
   }
 
   /// 停止扫描蓝牙设备
-  static void stopScan() {
-    PPBluetoothKitFlutterPlatform.instance.stopScan();
+  static Future<void> stopScan() async {
+    await PPBluetoothKitFlutterPlatform.instance.stopScan();
   }
 
   /// 添加蓝牙权限状态监听
@@ -72,9 +72,9 @@ class PPBluetoothKitManager {
 
   /// 设置设备配置参数
   ///
-  /// @param deviceContent 设备配置JSON字符串
-  static void setDeviceSetting(String deviceContent) {
-    PPBluetoothKitFlutterPlatform.instance.setDeviceSetting(deviceContent);
+  /// @param jsonContent 设备配置JSON字符串
+  static void setDeviceSetting(String jsonContent) {
+    PPBluetoothKitFlutterPlatform.instance.setDeviceSetting(jsonContent);
   }
 
   /// 主动断开当前设备连接
