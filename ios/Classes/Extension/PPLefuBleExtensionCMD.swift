@@ -410,7 +410,7 @@ extension PPLefuBleConnectManager {
                     return
                 }
                 
-                let success = state > 3
+                let success = state == 0
                 self.sendWifiOTA(isSuccess: success, errorCode: Int(state), callBack: callBack)
                 
             })

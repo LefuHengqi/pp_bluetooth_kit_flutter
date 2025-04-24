@@ -34,7 +34,7 @@ class PPBluetoothKitManager {
   }
 
   /// 添加蓝牙权限状态监听
-  ///
+  /// 多次注册，只有最后一次注册生效，建议全局只注册一个
   /// @param callBack 权限变更回调
   ///                 参数：[PPBlePermissionState] 当前权限状态
   static void addBlePermissionListener({required Function(PPBlePermissionState state) callBack}) {
@@ -53,7 +53,7 @@ class PPBluetoothKitManager {
   }
 
   /// 添加测量数据监听器
-  ///
+  /// 多次注册，只有最后一次注册生效，建议全局只注册一个
   /// @param callBack 测量数据回调，包含三个参数：
   ///                 1. [PPMeasurementDataState] 测量状态
   ///                 2. [PPBodyBaseModel] 测量数据模型
