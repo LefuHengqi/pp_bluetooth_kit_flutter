@@ -561,7 +561,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       });
 
       final retJson = ret?.cast<String, dynamic>();
-      final wifiList = retJson?["wifiList"] as List<String>?;
+      final wifiList = retJson?["wifiList"]?.cast<String>().toList() ?? [];
 
       PPBluetoothKitLogger.i('搜索周围Wi-Fi热点结果-数量:${wifiList?.length}');
 

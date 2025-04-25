@@ -270,15 +270,27 @@ extension PPLefuBleConnectManager {
                 self.sendWIFISSID(ssId, isConnectWIFI: connected, callBack: callBack)
             })
         case .peripheralTorre:
-            self.torreControl?.codeFetchWifiConfig({[weak self] state in
-                guard let `self` = self else {
+            self.torreControl?.dataFetchConfigNetworkSSID({ ssID in
+                if ssID == nil || ssID.isEmpty {
+                    self.sendWIFISSID(nil, isConnectWIFI: false, callBack: callBack)
                     return
                 }
                 
-                let connected = state == 1
+                self.sendWIFISSID(ssID, isConnectWIFI: true, callBack: callBack)
                 
-                self.sendWIFISSID("", isConnectWIFI: connected, callBack: callBack)
             })
+            
+        case .peripheralBorre:
+            self.borreControl?.dataFetchConfigNetworkSSID({ ssID in
+                if ssID == nil || ssID.isEmpty {
+                    self.sendWIFISSID(nil, isConnectWIFI: false, callBack: callBack)
+                    return
+                }
+                
+                self.sendWIFISSID(ssID, isConnectWIFI: true, callBack: callBack)
+                
+            })
+
         case .peripheralIce:
             self.iceControl?.queryWifiConfig(handler: {[weak self] wifiInfo in
                 guard let `self` = self else {
@@ -1496,6 +1508,9 @@ extension PPLefuBleConnectManager {
                 let success = stauts == 0
                 self.sendCommonState(success, callBack: callBack)
             })
+        case .peripheralIce:
+            self.iceControl?.exitWifiConfig();
+            self.sendCommonState(true, callBack: callBack)
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])

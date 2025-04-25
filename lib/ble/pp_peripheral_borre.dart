@@ -55,6 +55,12 @@ class PPPeripheralBorre {
     return PPBluetoothKitFlutterPlatform.instance.isConnectWIFI(_peripheralType);
   }
 
+  /// 获取设备配网信息（Wi-Fi）
+  /// 返回: 如果设备已配网，则返回设备中的 ssId
+  static Future<String?> fetchWifiInfo() async {
+    return PPBluetoothKitFlutterPlatform.instance.fetchWifiInfo(_peripheralType);
+  }
+
   /// 获取 WIFI MAC 地址
   /// 举例：MAC 地址：01:02:03:04:05:06
   static Future<String?> fetchWifiMac() async {

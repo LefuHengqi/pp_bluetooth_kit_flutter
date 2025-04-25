@@ -142,6 +142,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('接收广播设备数据'),    // 31
     GridItem('发送广播数据'),    // 32
     GridItem('获取屏幕亮度'),    // 33
+    GridItem('获取周围Wi-Fi'),    // 34
+    GridItem('退出配网'),    // 35
+    GridItem('获取配网信息'),    // 36
   ];
 
   void _updateText(String newText) {
@@ -235,12 +238,14 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
                           // final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
-                          final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
+                          // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
+                          // final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
+
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
@@ -462,6 +467,15 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 33) {
                           final ret = await PPPeripheralTorre.fetchScreenBrightness();
                           _updateText('屏幕亮度-$ret');
+                        } else if (index == 34) {
+                          final ret = await PPPeripheralTorre.scanWifiNetworks();
+                          _updateText('周边Wi-Fi-$ret');
+                        } else if (index == 35) {
+                          final ret = await PPPeripheralTorre.exitNetworkConfig();
+                          _updateText('退出配网Wi-Fi-$ret');
+                        } else if (index == 36) {
+                          final ret = await PPPeripheralTorre.fetchWifiInfo();
+                          _updateText('获取ssid-$ret');
                         }
                       },
                     );
