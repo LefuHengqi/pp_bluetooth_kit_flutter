@@ -147,4 +147,9 @@ class PPPeripheralIce {
     PPBluetoothKitFlutterPlatform.instance.resetDevice(_peripheralType);
   }
 
+  /// 退出Wi-Fi配网
+  static Future<bool> exitNetworkConfig() async {
+    return PPBluetoothKitFlutterPlatform.instance.exitNetworkConfig(_peripheralType);
+  }
+
 }
