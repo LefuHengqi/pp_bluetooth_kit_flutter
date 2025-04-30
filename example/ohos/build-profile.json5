@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "/Users/jason/.ohos/config/default_ohos_N-u3R1UO1__xIAfLy5tiX2s0qR2qi5tq4GNOuUKwwlQ=.cer",
-          "storePassword": "0000001A05A64D35BFFD9E093B47055DADA315E5FA006955B22EF8A9D86ABF596C7D7EE304207C2CA240",
+          "certpath": "/Users/lefu/.ohos/config/default_ohos_aUt3dzm5UhuRqDI-me6Sal0sS7dCBTmq8w7D9jLqIB4=.cer",
+          "storePassword": "0000001B7AB9DB1062538F75FB7D877D947035CE93069E1B8149C1B82E63D8A2855D7C7758781E65DC5DF1",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A1CA674A029A02675F157157E4AEAF7D5B6CF48BE2BD1445A74E7601277031D32E8BFDFBDBBCE",
-          "profile": "/Users/jason/.ohos/config/default_ohos_N-u3R1UO1__xIAfLy5tiX2s0qR2qi5tq4GNOuUKwwlQ=.p7b",
+          "keyPassword": "0000001B80E35D3B62A79EB90C640AE6F2C577543007930EDC3BD42A87A61012E85510B23C636BA2EA597C",
+          "profile": "/Users/lefu/.ohos/config/default_ohos_aUt3dzm5UhuRqDI-me6Sal0sS7dCBTmq8w7D9jLqIB4=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "/Users/jason/.ohos/config/default_ohos_N-u3R1UO1__xIAfLy5tiX2s0qR2qi5tq4GNOuUKwwlQ=.p12"
+          "storeFile": "/Users/lefu/.ohos/config/default_ohos_aUt3dzm5UhuRqDI-me6Sal0sS7dCBTmq8w7D9jLqIB4=.p12"
         }
       }
     ],
@@ -28,6 +28,30 @@
     {
       "name": "entry",
       "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "path_provider_ohos",
+      "srcPath": "../../../../../../.pub-cache/git/flutter_packages-056bced4b677ed4f168b245823570c40fe55bddb/packages/path_provider/path_provider_ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pp_bluetooth_kit_flutter",
+      "srcPath": "../../ohos",
       "targets": [
         {
           "name": "default",
