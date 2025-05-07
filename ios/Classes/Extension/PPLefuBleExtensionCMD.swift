@@ -75,6 +75,16 @@ extension PPLefuBleConnectManager {
             let unit = model.unit
             self.fishControl?.change(unit)
             self.sendCommonState(true, callBack: callBack)
+        case .peripheralEgg:
+            let unit = model.unit
+            self.eggControl?.change(unit)
+            self.sendCommonState(true, callBack: callBack)
+        case .peripheralDurian:
+
+            self.durianControl?.syncDeviceSetting(model)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
             
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
@@ -1606,6 +1616,16 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralFish:
             self.fishControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+        case .peripheralEgg:
+            self.eggControl?.discoverDeviceInfoService({[weak self] model180A in
                 guard let `self` = self else {
                     return
                 }

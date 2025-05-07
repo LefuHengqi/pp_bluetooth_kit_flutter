@@ -3,19 +3,11 @@ import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 
+class PPPeripheralDurian {
+  static final _peripheralType = PPDevicePeripheralType.durian.value;
 
 
-class PPPeripheralFish {
-  static final _peripheralType = PPDevicePeripheralType.fish.value;
-
-
-  /// 同步时间
-  /// 返回值：true:成功
-  static Future<bool?> syncTime() async {
-    return PPBluetoothKitFlutterPlatform.instance.syncTime(_peripheralType);
-  }
-
-  /// 同步单位
+  /// 同步用户信息
   /// deviceUser 用户信息
   /// unitType 单位，必传
   /// userHeight 身高，必传
@@ -23,19 +15,20 @@ class PPPeripheralFish {
   /// sex 性别，必传
   /// isAthleteMode 运动员模式，可以不传
   /// isPregnantMode 孕妇模式，可以不传
-  static Future<bool?> syncUnit(PPDeviceUser deviceUser) async {
+  static Future<bool?> syncUserInfo(PPDeviceUser deviceUser) async {
     return PPBluetoothKitFlutterPlatform.instance.syncUnit(_peripheralType, deviceUser);
   }
+
 
   /// 获取设备信息
   static Future<PPDevice180AModel?> fetchDeviceInfo() async {
     return PPBluetoothKitFlutterPlatform.instance.fetchDeviceInfo(_peripheralType);
   }
 
-  /// 去皮/清零
-  static Future<bool> toZero() async {
-    return PPBluetoothKitFlutterPlatform.instance.toZero(_peripheralType);
+  /// 获取设备电量
+  /// continuity true:返回实时电量，false:只返回一次电量
+  static void fetchBatteryInfo({required bool continuity, required Function(int power) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance.fetchBatteryInfo(_peripheralType, continuity: continuity, callBack: callBack);
   }
-
 
 }

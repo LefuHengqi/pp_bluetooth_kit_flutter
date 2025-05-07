@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_banana.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_fish.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_hamburger.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_ice.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_jambul.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
@@ -145,6 +147,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('获取周围Wi-Fi'),    // 34
     GridItem('退出配网'),    // 35
     GridItem('获取配网信息'),    // 36
+    GridItem('厨房秤-去皮/清零'),    // 37
   ];
 
   void _updateText(String newText) {
@@ -246,12 +249,19 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
                           // final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
                           // final device = PPDeviceModel("CF632","CF:E9:02:11:C0:12");
-                          final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
+                          // final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
+                          final device  = PPDeviceModel("LFSmart Scale", "CA:E6:08:24:04:A7");
 
-
+                          // 人体秤
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                             _updateText('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                          });
+
+                          // 厨房秤
+                          PPBluetoothKitManager.addKitchenMeasurementListener(callBack: (state, model, device){
+                            print('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                            _updateText('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                           });
 
                           PPBluetoothKitManager.startScan((ppDevice){
@@ -449,18 +459,27 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 31) {
 
                           // final device  = PPDeviceModel("FDScale", "ED:68:00:31:48:F2");
-                          final device  = PPDeviceModel("OVRM", "CF:E7:12:02:00:02");
+                          // final device  = PPDeviceModel("OVRM", "CF:E7:12:02:00:02");
+                          final device  = PPDeviceModel("LFSc", "ED:68:00:27:61:49");
 
+                          // 人体秤
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                             _updateText('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                          });
+
+                          // 厨房秤
+                          PPBluetoothKitManager.addKitchenMeasurementListener(callBack: (state, model, device){
+                            print('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                            _updateText('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                           });
 
                           PPBluetoothKitManager.startScan((ppDevice) async {
                             if (ppDevice.deviceMac == device.deviceMac) {
                               PPBluetoothKitManager.stopScan();
 
-                              final ret = await PPPeripheralBanana.receiveDeviceData(ppDevice);
+                              // final ret = await PPPeripheralBanana.receiveDeviceData(ppDevice);
+                              final ret = await PPPeripheralHamburger.receiveDeviceData(ppDevice);
                               _updateText('接收广播设备数据-结果:$ret');
                             }
                           });
@@ -479,6 +498,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 36) {
                           final ret = await PPPeripheralTorre.fetchWifiInfo();
                           _updateText('获取ssid-$ret');
+                        } else if (index == 37) {
+                          final ret = await PPPeripheralFish.toZero();
+                          _updateText('去皮/清零-$ret');
                         }
                       },
                     );

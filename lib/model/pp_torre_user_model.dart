@@ -8,7 +8,7 @@ class PPTorreUserModel extends PPDeviceUser {
   String memberID; // 成员ID
   String userName; // 用户昵称
   int deviceHeaderIndex = 0; // 用户设备头像index
-  
+
   int pIndex = 0; // Borre设备需要
 
   double currentWeight; // 当前体重
