@@ -26,6 +26,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   StreamSubscription? _dfuSubscription;
   StreamSubscription? _deviceLogSubscription;
   StreamSubscription? _scanStateSubscription;
+  StreamSubscription? _kitchenSubscription;
 
   final methodChannel = const MethodChannel('pp_bluetooth_kit_flutter');
 
@@ -41,7 +42,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   final _dfuEvent = const EventChannel('pp_dfu_streams');
   final _deviceLogEvent = const EventChannel('device_log_streams');
   final _scanStateEvent = const EventChannel('pp_scan_state_streams');
-
+  final _kitchenDataEvent = const EventChannel('pp_kitchen_streams');
 
 
   @override
@@ -1332,6 +1333,63 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     } catch(e) {
 
       PPBluetoothKitLogger.i('发送广播数据-异常:$e');
+      return false;
+    }
+  }
+
+
+  @override
+  Future<void> addKitchenMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) async {
+    PPBluetoothKitLogger.i('添加厨房秤测量监听-addKitchenMeasurementListener');
+    _kitchenSubscription?.cancel();
+    _kitchenSubscription = _kitchenDataEvent.receiveBroadcastStream().listen((event) {
+      try {
+
+        final retJson = event.cast<String, dynamic>();
+
+        final stateCode = retJson['measurementState'] as int;
+        final device = retJson['device'].cast<String, dynamic>();
+        final data = retJson['data'].cast<String, dynamic>();
+
+        var state = PPMeasurementDataState.processData;
+        switch (stateCode) {
+          case 10:
+            state = PPMeasurementDataState.completed;
+            break;
+        }
+
+        final model = PPBodyBaseModel.fromJson(data);
+        final deviceModel = PPDeviceModel.fromJson(device);
+
+        callBack(state, model, deviceModel);
+
+      } catch(e) {
+        PPBluetoothKitLogger.i('厨房秤-测量数据-返回结果异常:$e');
+      }
+    });
+  }
+
+
+  @override
+  Future<bool> toZero(int peripheralType) async {
+    PPBluetoothKitLogger.i('去皮/清零-peripheralType:$peripheralType');
+
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('toZero',<String, dynamic>{
+        'peripheralType':peripheralType,
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('去皮/清零 结果-$state');
+
+      return state;
+
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('去皮/清零-异常:$e');
       return false;
     }
   }

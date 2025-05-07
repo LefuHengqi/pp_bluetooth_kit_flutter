@@ -209,4 +209,21 @@ extension PPLefuBleConnectManager {
         self.scanStateStreamHandler?.event?(["state":code])
     }
     
+    
+    func sendKitchenData(_ model:PPBluetoothScaleBaseModel, advModel: PPBluetoothAdvDeviceModel, measureState:Int) {
+        
+        let deviceDict:[String:Any] = self.convertDeviceDict(advModel)
+        let dataDict:[String:Any] = self.convertMeasurementDict(model)
+        
+        self.loggerStreamHandler?.event?("厨房秤-测量状态:\(measureState)")
+        
+        let dict:[String:Any] = [
+            "measurementState":measureState,
+            "device":deviceDict,
+            "data":dataDict
+        ]
+        
+        self.kitchenStreamHandler?.event?(dict)
+    }
+    
 }

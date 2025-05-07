@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat targetWeight;
 @property (nonatomic, assign) CGFloat idealWeight;
 
+//local pIndex，Borre协议专用
+@property (nonatomic, assign) NSInteger PIndex;
+
 
 @property (nonatomic, copy) NSArray <PPUserHistoryData *> *recentData;
 

@@ -18,7 +18,6 @@
 #import <PPBaseKit/PPBaseKit.h>
 #import "PPUserRecentBodyData.h"
 #import "PPTorreSettingModel.h"
-#import "PPTorreSettingModel+Borre.h"
 #import "PPBatteryInfoModel.h"
 
 typedef NS_ENUM(NSUInteger, Borre608LightMode) {

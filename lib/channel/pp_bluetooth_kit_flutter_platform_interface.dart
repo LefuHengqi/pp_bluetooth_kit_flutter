@@ -244,4 +244,13 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('sendBroadcastData has not been implemented.');
   }
 
+
+  /// 厨房秤
+  Future<void> addKitchenMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
+    throw UnimplementedError('addKitchenMeasurementListener has not been implemented.');
+  }
+
+  Future<bool> toZero(int peripheralType) {
+    throw UnimplementedError('toZero has not been implemented.');
+  }
 }

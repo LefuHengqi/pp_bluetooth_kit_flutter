@@ -8,6 +8,7 @@ class PPTorreUserModel extends PPDeviceUser {
   String memberID; // 成员ID
   String userName; // 用户昵称
   int deviceHeaderIndex = 0; // 用户设备头像index
+  int pIndex = 0; // Borre设备需要
 
   double currentWeight; // 当前体重
   double targetWeight; // 目标体重
@@ -30,6 +31,7 @@ class PPTorreUserModel extends PPDeviceUser {
     this.targetWeight = 0,
     this.idealWeight = 0,
     this.recentData = const [],
+    this.pIndex = 0,
 
   });
 
@@ -39,6 +41,7 @@ class PPTorreUserModel extends PPDeviceUser {
       memberID: json['memberID'] ?? '',
       userName: json['userName'] ?? '',
       deviceHeaderIndex: json['deviceHeaderIndex'] ?? 0,
+      pIndex: json['pIndex'] ?? 0,
       currentWeight: json['currentWeight']?.toDouble() ?? 0.0,
       targetWeight: json['targetWeight']?.toDouble() ?? 0.0,
       idealWeight: json['idealWeight']?.toDouble() ?? 0.0,
@@ -61,6 +64,7 @@ class PPTorreUserModel extends PPDeviceUser {
       'memberID': memberID,
       'userName': userName,
       'deviceHeaderIndex': deviceHeaderIndex,
+      'pIndex':pIndex,
       'currentWeight': currentWeight,
       'targetWeight': targetWeight,
       'idealWeight': idealWeight,

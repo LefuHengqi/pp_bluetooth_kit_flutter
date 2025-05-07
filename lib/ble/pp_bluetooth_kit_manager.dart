@@ -89,4 +89,15 @@ class PPBluetoothKitManager {
   static void addScanStateListener({required Function(bool isScanning) callBack}) async {
     PPBluetoothKitFlutterPlatform.instance.addScanStateListener(callBack: callBack);
   }
+
+
+  /// 添加厨房秤-测量数据监听器
+  /// 多次注册，只有最后一次注册生效
+  /// @param callBack 测量数据回调，包含三个参数：
+  ///                 1. [PPMeasurementDataState] 测量状态
+  ///                 2. [PPBodyBaseModel] 测量数据模型
+  ///                 3. [PPDeviceModel] 数据来源设备
+  static void addKitchenMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance.addKitchenMeasurementListener(callBack: callBack);
+  }
 }

@@ -6,10 +6,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "PPTorreSettingModel+Borre.h"
 #import "PPUserRecentBodyData.h"
 #import "PPBluetoothDefine.h"
 #import "PPBluetoothAdvDeviceModel.h"
+#import "PPTorreSettingModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

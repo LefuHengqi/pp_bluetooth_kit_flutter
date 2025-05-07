@@ -244,7 +244,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
                           // final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
                           // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
-                          final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
+                          // final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
+                          // final device = PPDeviceModel("CF632","CF:E9:02:11:C0:12");
+                          final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
 
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
@@ -347,6 +349,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                               unitType: PPUnitType.Unit_KG,
                               userID: _userID,
                               memberID: _memberID,
+                              pIndex: 2,
                               currentWeight: 45);
 
                           final ret = await PPPeripheralTorre.syncUserList([user]);
