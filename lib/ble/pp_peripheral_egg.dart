@@ -5,15 +5,9 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 
 
 
-class PPPeripheralFish {
-  static final _peripheralType = PPDevicePeripheralType.fish.value;
+class PPPeripheralEgg {
+  static final _peripheralType = PPDevicePeripheralType.egg.value;
 
-
-  /// 同步时间
-  /// 返回值：true:成功
-  static Future<bool?> syncTime() async {
-    return PPBluetoothKitFlutterPlatform.instance.syncTime(_peripheralType);
-  }
 
   /// 同步单位
   /// unitType 单位，必传
