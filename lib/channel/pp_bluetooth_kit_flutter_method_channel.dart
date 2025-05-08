@@ -6,6 +6,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
@@ -293,7 +294,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('syncTime',<String, dynamic>{
-        'peripheralType':peripheralType
+        'peripheralType':peripheralType,
+        'is24Hour':is24Hour
       });
       final retJson = ret?.cast<String, dynamic>();
       final state = (retJson?["state"] as bool? ) ?? false;
@@ -1393,5 +1395,30 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       return false;
     }
   }
+
+
+  @override
+  Future<bool> last7Data(int peripheralType, PPLast7DataModel model) async {
+    PPBluetoothKitLogger.i('同步最近7天/7次数据 peripheralType:$peripheralType');
+    try {
+
+      final dataMap = model.toJson();
+      dataMap['peripheralType'] = peripheralType;
+
+      final ret = await _bleChannel.invokeMethod<Map>('syncLast7Data',dataMap);
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('同步最近7天/7次数据 结果:$state');
+
+      return state;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('同步最近7天/7次数据-异常:$e');
+      return false;
+    }
+  }
+
 
 }

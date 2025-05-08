@@ -325,3 +325,23 @@ enum PPBroadcastCommand {
   }
 
 }
+
+enum PPLast7DataType {
+  weight(0),     // 体重
+  bmi(1),        // BMI
+  fat(2),        // 体脂率
+  waterPercentage(3),   // 水分率
+  musclePercentage(4);   // 肌肉率
+
+  final int value;
+
+  const PPLast7DataType(this.value);
+
+  /// 根据整数值反向解析枚举
+  static PPLast7DataType fromInt(int value) {
+    return values.firstWhere(
+          (e) => e.value == value,
+      orElse: () => PPLast7DataType.weight, // 默认返回 weight
+    );
+  }
+}

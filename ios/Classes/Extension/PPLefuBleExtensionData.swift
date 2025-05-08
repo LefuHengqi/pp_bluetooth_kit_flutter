@@ -34,6 +34,7 @@ extension PPLefuBleConnectManager {
             "deviceSettingId":device.deviceSettingId,
             "deviceMac":device.deviceMac,
             "deviceName":device.deviceName,
+            "customDeviceName":device.customDeviceName,
             "devicePower":device.devicePower,
             "rssi":device.rssi,
             "deviceType":device.deviceType.rawValue,

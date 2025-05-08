@@ -1535,6 +1535,32 @@ extension PPLefuBleConnectManager {
             callBack([:])
         }
     }
+    
+    func syncLast7Data(recentList:[PPUserRecentBodyData], lastBodyData:PPUserRecentBodyData, type:PPUserBodyDataType, user:PPTorreSettingModel,callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            self.sendCommonState(false, callBack: callBack)
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralBorre:
+            self.borreControl?.syncLast7DaysData608(recentList, last: lastBodyData, type: type, user: user, handler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+            self.sendCommonState(false, callBack: callBack)
+        }
+    }
 
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         
