@@ -23,7 +23,11 @@ A new Flutter plugin project.
     ]
 
   # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.pod_target_xcconfig = {
+    'DEFINES_MODULE' => 'YES',
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    'OTHER_LDFLAGS' => '$(inherited) -ObjC -all_load'  # 强制加载所有符号（包括分类）
+  }
   s.swift_version = '5.0'
   
   s.dependency 'SSZipArchive'

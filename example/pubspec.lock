@@ -136,7 +136,7 @@ packages:
     description:
       path: "packages/path_provider/path_provider"
       ref: HEAD
-      resolved-ref: "056bced4b677ed4f168b245823570c40fe55bddb"
+      resolved-ref: "35fb467533e174411a117b2a030c15d2a3a9687c"
       url: "https://gitee.com/openharmony-sig/flutter_packages.git"
     source: git
     version: "2.1.0"
@@ -169,7 +169,7 @@ packages:
     description:
       path: "packages/path_provider/path_provider_ohos"
       ref: HEAD
-      resolved-ref: "056bced4b677ed4f168b245823570c40fe55bddb"
+      resolved-ref: "35fb467533e174411a117b2a030c15d2a3a9687c"
       url: "https://gitee.com/openharmony-sig/flutter_packages.git"
     source: git
     version: "2.2.1"
