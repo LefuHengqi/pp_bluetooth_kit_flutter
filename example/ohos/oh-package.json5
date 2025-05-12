@@ -15,8 +15,7 @@
   },
   "overrides": {
     "@ohos/flutter_ohos": "file:./har/flutter.har",
-    "pp_bluetooth_kit_flutter": "../../ohos",
     "@ohos/flutter_module": "file:./entry",
-    "path_provider_ohos": "../../../../../../.pub-cache/git/flutter_packages-056bced4b677ed4f168b245823570c40fe55bddb/packages/path_provider/path_provider_ohos/ohos"
+    "pp_bluetooth_kit_flutter": "file:./har/pp_bluetooth_kit_flutter.har"
   }
 }

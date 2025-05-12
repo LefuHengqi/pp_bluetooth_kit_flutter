@@ -25,11 +25,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-
+    PPBluetoothKitLogger.addListener(isDebug: true, callBack: (text) {
+      print('SDK的日志:$text');
+    });
     final path = 'config/Device.json';
     String jsonStr = await rootBundle.loadString(path);
+    print("jsonStr len:${jsonStr.length}");
+    printLongJson(jsonStr);
     PPBluetoothKitManager.setDeviceSetting(jsonStr);
-
     PPBluetoothKitManager.addBlePermissionListener(callBack: (state) {
       print('蓝牙权限变化-$state');
     });
@@ -39,6 +42,16 @@ Future<void> main() async {
   }
 
   runApp(const MyApp());
+
+}
+
+void printLongJson(String jsonStr) {
+  const chunkSize = 500; // 每段长度
+  for (var i = 0; i < jsonStr.length; i += chunkSize) {
+    final end = (i + chunkSize).clamp(0, jsonStr.length); // 防止越界
+    final chunk = jsonStr.substring(i, end);
+    print("[${i ~/ chunkSize + 1}] $chunk"); // 带序号输出
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -160,10 +173,6 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     // TODO: implement initState
     super.initState();
 
-    PPBluetoothKitLogger.addListener(isDebug: false, callBack: (text) {
-      print('SDK的日志:$text');
-    });
-
     PPBluetoothKitManager.addScanStateListener(callBack: (isScanning) {
       print('扫描状态:$isScanning');
     });
@@ -244,7 +253,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
                           // final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
                           // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
-                          final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
+                          final device = PPDeviceModel("CF597_GNLine","5E:81:28:BD:8A:20");
 
 
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){

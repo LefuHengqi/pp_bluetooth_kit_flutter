@@ -1,5 +1,4 @@
 import { FlutterEngine, Log } from '@ohos/flutter_ohos';
-import PathProviderPlugin from 'path_provider_ohos';
 import PpBluetoothKitFlutterPlugin from 'pp_bluetooth_kit_flutter';
 
 /**
@@ -14,7 +13,6 @@ export class GeneratedPluginRegistrant {
 
   static registerWith(flutterEngine: FlutterEngine) {
     try {
-      flutterEngine.getPlugins()?.add(new PathProviderPlugin());
       flutterEngine.getPlugins()?.add(new PpBluetoothKitFlutterPlugin());
     } catch (e) {
       Log.e(

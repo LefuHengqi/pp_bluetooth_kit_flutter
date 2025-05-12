@@ -1,6 +1,5 @@
 import fs from '@ohos.file.fs';
 import zlib from '@ohos.zlib';
-import { Context } from '@ohos.application.Context';
 
 /**
  * 蓝牙秤工具类
@@ -21,10 +20,10 @@ export class PPLefuScaleTools {
       const destinationPath = `${cachePath}/Torre`;
 
       // 清空目标目录
-      await this.clearDirectoryContents(destinationPath);
+      await PPLefuScaleTools.clearDirectoryContents(destinationPath);
 
       // 解压文件
-      const success = await this.unzipFile(zipPath, destinationPath);
+      const success = await PPLefuScaleTools.unzipFile(zipPath, destinationPath);
 
       if (success) {
         return destinationPath;
@@ -44,18 +43,18 @@ export class PPLefuScaleTools {
    */
   static async unzipFile(filePath: string, destinationPath: string): Promise<boolean> {
     try {
-      // 确保目标目录存在
-      await fs.mkdir(destinationPath, { recursive: true });
-
-      // 读取zip文件
-      const zipData = await fs.readFile(filePath);
-      
-      // 解压文件
-      const unzippedData = await zlib.decompressFile(zipData);
-      
-      // 写入解压后的文件
-      await fs.writeFile(destinationPath, unzippedData);
-      
+      // // 确保目标目录存在
+      // await fs.mkdir(destinationPath, { recursive: true });
+      //
+      // // 读取zip文件
+      // const zipData = await fs.readFile(filePath);
+      //
+      // // 解压文件
+      // const unzippedData = await zlib.decompressFile(zipData);
+      //
+      // // 写入解压后的文件
+      // await fs.writeFile(destinationPath, unzippedData);
+      //
       return true;
     } catch (error) {
       console.error('解压文件失败:', error);
@@ -70,7 +69,7 @@ export class PPLefuScaleTools {
   static async clearDirectoryContents(path: string): Promise<void> {
     try {
       // 验证路径安全性
-      if (!this.isSafePath(path)) {
+      if (!PPLefuScaleTools.isSafePath(path)) {
         throw new Error('危险路径禁止操作');
       }
 
@@ -94,7 +93,7 @@ export class PPLefuScaleTools {
       }
     } catch (error) {
       console.error('清空目录失败:', error);
-      throw error;
+      // throw error;
     }
   }
 

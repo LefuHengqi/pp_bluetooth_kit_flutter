@@ -36,30 +36,6 @@
           ]
         }
       ]
-    },
-    {
-      "name": "path_provider_ohos",
-      "srcPath": "../../../../../../.pub-cache/git/flutter_packages-056bced4b677ed4f168b245823570c40fe55bddb/packages/path_provider/path_provider_ohos/ohos",
-      "targets": [
-        {
-          "name": "default",
-          "applyToProducts": [
-            "default"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "pp_bluetooth_kit_flutter",
-      "srcPath": "../../ohos",
-      "targets": [
-        {
-          "name": "default",
-          "applyToProducts": [
-            "default"
-          ]
-        }
-      ]
     }
   ]
 }
