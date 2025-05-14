@@ -1129,7 +1129,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   
   @override
   Future<void> keepAlive(int peripheralType) async {
-    PPBluetoothKitLogger.i('发送保活指令:peripheralType:$peripheralType');
+    // PPBluetoothKitLogger.i('发送保活指令:peripheralType:$peripheralType');
     await _bleChannel.invokeMethod('keepAlive');
   }
 
