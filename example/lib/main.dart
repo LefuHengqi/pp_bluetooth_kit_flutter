@@ -30,6 +30,10 @@ Future<void> main() async {
 
   try {
 
+    PPBluetoothKitLogger.addListener(isDebug: true, callBack: (text) {
+      print('SDK的日志:$text');
+    });
+
     final path = 'config/Device.json';
     String jsonStr = await rootBundle.loadString(path);
     PPBluetoothKitManager.setDeviceSetting(jsonStr);
@@ -166,9 +170,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     // TODO: implement initState
     super.initState();
 
-    PPBluetoothKitLogger.addListener(isDebug: false, callBack: (text) {
-      print('SDK的日志:$text');
-    });
+
 
     PPBluetoothKitManager.addScanStateListener(callBack: (isScanning) {
       print('扫描状态:$isScanning');
@@ -238,13 +240,13 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         if (index == 0) {
                           PPBluetoothKitManager.startScan((device) {
                             print('业务扫描回调:${device.toString()}');
-                            _updateText('扫到设备:${device.deviceName} ${device.deviceMac}');
+                            _updateText('扫到设备:${device.toJson()} ');
                           });
                         } else if (index == 1) {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
@@ -254,6 +256,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device = PPDeviceModel("CF632","CF:E9:02:11:C0:12");
                           // final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
                           // final device  = PPDeviceModel("LFSmart Scale", "CA:E6:08:24:04:A7");
+                          final device = PPDeviceModel("LEFU-CF577","CF:E7:0B:14:00:B3");
 
                           // 人体秤
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){

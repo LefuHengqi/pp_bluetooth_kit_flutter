@@ -1013,7 +1013,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     PPBluetoothKitLogger.i('退出抱婴模式-peripheralType:$peripheralType');
     try {
 
-      final ret = await _bleChannel.invokeMethod<Map>('startBabyModel',<String, dynamic>{
+      final ret = await _bleChannel.invokeMethod<Map>('exitBabyModel',<String, dynamic>{
         'peripheralType':peripheralType
       });
 
