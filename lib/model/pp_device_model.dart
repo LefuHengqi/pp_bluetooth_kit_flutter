@@ -40,6 +40,7 @@ class PPDeviceModel {
   String? productModel = ""; //产品型号
   int? standardType = 0; //标准类型，0 亚洲标准, 1 WHO标准
 
+
   PPDeviceModel(this.deviceName, this.deviceMac);
 
   PPDevicePeripheralType getDevicePeripheralType() {
