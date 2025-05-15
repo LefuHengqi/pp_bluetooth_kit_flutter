@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL needAuth; // 是否需要鉴权
 @property (nonatomic, assign) int httpType; // 0-http,1-https
 @property (nonatomic, copy) NSString *customDeviceName; // 自定义名称
+@property (nonatomic, copy) NSString *imgUrl; // 设备配置的图片
+@property (nonatomic, assign) NSInteger brandId;
 
 @property (nonatomic, assign) PPDevicePeripheralType PeripheralType;
 

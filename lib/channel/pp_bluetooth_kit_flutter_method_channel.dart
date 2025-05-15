@@ -82,7 +82,6 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       if (event is Map){
         try {
-
           final retJson = event.cast<String, dynamic>();
           PPDeviceModel model =PPDeviceModel.fromJson(retJson);
           callBack(model);
