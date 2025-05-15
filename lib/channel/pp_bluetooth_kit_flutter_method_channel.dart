@@ -82,7 +82,6 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       if (event is Map){
         try {
-
           final retJson = event.cast<String, dynamic>();
           PPDeviceModel model =PPDeviceModel.fromJson(retJson);
           callBack(model);
@@ -1015,7 +1014,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     PPBluetoothKitLogger.i('退出抱婴模式-peripheralType:$peripheralType');
     try {
 
-      final ret = await _bleChannel.invokeMethod<Map>('startBabyModel',<String, dynamic>{
+      final ret = await _bleChannel.invokeMethod<Map>('exitBabyModel',<String, dynamic>{
         'peripheralType':peripheralType
       });
 
@@ -1131,7 +1130,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   
   @override
   Future<void> keepAlive(int peripheralType) async {
-    PPBluetoothKitLogger.i('发送保活指令:peripheralType:$peripheralType');
+    // PPBluetoothKitLogger.i('发送保活指令:peripheralType:$peripheralType');
     await _bleChannel.invokeMethod('keepAlive');
   }
 

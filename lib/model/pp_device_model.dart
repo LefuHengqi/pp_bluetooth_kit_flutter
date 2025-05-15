@@ -39,6 +39,8 @@ class PPDeviceModel {
   String? imgUrl = ""; //产品图地址
   String? productModel = ""; //产品型号
   int? standardType = 0; //标准类型，0 亚洲标准, 1 WHO标准
+  int? brandId = 0;
+  int? avatarType = 0;
 
   PPDeviceModel(this.deviceName, this.deviceMac);
 
@@ -125,6 +127,8 @@ class PPDeviceModel {
       'imgUrl': imgUrl,
       'productModel': productModel,
       'standardType': standardType,
+      'brandId': brandId,
+      'avatarType': avatarType,
     };
   }
 
@@ -155,10 +159,12 @@ class PPDeviceModel {
     model.advLength = json['advLength'];
     model.macAddressStart = json['macAddressStart'];
     model.sign = json['sign'];
-    model.deviceSettingId = json['deviceSettingId'];
-    model.imgUrl = json['imgUrl'];
-    model.productModel = json['productModel'];
-    model.standardType = json['standardType'];
+    model.deviceSettingId = json['deviceSettingId'] as int?;
+    model.imgUrl = json['imgUrl'] as String?;
+    model.productModel = json['productModel'] as String?;
+    model.standardType = json['standardType'] as int?;
+    model.brandId = json['brandId'] as int?;
+    model.avatarType = json['avatarType'] as int?;
     return model;
   }
 }

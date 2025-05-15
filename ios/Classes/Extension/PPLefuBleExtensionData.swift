@@ -30,7 +30,8 @@ extension PPLefuBleConnectManager {
     }
     
     func convertDeviceDict(_ device:PPBluetoothAdvDeviceModel)->[String:Any] {
-        let dict:[String:Any] = [
+
+        let dict:[String:Any?] = [
             "deviceSettingId":device.deviceSettingId,
             "deviceMac":device.deviceMac,
             "deviceName":device.deviceName,
@@ -49,10 +50,16 @@ extension PPLefuBleConnectManager {
             "sign":device.sign,
             "advLength":device.advLength,
             "macAddressStart":device.macAddressStart,
-            "standardType":device.standardType.rawValue
+            "standardType":device.standardType.rawValue,
+            "productModel":device.productModel,
+            "brandId":device.brandId,
+            "imgUrl":device.imgUrl,
+            "avatarType":device.avatarType.rawValue,
         ]
         
-        return dict
+        let filtedDict = dict.compactMapValues { $0 }
+        
+        return filtedDict
     }
     
     func convertMeasurementDict(_ model:PPBluetoothScaleBaseModel)->[String:Any] {
