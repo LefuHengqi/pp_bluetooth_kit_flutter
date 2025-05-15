@@ -7,13 +7,17 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_banana.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_borre.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_fish.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_hamburger.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_ice.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_jambul.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
@@ -158,6 +162,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('获取周围Wi-Fi'),    // 34
     GridItem('退出配网'),    // 35
     GridItem('获取配网信息'),    // 36
+    GridItem('同步最近7天/7次数据'),    // 37
+    GridItem('厨房秤-去皮/清零'),    // 38
   ];
 
   void _updateText(String newText) {
@@ -247,18 +253,28 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           PPBluetoothKitManager.stopScan();
                         } else if (index == 2) {
 
-                          // final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
+                          final device = PPDeviceModel("CF577","CF:E7:05:0A:00:49");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:4E:3F:56");
                           // final device = PPDeviceModel("LFSmart Scale","CF:E6:10:17:00:6A");
                           // final device = PPDeviceModel("Health Scale c24","08:3A:8D:58:0D:32");
                           // final device  = PPDeviceModel("CF597_GNLine", "08:A6:F7:C1:A5:62");
                           // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
-                          final device = PPDeviceModel("CF597_GNLine","5E:81:28:BD:8A:20");
+                          // final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
+                          // final device = PPDeviceModel("CF632","CF:E9:02:11:C0:12");
+                          // final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
+                          // final device  = PPDeviceModel("LFSmart Scale", "CA:E6:08:24:04:A7");
 
 
+                          // 人体秤
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                             _updateText('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                          });
+
+                          // 厨房秤
+                          PPBluetoothKitManager.addKitchenMeasurementListener(callBack: (state, model, device){
+                            print('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                            _updateText('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                           });
 
                           PPBluetoothKitManager.startScan((ppDevice){
@@ -356,6 +372,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                               unitType: PPUnitType.Unit_KG,
                               userID: _userID,
                               memberID: _memberID,
+                              pIndex: 2,
                               currentWeight: 45);
 
                           final ret = await PPPeripheralTorre.syncUserList([user]);
@@ -455,18 +472,27 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 31) {
 
                           // final device  = PPDeviceModel("FDScale", "ED:68:00:31:48:F2");
-                          final device  = PPDeviceModel("OVRM", "CF:E7:12:02:00:02");
+                          // final device  = PPDeviceModel("OVRM", "CF:E7:12:02:00:02");
+                          final device  = PPDeviceModel("LFSc", "ED:68:00:27:61:49");
 
+                          // 人体秤
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){
                             print('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                             _updateText('测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                          });
+
+                          // 厨房秤
+                          PPBluetoothKitManager.addKitchenMeasurementListener(callBack: (state, model, device){
+                            print('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
+                            _updateText('厨房秤-测量-状态:$state data:${model.toJson()} device:${device.toJson()}');
                           });
 
                           PPBluetoothKitManager.startScan((ppDevice) async {
                             if (ppDevice.deviceMac == device.deviceMac) {
                               PPBluetoothKitManager.stopScan();
 
-                              final ret = await PPPeripheralBanana.receiveDeviceData(ppDevice);
+                              // final ret = await PPPeripheralBanana.receiveDeviceData(ppDevice);
+                              final ret = await PPPeripheralHamburger.receiveDeviceData(ppDevice);
                               _updateText('接收广播设备数据-结果:$ret');
                             }
                           });
@@ -485,6 +511,37 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 36) {
                           final ret = await PPPeripheralTorre.fetchWifiInfo();
                           _updateText('获取ssid-$ret');
+                        } else if (index == 37) {
+                          final model = PPLast7DataModel();
+                          model.userID = _userID;
+                          model.memberID = _memberID;
+                          model.lastBMI = 2111;
+                          model.lastBodyFat = 2500;
+                          model.lastBone = 250;
+                          model.lastBoneRate = 3810;
+                          model.lastMuscle = 4220;
+                          model.lastMuscleRate = 7080;
+                          model.lastWaterRate = 5150;
+                          model.lastHeartRate = 690;
+                          model.targetWeight = 68.90;
+                          model.idealWeight = 62.0;
+
+                          final r1 = PPRecentData(timeStamp: 1746702227500, value: 5670);
+                          final r2 = PPRecentData(timeStamp: 1746702227600, value: 6000);
+                          final r3 = PPRecentData(timeStamp: 1746702228500, value: 7680);
+                          final r4 = PPRecentData(timeStamp: 1746702229500, value: 6789);
+                          final r5 = PPRecentData(timeStamp: 1746702237500, value: 3456);
+                          final r6 = PPRecentData(timeStamp: 1746702247500, value: 3245);
+                          final r7 = PPRecentData(timeStamp: 1746702257500, value: 1098);
+                          final list = [r1,r2,r3,r4,r5,r6,r7];
+
+                          model.weightList = list;
+
+                          final ret = await PPPeripheralBorre.syncLast7Data(model);
+                          _updateText('去皮/清零-$ret');
+                        } else if (index == 38) {
+                          final ret = await PPPeripheralFish.toZero();
+                          _updateText('去皮/清零-$ret');
                         }
                       },
                     );

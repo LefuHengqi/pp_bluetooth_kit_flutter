@@ -71,6 +71,21 @@ extension PPLefuBleConnectManager {
                 let success = status == 0
                 self.sendCommonState(success, callBack: callBack)
             })
+        case .peripheralFish:
+            let unit = model.unit
+            self.fishControl?.change(unit)
+            self.sendCommonState(true, callBack: callBack)
+        case .peripheralEgg:
+            let unit = model.unit
+            self.eggControl?.change(unit)
+            self.sendCommonState(true, callBack: callBack)
+        case .peripheralDurian:
+
+            self.durianControl?.syncDeviceSetting(model)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
+            
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             sendCommonState(false, callBack: callBack)
@@ -145,6 +160,10 @@ extension PPLefuBleConnectManager {
                 let success = state == 0
                 self.sendCommonState(success, callBack: callBack)
             })
+        case .peripheralFish:
+            let date = Date()
+            self.fishControl?.syncTime(date)
+            self.sendCommonState(true, callBack: callBack)
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             sendCommonState(false, callBack: callBack)
@@ -1516,6 +1535,32 @@ extension PPLefuBleConnectManager {
             callBack([:])
         }
     }
+    
+    func syncLast7Data(recentList:[PPUserRecentBodyData], lastBodyData:PPUserRecentBodyData, type:PPUserBodyDataType, user:PPTorreSettingModel,callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            self.sendCommonState(false, callBack: callBack)
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralBorre:
+            self.borreControl?.syncLast7DaysData608(recentList, last: lastBodyData, type: type, user: user, handler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+            self.sendCommonState(false, callBack: callBack)
+        }
+    }
 
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         
@@ -1587,6 +1632,26 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralForre:
             self.forreControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+        case .peripheralFish:
+            self.fishControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+        case .peripheralEgg:
+            self.eggControl?.discoverDeviceInfoService({[weak self] model180A in
                 guard let `self` = self else {
                     return
                 }

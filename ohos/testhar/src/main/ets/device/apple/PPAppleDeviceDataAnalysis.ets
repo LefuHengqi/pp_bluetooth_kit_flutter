@@ -10,6 +10,7 @@ import { ProtocolNormalDeviceHelper } from '../../utils/ProtocolNormalDeviceHelp
 import { PPBodyBaseModel } from '../../vo/PPBodyBaseModel';
 import { PPDeviceModel } from '../../vo/PPDeviceModel';
 import call from '@ohos.telephony.call';
+import { PPScaleState, PPScaleStateHeartRateType, PPScaleStateImpedanceType } from '../../../../../Index';
 
 export class PPAppleDeviceDataAnalysis {
   private _lastReceiveData: string = "";
@@ -269,7 +270,10 @@ export class PPAppleDeviceDataAnalysis {
       // 检查超重标记（原substring(6,10) → 字节3-5）
       if (data.length > 5 && data[3] === 0xFF && data[4] === 0xFF) {
         PPLogger.i("analyticalData V2协议 超重");
-        this.dataChangeListener?.monitorOverWeight?.();
+        const bodyBaseModel = new PPBodyBaseModel();
+        bodyBaseModel.deviceModel = deviceModel ?? undefined;
+        bodyBaseModel.isOverload = true;
+        this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
       } else {
         switch (prefixByte) {
           case 0xCF: // 'CF'
@@ -458,11 +462,13 @@ export class PPAppleDeviceDataAnalysis {
     bodyBaseModel.deviceModel = deviceModel ?? undefined;
     bodyBaseModel.unit = unitType;
     bodyBaseModel.weight = weightKgInt;
-
+    let scaleState = bodyBaseModel?.scaleState ?? new PPScaleState();
+    bodyBaseModel.scaleState = scaleState;
     // Process heart rate data (bytes 2-3)
     const heartRateSign = data[2]; // Original substring(4,6) → byte[2]
     if (heartRateSign === 0xC0) {
-      bodyBaseModel.isHeartRating = false;
+      scaleState.heartRateType = PPScaleStateHeartRateType.HEARTRATE_NO_MEASURE
+      bodyBaseModel.scaleState = scaleState;
       const heartRate = data[1]; // Original substring(2,4) → byte[1]
       bodyBaseModel.heartRate = heartRate;
     }
@@ -474,13 +480,16 @@ export class PPAppleDeviceDataAnalysis {
       case 0x08: // "08"
         // Weight stable, measuring impedance
         // const lockWeightKg = bodyBaseModel.getPpWeightKg();
-        dataChangeListener?.onImpedanceFatting?.();
+        scaleState.impedanceType = PPScaleStateImpedanceType.IMPEDANCE_MEASURING;
+        bodyBaseModel.scaleState = scaleState;
+        dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
         break;
 
       case 0x03: // "03"
         // Measuring heart rate
-        bodyBaseModel.isHeartRating = true;
-        dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);
+        scaleState.heartRateType = PPScaleStateHeartRateType.HEARTRATE_MEASURING;
+        bodyBaseModel.scaleState = scaleState;
+        dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
         break;
 
       case 0x01: // "01"
@@ -497,7 +506,8 @@ export class PPAppleDeviceDataAnalysis {
         bodyBaseModel.impedance = this.impedance50;
         bodyBaseModel.ppImpedance100EnCode = this.impedance100;
         bodyBaseModel.weight = this.myWeightKgInt;
-        bodyBaseModel.isHeartRating = false;
+        scaleState.heartRateType = PPScaleStateHeartRateType.HEARTRATE_SUCCESS
+        bodyBaseModel.scaleState = scaleState;
         bodyBaseModel.heartRate = this.heartRate;
 
         dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);

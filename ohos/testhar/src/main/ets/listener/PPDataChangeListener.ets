@@ -22,12 +22,6 @@ export class PPDataChangeListener {
   monitorFootLenMeasure?: (scaleState: PPScaleFootState | null, footLen: number) => void;
   // 测量失败
   monitorDataFail?: (bodyBaseModel: PPBodyBaseModel | null, deviceModel: PPDeviceModel | null) => void;
-  // 阻抗测量状态
-  onImpedanceFatting?: () => void;
   // 秤端计算的数据
   monitorLockDataByCalculateInScale?: (bodyFatModel: PPBodyFatInScaleVo | null) => void;
-  // 超重
-  monitorOverWeight?: () => void;
-  // 设备关机回调
-  onDeviceShutdown?: () => void;
 }

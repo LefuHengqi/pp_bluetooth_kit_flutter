@@ -58,6 +58,8 @@ static NSInteger TORRE_ABNORMAL_HISTORY_INTERVAL_TIME = 1643731200; //2022-2-3ï¼
 
 + (NSString *)getBinaryByHex:(NSString *)hex;
 
++ (NSInteger)getFinalWeight100:(CGFloat)weightKG;
+
 @end
 
 NS_ASSUME_NONNULL_END

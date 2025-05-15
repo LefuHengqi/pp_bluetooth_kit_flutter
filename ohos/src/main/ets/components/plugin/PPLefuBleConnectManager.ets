@@ -18,16 +18,19 @@ import { PPJambulDeviceControl } from 'ppsdkkit/src/main/ets/device/jambul/PPJam
 import { PPTorreDeviceControl } from 'ppsdkkit/src/main/ets/device/torre/PPTorreDeviceControl';
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
 
+import { abilityAccessCtrl, bundleManager, Permissions, common, Context, featureAbility, UIAbility } from '@kit.AbilityKit';
+import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import {
-  abilityAccessCtrl,
-  bundleManager,
-  Permissions,
-  common,
-  Context,
-  featureAbility,
-  UIAbility
-} from '@kit.AbilityKit';
-import { BusinessError } from '@kit.BasicServicesKit';
+  PPBodyBaseModel,
+  PPConfigWifiStateMenu,
+  PPDataChangeListener,
+  PPHistoryDataInterface,
+  PPScaleStateHeartRateType,
+  PPScaleStateImpedanceType,
+  PPWifiModel,
+  TimeFormat,
+  UnitUtil
+} from 'ppsdkkit';
 
 enum PPLefuScanType {
   SCAN = 0
@@ -53,6 +56,8 @@ export class PPLefuBleConnectManager {
   currentDevice: PPDeviceModel | null = null;
   deviceModels: Map<String, PPDeviceModel> = new Map();
   private abilityPluginBinding: AbilityPluginBinding | null = null;
+
+  historyModels: PPBodyBaseModel[] = [];
 
   constructor() {
     // 初始化蓝牙管理器
@@ -173,6 +178,7 @@ export class PPLefuBleConnectManager {
     this.sendScanState(true);
 
     PPBleSearch.getInstance().startScan((deviceModel: PPDeviceModel) => {
+      PPLoggerPluginOhos.d(`startScan deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`)
       if (!deviceModel.deviceMac) {
         return;
       }
@@ -192,6 +198,7 @@ export class PPLefuBleConnectManager {
   }
 
   stopScan(): void {
+    this.addLog('停止扫描')
     PPBleSearch.getInstance().stopScan();
     if (this.isScaning) {
       this.isScaning = false;
@@ -200,7 +207,6 @@ export class PPLefuBleConnectManager {
   }
 
   connectDevice(deviceMac: string) {
-
     let deviceModel: PPDeviceModel = this.deviceModels[deviceMac];
     if (!deviceModel) {
       this.addLog(`设备${deviceMac}未找到，请先搜索设备`)
@@ -216,6 +222,36 @@ export class PPLefuBleConnectManager {
             this.startConnectDevice();
           }
         } else {
+          this.addLog('其他设备连接，先断开,再连接')
+          this.disconnect();
+          this.createDeviceControl(deviceModel);
+          this.startConnectDevice();
+        }
+      } else {
+        this.createDeviceControl(deviceModel);
+        this.startConnectDevice();
+      }
+    }
+  }
+
+  receiveBroadcastData(deviceMac: string, result: MethodResult): void {
+    this.addLog(`启动广播秤数据监听 deviceMac:${deviceMac}`)
+    let deviceModel: PPDeviceModel = this.deviceModels[deviceMac];
+    if (!deviceModel) {
+      this.addLog(`设备${deviceMac}未找到，请先搜索设备`)
+      this.sendConnectState(2);
+    } else {
+      this.stopScan();
+      if (this.deviceControl) {
+        if (this.deviceControl.deviceModel?.deviceMac === deviceMac) {
+          if (this.deviceControl.isConnect()) {
+            this.addLog('设备已连接,无需重复连接')
+            this.sendConnectState(1);
+          } else {
+            this.startConnectDevice();
+          }
+        } else {
+          this.addLog('其他设备连接，先断开,再连接')
           this.disconnect();
           this.createDeviceControl(deviceModel);
           this.startConnectDevice();
@@ -252,17 +288,67 @@ export class PPLefuBleConnectManager {
         this.addLog(`不支持的设备类型:${deviceModel.getDevicePeripheralType()}`);
         break;
     }
+    this.registerDataChangeListener();
+  }
+
+  private registerDataChangeListener() {
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    }
+
+  }
+
+  dataChangeListener: PPDataChangeListener = {
+
+    monitorProcessData: (bodyBaseModel: PPBodyBaseModel | null, deviceModel: PPDeviceModel | null) => {
+      this.addLog(`实时数据:${bodyBaseModel?.getPpWeightKg()}`)
+      const scaleState = bodyBaseModel?.scaleState
+      if (scaleState?.heartRateType === PPScaleStateHeartRateType.HEARTRATE_MEASURING) {
+        this.addLog(`心率测量中 monitorProcessData`)
+        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 2));
+      } else if (scaleState?.impedanceType === PPScaleStateImpedanceType.IMPEDANCE_MEASURING) {
+        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 1));
+      } else {
+        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 0));
+      }
+    },
+
+    monitorLockData: (bodyBaseModel: PPBodyBaseModel | null, deviceModel: PPDeviceModel | null) => {
+      if (bodyBaseModel?.isHeartRating) {
+        this.addLog(`心率测量中 monitorLockData`)
+        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 2));
+      } else {
+        this.addLog(`稳定数据:${bodyBaseModel?.getPpWeightKg()} impedance:${bodyBaseModel?.impedance}`)
+        this.addLog(`测量结束`)
+        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 10));
+      }
+    },
   }
 
   private startConnectDevice() {
+    this.addLog('开始连接设备');
     this.deviceControl?.startConnect((state: ble.ProfileConnectionState) => {
       this.connectState = state;
       PPLoggerPluginOhos.i(`BluetoothPage bluetooth connect state changed state:${state}}`);
+      // 发送连接状态 连接状态 0:断开连接 1:连接成功 2:连接错误
       if (this.connectState === constant.ProfileConnectionState.STATE_DISCONNECTED) {
         this.addLog('设备断开');
         this.sendConnectState(0);
       } else if (this.connectState === constant.ProfileConnectionState.STATE_CONNECTED) {
         this.addLog('连接成功');
+        this.sendConnectState(1);
+      } else if (this.connectState === constant.ProfileConnectionState.STATE_CONNECTING) {
+        this.addLog('正在连接');
+      } else if (this.connectState === constant.ProfileConnectionState.STATE_DISCONNECTING) {
+        this.addLog('正在断开连接');
       }
     }, (isSuccess: boolean) => {
       if (isSuccess) {
@@ -327,128 +413,551 @@ export class PPLefuBleConnectManager {
     callBack.success({ state: state });
   }
 
-  fetchHistory(userID: string, memberID: string, callBack: MethodResult) {
+  fetchHistory(userID: string, memberID: string, result: MethodResult) {
+    this.historyModels = [];
     this.addLog(`获取历史记录 userID:${userID},memberID:${memberID}`)
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      this.deviceControl.syncHistory(this.historyDataInterface);
+
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      if (userID === "30") {
+        this.deviceControl.syncTouristHistory(this.historyDataInterface)
+      } else {
+        let userModel = new PPUserModel();
+        userModel.userID = userID;
+        userModel.memberID = memberID;
+        this.deviceControl.syncUserHistory(userModel, this.historyDataInterface);
+      }
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.syncHistory(this.historyDataInterface)
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
+  }
+
+  historyDataInterface: PPHistoryDataInterface = {
+    // 监控历史数据
+    monitorHistoryData: (bodyBaseModel: PPBodyBaseModel | null) => {
+      if (bodyBaseModel != null) {
+        this.addLog(`游客历史数据:${bodyBaseModel.getPpWeightKg()}`)
+        this.historyModels.push(bodyBaseModel);
+      }
+    },
+
+    // 监控历史结束
+    monitorHistoryEnd: () => {
+      this.addLog(`游客历史数据结束`)
+      this.historyStreamHandler?.success(this.historyModels)
+    },
+
+    // 监控历史失败
+    monitorHistoryFail: () => {
+      this.addLog(`游客历史数据失败`)
+    },
+
   }
 
   deleteHistory() {
     this.addLog(`deleteHistory`)
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      this.deviceControl.deleteHistory();
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.deleteHistory();
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      // this.deviceControl.deleteHistory();
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   configWifi(domain: string, ssId: string, password: string | null = null, result: MethodResult) {
     this.addLog(`configWifi domain:${domain},ssId:${ssId},password:${password}`)
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+
+      this.deviceControl?.modifyServerDomain(domain, (modifyResult) => {
+        if (modifyResult) {
+          this.addLog(`修改域名成功`)
+          if (this.deviceControl instanceof PPAppleDeviceControl) {
+            this.deviceControl?.configWifi(ssId, password, (sn, stateMenu) => {
+              this.addLog(`配置Wifi Success sn:${sn} ${stateMenu}`);
+              result.success({ sn: sn, erroCode:0,success:true })
+            })
+          }
+        } else {
+          this.addLog(`修改域名失败`)
+        }
+      })
+
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.configWifi(domain, ssId, password,(configState: PPConfigWifiStateMenu, resultCode: string) => {
+
+      });
+    }
   }
 
   syncTime(is24Hour: boolean, result: MethodResult) {
-    this.addLog(`is24Hour`)
+    this.addLog(`syncTime is24Hour:${is24Hour}`)
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      const syncResult = this.deviceControl.syncTime(systemDateTime.getTime())
+      result.success({ state: syncResult })
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const syncResult = this.deviceControl.syncTime(systemDateTime.getTime(), is24Hour ? TimeFormat.HOUR_24 : TimeFormat.HOUR_12)
+      result.success({ state: syncResult })
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const syncResult = this.deviceControl.syncTime(systemDateTime.getTime())
+      result.success({ state: syncResult })
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      // this.deviceControl.syncTime(systemDateTime.getTime())
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+      // this.deviceControl.syncUnit(systemDateTime.getTime())
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   syncUnit(unit: number, sex: number, age: number, height: number, isPregnantMode: boolean, isAthleteMode: boolean) {
     this.addLog(`同步单位 unit:${unit},sex:${sex},age:${age},height:${height},isPregnantMode:${isPregnantMode},isAthleteMode:${isAthleteMode}`)
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      let userModel = new PPUserModel();
+      userModel.sex = sex;
+      userModel.age = age;
+      userModel.userHeight = height;
+      this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""),
+        userModel)
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      // this.deviceControl.syncUnit(systemDateTime.getTime())
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+      let userModel = new PPUserModel();
+      userModel.sex = sex;
+      userModel.age = age;
+      userModel.userHeight = height;
+      this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""),
+        userModel)
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
+    }
   }
 
   fetchWifiInfo(result: MethodResult) {
     this.addLog('获取WiFi信息')
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      this.deviceControl.readWifiInfo((ssid: string | null) => {
+        result.success({
+          ssId: ssid ?? "",
+          isConnectWIFI: (!ssid) ? false : true,
+        });
+      })
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getWifiSSID((ssid: string | null) => {
+        result.success({ ssId: ssid ?? "", isConnectWIFI: (!ssid) ? false : true });
+      })
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.getWifiSSID((ssid: string | null) => {
+        result.success({ ssId: ssid ?? "", isConnectWIFI: (!ssid) ? false : true });
+      })
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
+    }
   }
 
-  fetchDeviceInfo(result: MethodResult) {
-    this.addLog('获取设备信息')
+  async fetchDeviceInfo(result: MethodResult) {
+    this.addLog('获取设备信息');
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      const deviceModel = await this.deviceControl.readDeviceInfo()
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const deviceModel = await this.deviceControl.readDeviceInfo()
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const deviceModel = await this.deviceControl.readDeviceInfo()
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
+    }
   }
 
-  fetchBatteryInfo(result: MethodResult) {
+  async fetchBatteryInfo(result: MethodResult) {
     this.addLog('获取电池信息')
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      const battery = await this.deviceControl.readBatteryLevel();
+      result.success({ power: battery });
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const battery = await this.deviceControl.readBatteryLevel();
+      result.success({ power: battery });
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const battery = await this.deviceControl.readBatteryLevel();
+      result.success({ power: battery });
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
+    }
   }
 
   resetDevice(): void {
-    this.addLog('重置设备')
+    this.addLog('重置设备');
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      this.deviceControl.resetDevice();
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.resetDevice();
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.resetDevice();
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
+    }
   }
 
-  fetchConnectedDevice(result: MethodResult): void {
+  async fetchConnectedDevice(result: MethodResult) {
     this.addLog('获取已连接设备')
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
+    }
   }
 
+  ///蓝牙权限变化监听，0:未知，1：未授权，2:蓝牙-开，3：蓝牙-关
   addBlePermissionListener(): void {
     this.addLog('添加蓝牙权限监听')
   }
 
   fetchWifiMac(result: MethodResult): void {
     this.addLog('获取WiFi MAC地址')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getWifiMac((mac: string | null) => {
+        result.success({ wifiMac: mac });
+      })
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchWifiMac-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   scanWifiNetworks(result: MethodResult): void {
     this.addLog('扫描WiFi网络')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getWifiList((wifiModels: PPWifiModel[] | null) => {
+        const networks: string[] = [];
+        if (wifiModels) {
+          wifiModels.forEach((wifiModel: PPWifiModel) => {
+            if (wifiModel?.ssid) {
+              networks.push(wifiModel?.ssid);
+            }
+          });
+        }
+        result.success({ wifiList: networks });
+      })
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.getWifiList((wifiModels: PPWifiModel[] | null) => {
+        const networks: string[] = [];
+        if (wifiModels) {
+          wifiModels.forEach((wifiModel: PPWifiModel) => {
+            if (wifiModel?.ssid) {
+              networks.push(wifiModel?.ssid);
+            }
+          });
+        }
+        result.success({ wifiList: networks });
+      })
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-scanWifiNetworks-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
-  wifiOTA(result: MethodResult): void {
+  async wifiOTA(result: MethodResult) {
     this.addLog('WiFi OTA升级')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const callResult = await this.deviceControl.startUserOTA({
+        onUpdateFail: (errorCode: number) => {
+          this.loggerStreamHandler?.success(`onUpdateFail errorCode:${errorCode}`)
+          result.success({ isSuccess: false, errorCode: errorCode });
+        },
+        onUpdateSuccess: () => {
+          this.loggerStreamHandler?.success(`onUpdateSuccess`)
+          result.success({ isSuccess: result, errorCode: 0 });
+        },
+
+      });
+      if (!callResult) {
+        result.success({ isSuccess: callResult, errorCode: 3 });
+      }
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const callResult = await this.deviceControl.startUserOTA({
+        onUpdateFail: (errorCode: number) => {
+          this.loggerStreamHandler?.success(`onUpdateFail errorCode:${errorCode}`)
+          result.success({ isSuccess: false, errorCode: errorCode });
+        },
+        onUpdateSuccess: () => {
+          this.loggerStreamHandler?.success(`onUpdateSuccess`)
+          result.success({ isSuccess: result, errorCode: 0 });
+        }
+      });
+      if (!callResult) {
+        result.success({ isSuccess: callResult, errorCode: 3 });
+      }
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-wifiOTA-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   heartRateSwitchControl(open: boolean, result: MethodResult): void {
-    this.addLog(`心率开关控制 open:${open}`)
+    this.addLog(` 心率开关控制 open:${open}`);
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      // 心率0打开 1关闭
+      this.deviceControl.controlHeartRate(open, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      // 心率0打开 1关闭
+      this.deviceControl.controlHeartRate(open, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-heartRateSwitchControl-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   fetchHeartRateSwitch(result: MethodResult): void {
     this.addLog('获取心率开关状态')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getHeartRateState((isOn: boolean) => {
+        result.success({ open: isOn });
+      });
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.getHeartRateState((isOn: boolean) => {
+        result.success({ state: isOn });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchHeartRateSwitch-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   impedanceSwitchControl(open: boolean, result: MethodResult): void {
     this.addLog(`阻抗开关控制 open:${open}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      // 阻抗0打开 1关闭
+      this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      // 阻抗0打开 1关闭
+      this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-impedanceSwitchControl-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   fetchImpedanceSwitch(result: MethodResult): void {
     this.addLog('获取阻抗开关状态')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getImpedanceState((isOn: boolean) => {
+        result.success({ state: isOn });
+      });
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.getImpedanceState((isOn: boolean) => {
+        result.success({ state: isOn });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchImpedanceSwitch-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   setBindingState(binding: boolean, result: MethodResult): void {
     this.addLog(`设置绑定状态 binding:${binding}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      // 绑定0解绑 1绑定
+      this.deviceControl.deviceBindStatus(binding, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-setBindingState-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   fetchBindingState(result: MethodResult): void {
     this.addLog('获取绑定状态')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getDeviceBindStatus((isBind: boolean) => {
+        result.success({ binding: isBind });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchBindingState-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   setScreenBrightness(brightness: number, result: MethodResult): void {
     this.addLog(`设置屏幕亮度 brightness:${brightness}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.setLight(brightness, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-getScreenBrightness-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   getScreenBrightness(result: MethodResult): void {
     this.addLog('获取屏幕亮度')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getLight((brightness: number) => {
+        result.success({ brightness: brightness });
+      });
+    }
   }
 
-  syncUserInfo(model: PPUserModel, result: MethodResult): void {
+  async syncUserInfo(model: PPUserModel, result: MethodResult) {
     this.addLog(`同步用户信息 model:${JSON.stringify(model)}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const syncResult = await this.deviceControl.syncUserInfo(model);
+      result.success({ state: syncResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-syncUserInfo-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   syncUserList(userArray: PPUserModel[], result: MethodResult): void {
     this.addLog(`同步用户列表 userArray:${JSON.stringify(userArray)}`)
+    const deviceModel = this.deviceControl?.deviceModel;
+    this.loggerStreamHandler?.success(`不支持该功能-syncUserList-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+
   }
 
   fetchUserIDList(result: MethodResult): void {
     this.addLog('获取用户ID列表')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getUserList((userIDList: string[]) => {
+        result.success({ userIDList: userIDList });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchUserIDList-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
-  selectUser(user: PPUserModel, result: MethodResult): void {
+  async selectUser(user: PPUserModel, result: MethodResult): Promise<void> {
     this.addLog(`选择用户 user:${JSON.stringify(user)}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const selectResult = await this.deviceControl.sendCurrentUserInfo(user);
+      result.success({ state: selectResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-selectUser-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   deleteUser(user: PPUserModel, result: MethodResult): void {
     this.addLog(`删除用户 user:${JSON.stringify(user)}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const deleteResult = this.deviceControl.deleteUserInfo(user);
+      result.success({ state: deleteResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-deleteUser-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   startMeasure(result: MethodResult): void {
     this.addLog('开始测量')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.startMeasure((state: number) => {
+        // 0x00：成功
+        // 0x01：设备配网中，开始测量失败
+        // 0x02：设备OTA中，开始测量失败
+        result.success({ state: state == 0 });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-startMeasure-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   stopMeasure(result: MethodResult): void {
     this.addLog('停止测量')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const stopResult = this.deviceControl.stopMeasure();
+      result.success({ state: stopResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-stopMeasure-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   startBabyModel(step: number, weight: number, result: MethodResult): void {
     this.addLog(`开始婴儿模式 step:${step},weight:${weight}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const startResult = this.deviceControl.startBabyModel(step, weight, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+      if (!startResult) {
+        result.success({ state: false });
+      }
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-startBabyModel-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   exitBabyModel(result: MethodResult): void {
     this.addLog('退出婴儿模式')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const exitResult = this.deviceControl.exitBabyModel((isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+      if (!exitResult) {
+        result.success({ state: false });
+      }
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-exitBabyModel-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   startDFU(filePath: string, deviceFirmwareVersion: string, isForceCompleteUpdate: boolean,
@@ -456,44 +965,164 @@ export class PPLefuBleConnectManager {
     this.addLog(`开始DFU升级 filePath:${filePath},deviceFirmwareVersion:${deviceFirmwareVersion},isForceCompleteUpdate:${isForceCompleteUpdate}`)
   }
 
-  syncDeviceLog(logFolder: string): void {
+  async syncDeviceLog(logFolder: string): Promise<void> {
     this.addLog(`同步设备日志 logFolder:${logFolder}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const syncLogReslut = await this.deviceControl.syncLog(logFolder, (progress: number, logFilePath: string, isEnd: boolean) => {
+        if (isEnd) {
+          this.deviceLogStreamHandler?.success({ progress: 100, isFailed: false, filePath: logFilePath })
+        } else {
+          this.deviceLogStreamHandler?.success({ progress: progress, isFailed: false, filePath: "" })
+        }
+      });
+      if (!syncLogReslut) {
+        this.deviceLogStreamHandler?.success({ progress: -1, isFailed: true, filePath: logFolder })
+      }
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const syncLogReslut = await this.deviceControl.syncLog(logFolder, (progress: number, logFilePath: string, isEnd: boolean) => {
+        if (isEnd) {
+          this.deviceLogStreamHandler?.success({ progress: 100, isFailed: false, filePath: logFilePath })
+        } else {
+          this.deviceLogStreamHandler?.success({ progress: progress, isFailed: false, filePath: "" })
+        }
+      });
+      if (!syncLogReslut) {
+        this.deviceLogStreamHandler?.success({ progress: -1, isFailed: true, filePath: logFolder })
+      }
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-syncDeviceLog-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
   }
 
   keepAlive(): void {
-    this.addLog('保持连接')
+    this.addLog('保活')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.keepAlive();
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.keepAlive();
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-keepAlive-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
+  /**
+   * 0：清除所有设备数据(用户信息、历史数据、配网数据、设置信息)
+   1：清除用户信息
+   2：清除历史数据
+   3：清除配网状态
+   4：清除设置信息
+   * @param type
+   * @param result
+   */
   clearDeviceData(type: number, result: MethodResult): void {
     this.addLog(`清除设备数据 type:${type}`)
+
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      if (type == 0) {
+        const clearResult = this.deviceControl.clearAllDeviceInfo((isSuccess: boolean) => {
+          result.success({ state: isSuccess });
+        });
+      } else if (type == 1) {
+        const clearResult = this.deviceControl.clearDeviceUserInfo((isSuccess: boolean) => {
+          result.success({ state: isSuccess });
+        });
+      } else if (type == 2) {
+        const clearResult = this.deviceControl.clearHistoryData((isSuccess: boolean) => {
+          result.success({ state: isSuccess });
+        });
+      } else if (type == 3) {
+        const clearResult = this.deviceControl.clearConfigWifiInfo((isSuccess: boolean) => {
+          result.success({ state: isSuccess });
+        });
+      } else if (type == 4) {
+        const clearResult = this.deviceControl.clearSettingInfo((isSuccess: boolean) => {
+          result.success({ state: isSuccess });
+        });
+      }
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-clearDeviceData-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
-  setDeviceLanguage(type: number, result: MethodResult): void {
-    this.addLog(`设置设备语言 type:${type}`)
+  /**
+   *  0, // 中文简体
+   1, // 英文
+   2, // 中文繁体
+   3, // 日语
+   4, // 西班牙语
+   5, // 葡萄牙语
+   6, // 阿拉伯语
+   7 // 韩语
+   * @param language
+   * @param result
+   */
+  setDeviceLanguage(language: number, result: MethodResult): void {
+    this.addLog(`设置设备语言 language:${language}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.setLanguage(language, (isSuccess: boolean) => {
+        result.success({ state: isSuccess });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-setDeviceLanguage-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
   fetchDeviceLanguage(result: MethodResult): void {
     this.addLog('获取设备语言')
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getLanguage((language: number) => {
+        result.success({ language: language });
+      });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-fetchDeviceLanguage-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
   setDisplayBodyFat(bodyFat: number, result: MethodResult): void {
     this.addLog(`设置显示体脂 bodyFat:${bodyFat}`)
+    if (this.deviceControl instanceof PPIceDeviceControl) {
+      const syncResult = this.deviceControl.syncFat(bodyFat);
+      result.success({ state: syncResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-setDisplayBodyFat-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
   exitScanWifiNetworks(result: MethodResult): void {
     this.addLog('退出WiFi扫描')
+    if (this.deviceControl instanceof PPIceDeviceControl) {
+      const exitResult = this.deviceControl.exitWifiList();
+      result.success({ state: exitResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-exitScanWifiNetworks-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
   exitNetworkConfig(result: MethodResult): void {
     this.addLog('退出网络配置')
-  }
-
-  receiveBroadcastData(deviceMac: string, result: MethodResult): void {
-    this.addLog(`接收广播数据 deviceMac:${deviceMac}`)
+    if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const exitResult = this.deviceControl.exitConfigWifi();
+      result.success({ state: exitResult });
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      const exitResult = this.deviceControl.exitConfigWifi();
+      result.success({ state: exitResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-exitScanWifiNetworks-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
+    }
   }
 
   sendBroadcastData(cmd: string, unit: number, result: MethodResult): void {
     this.addLog(`发送广播数据 cmd:${cmd},unit:${unit}`)
+    const deviceModel = this.deviceControl?.deviceModel;
+    this.loggerStreamHandler?.success(`不支持该功能-sendBroadcastData-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
   }
 
   addLog(message: string) {

@@ -4912,6 +4912,32 @@
     "deviceConnectType" : 1,
     "deviceFuncType" : 1107,
     "id" : 100
+  },
+  {
+    "sdkCode" : 0,
+    "deviceType" : 1,
+    "deviceName" : "LEFU-CF621-X06",
+    "brand" : {
+      "brandLogo" : "https:\/\/unique.lefuenergy.com\/prod\/2023\/11\/23\/Property%201%3Dunique%403x_20231123185316A001.png",
+      "brandName" : "Unique Health"
+    },
+    "standardType" : 0,
+    "devicePowerType" : 3,
+    "deviceCalcuteType" : 10,
+    "advLength" : 999,
+    "avatarType" : 0,
+    "deviceUnitType" : "0,3",
+    "deviceConnectType" : 2,
+    "sign" : "FF",
+    "brandId" : 1,
+    "id" : 277,
+    "deviceAccuracyType" : 2,
+    "imgUrl" : "https:\/\/unique.lefuenergy.com\/prod\/2025\/02\/28\/CF621BLE_20241030112424A011_20250228105718A002.png",
+    "productModel" : "CF621-X06",
+    "deviceFuncType" : 295263,
+    "customDeviceName" : "LEFU-CF621-X06",
+    "macAddressStart" : 6,
+    "deviceProtocolType" : 5
   }
 ]
 

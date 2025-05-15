@@ -1,4 +1,4 @@
-import { ble, constant } from '@kit.ConnectivityKit';
+import { ble } from '@kit.ConnectivityKit';
 import { PPBaseDeviceControl } from '../PPBaseDeviceControl';
 import { PPLogger } from '../../log/PPLogger';
 import { BleUUID } from '../BleUUID';
@@ -18,6 +18,7 @@ import { TorreHelper } from './TorreHelper';
 import { PPUserModel } from '../../vo/PPUserModel';
 import { PPHistoryDataInterface } from '../../listener/PPHistoryDataInterface';
 import { PPDataChangeListener } from '../../listener/PPDataChangeListener';
+import { OnOTAStateListener } from '../../listener/OnOTAStateListener';
 
 
 /**
@@ -209,7 +210,7 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
    *
    * @param state
    */
-  async startMeasure(onStartMeasureResultCallBack?: (state: number | null) => void): Promise<boolean> {
+  async startMeasure(onStartMeasureResultCallBack?: (state: number) => void): Promise<boolean> {
     this.dataAnalysisF1.onStartMeasureResultCallBack = onStartMeasureResultCallBack;
     return this.deviceControlExtF1.startMeasure();
   }
@@ -218,8 +219,14 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
     return this.deviceControlExtF1.stopMeasure();
   }
 
-  async switchBaby(mode: number, step: number, weight: number): Promise<boolean> {
-    return this.deviceControlExtF1.switchBaby(mode, step, weight);
+  async startBabyModel(step: number, weight: number, onControlBabyResultCallBack: (isSuccess: boolean) => void): Promise<boolean> {
+    this.dataAnalysisF1.onControlBabyResultCallBack = onControlBabyResultCallBack;
+    return this.deviceControlExtF1.switchBaby(0, step, weight);
+  }
+
+  async exitBabyModel(onControlBabyResultCallBack: (isSuccess: boolean) => void): Promise<boolean> {
+    this.dataAnalysisF1.onControlBabyResultCallBack = onControlBabyResultCallBack;
+    return this.deviceControlExtF1.switchBaby(1);
   }
 
   /**
@@ -234,29 +241,30 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
 
   //0x00：关闭基础模式,可以测脂肪
   //0x01：打开基础模式，无法测脂肪
-  async controlImpedance(state: number,
-    onControlImpedanceResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async controlImpedance(isOn: boolean,
+    onControlImpedanceResultCallBack?: (isSuccess: boolean | false) => void): Promise<boolean> {
     this.dataAnalysisF1.onControlImpedanceResultCallBack = onControlImpedanceResultCallBack;
-    return this.deviceControlExtF1.controlImpedance(state);
+    return this.deviceControlExtF1.controlImpedance(isOn ? 0 : 1);
   }
 
-  async controlImpedance2(state: number,
-    onControlImpedanceResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async controlImpedance2(isOn: boolean,
+    onControlImpedanceResultCallBack?: (isSuccess: boolean | false) => void): Promise<boolean> {
     this.dataAnalysisF1.onControlImpedanceResultCallBack = onControlImpedanceResultCallBack;
-    return this.deviceControlExtF1.controlImpedance(state);
+    return this.deviceControlExtF1.controlImpedance(isOn ? 0 : 1);
   }
 
-  async controlHeartRate(state: number, onControlHeartRateResultCallback?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async controlHeartRate(open: boolean,
+    onControlHeartRateResultCallback?: (isSuccess: boolean | false) => void): Promise<boolean> {
     this.dataAnalysisF1.onControlHeartRateResultCallback = onControlHeartRateResultCallback;
-    return this.deviceControlExtF1.controlHeartRate(state);
+    return this.deviceControlExtF1.controlHeartRate(open ? 0 : 1);
   }
 
-  async getImpedanceState(onImpedanceStateCallBack?: (state: number | null) => void): Promise<boolean> {
+  async getImpedanceState(onImpedanceStateCallBack?: (isOn: boolean | true) => void): Promise<boolean> {
     this.dataAnalysisF1.onImpedanceStateCallBack = onImpedanceStateCallBack;
     return this.deviceControlExtF1.getImpedanceState();
   }
 
-  async getHeartRateState(onHeartRateStateCallBack?: (state: number | null) => void): Promise<boolean> {
+  async getHeartRateState(onHeartRateStateCallBack?: (isOn: boolean | true) => void): Promise<boolean> {
     this.dataAnalysisF1.onHeartRateStateCallBack = onHeartRateStateCallBack;
     return this.deviceControlExtF1.getHeartRateState();
   }
@@ -279,31 +287,31 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
     return this.deviceControlExtF1.keepAlive();
   }
 
-  async getLight(onLightCallBack?: (light: number | null) => void
+  async getLight(onLightCallBack?: (light: number | 0) => void
   ): Promise<boolean> {
     this.dataAnalysisF1.onLightCallBack = onLightCallBack;
     return this.deviceControlExtF1.getLight();
   }
 
-  async setLight(light: number, onLightResultCallBack?: (isSuccess: boolean | null) => void
+  async setLight(light: number, onLightResultCallBack?: (isSuccess: boolean | false) => void
   ): Promise<boolean> {
     this.dataAnalysisF1.onLightResultCallBack = onLightResultCallBack;
     return this.deviceControlExtF1.setLight(light);
   }
 
-  async getLanguage(onGetLanguageCallBack?: (language: number | null) => void): Promise<boolean> {
+  async getLanguage(onGetLanguageCallBack?: (language: number) => void): Promise<boolean> {
     this.dataAnalysisF1.onGetLanguageCallBack = onGetLanguageCallBack;
     return this.deviceControlExtF1.getLanguage();
   }
 
-  async getLanguageList(onGetLanguageListCallBack?: (languages: Array<number> | null) => void): Promise<boolean> {
+  async getLanguageList(onGetLanguageListCallBack?: (languages: Array<number>) => void): Promise<boolean> {
     this.dataAnalysisF1.onGetLanguageListCallBack = onGetLanguageListCallBack;
     return this.deviceControlExtF1.getLanguageList();
   }
 
   async setLanguage(
     language: number,
-    onSetLanguageCallBack?: (isSuccess: boolean | null) => void
+    onSetLanguageCallBack?: (isSuccess: boolean) => void
   ): Promise<boolean> {
     this.dataAnalysisF1.onSetLanguageCallBack = onSetLanguageCallBack;
     return this.deviceControlExtF1.setLanguage(language);
@@ -331,10 +339,21 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
    * @param type  1设置  2获取
    * @param state 0设备未绑定 1已绑定
    */
-  async deviceBindStatus(type: number, state: number,
-    onBindStateResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async deviceBindStatus(binding: boolean,
+    onBindStateResultCallBack?: (isSuccess: boolean | false) => void): Promise<boolean> {
     this.dataAnalysisF1.onBindStateResultCallBack = onBindStateResultCallBack;
-    return this.deviceControlExtF1.deviceBindStatus(type, state);
+    //state 0设备未绑定 1已绑定
+    return this.deviceControlExtF1.deviceBindStatus(1, binding ? 1 : 0);
+  }
+
+  /**
+   *   state 0设备未绑定 1已绑定
+   * @param onGetDeviceBindStateCallBack
+   * @returns
+   */
+  async getDeviceBindStatus(onBindStateCallBack?: (isBinding: boolean | false) => void): Promise<boolean> {
+    this.dataAnalysisF1.onBindStateCallBack = onBindStateCallBack;
+    return this.deviceControlExtF1.deviceBindStatus(2);
   }
 
   /**
@@ -348,38 +367,40 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
     return this.deviceControlExtF1.demoModeSwitch(type, state);
   }
 
-  async clearDeviceUserInfo(onClearDataResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async clearDeviceUserInfo(onClearDataResultCallBack?: (isSuccess: boolean) => void): Promise<boolean> {
     this.dataAnalysisF1.onClearDataResultCallBack = onClearDataResultCallBack;
     return this.deviceControlExtF1.clearDeviceUserInfo();
   }
 
-  async clearHistoryData(onClearDataResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async clearHistoryData(onClearDataResultCallBack?: (isSuccess: boolean) => void): Promise<boolean> {
     this.dataAnalysisF1.onClearDataResultCallBack = onClearDataResultCallBack;
     return this.deviceControlExtF1.clearHistoryData();
   }
 
-  async clearAllDeviceInfo(onClearDataResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async clearAllDeviceInfo(onClearDataResultCallBack?: (isSuccess: boolean) => void): Promise<boolean> {
     this.dataAnalysisF1.onClearDataResultCallBack = onClearDataResultCallBack;
     return this.deviceControlExtF1.clearAllDeviceInfo();
   }
 
-  async clearConfigWifiInfo(onClearDataResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async clearConfigWifiInfo(onClearDataResultCallBack?: (isSuccess: boolean) => void): Promise<boolean> {
     this.dataAnalysisF1.onClearDataResultCallBack = onClearDataResultCallBack;
     return this.deviceControlExtF1.clearConfigWifiInfo();
   }
 
-  async clearSettingInfo(onClearDataResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async clearSettingInfo(onClearDataResultCallBack?: (isSuccess: boolean) => void): Promise<boolean> {
     this.dataAnalysisF1.onClearDataResultCallBack = onClearDataResultCallBack;
     return this.deviceControlExtF1.clearSettingInfo();
   }
 
   // 启动本地升级
-  async startLocalOTA(): Promise<boolean> {
+  async startLocalOTA(otaStateListener: OnOTAStateListener): Promise<boolean> {
+    this.dataAnalysisF1.otaStateListener = otaStateListener;
     return this.deviceControlExtF1.startLocalOTA();
   }
 
   // 正常用户升级
-  async startUserOTA(): Promise<boolean> {
+  async startUserOTA(otaStateListener: OnOTAStateListener): Promise<boolean> {
+    this.dataAnalysisF1.otaStateListener = otaStateListener;
     return this.deviceControlExtF1.startUserOTA();
   }
 
@@ -522,7 +543,7 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
   /***********************以下开始FFF2指令*****************************************************************/
   /***********************Wifi相关*****************************************************************/
 
-  async configWifi(domainName: string, ssid: string, password: string,
+  async configWifi(domainName: string, ssid: string, password: string | null,
     configWifiResultCallBack?: (configState: PPConfigWifiStateMenu, resultCode: string) => void): Promise<boolean> {
     return this.deviceControlExtF2.configWifi(domainName, ssid, password, configWifiResultCallBack);
   }
@@ -571,10 +592,10 @@ export class PPTorreDeviceControl extends PPBaseDeviceControl {
   // }
 
   /***********************同步日志*****************************************************************/
-  async syncLog(onProgress?: (progress: number, logStr: string) => void): Promise<boolean> {
+  async syncLog(logFolder: string, onProgress?: (progress: number, logFilePath: string, isEnd: boolean) => void): Promise<boolean> {
     this.dataAnalysisF2.sendTag = TorreHelper.SEND_TAG_LOG;
     this.dataAnalysisF2.cacheReceiveData = new Uint8Array(0);
-    return this.deviceControlExtF2.fetchLog(onProgress);
+    return this.deviceControlExtF2.fetchLog(logFolder, onProgress);
   }
 
   async syncUserInfo(userModel: PPUserModel): Promise<boolean> {

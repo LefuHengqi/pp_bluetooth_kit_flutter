@@ -6,7 +6,6 @@ import { TimeFormat } from "../../enums/PPDeviceEnums";
 import { UnitUtil } from "../../utils/UnitUtil";
 import { PPUnitType } from "../../enums/PPUnitType";
 
-
 export class PPTorreDeviceControlExtF1 {
   characteristicFFF1: ble.BLECharacteristic | null = null;
   gattClient?: ble.GattClientDevice | null
@@ -54,7 +53,7 @@ export class PPTorreDeviceControlExtF1 {
   }
 
   // 切换婴儿模式（全部改为字节操作）
-  async switchBaby(mode: number, step: number, weight: number): Promise<boolean> {
+  async switchBaby(mode: number, step: number = 0, weight: number = 0): Promise<boolean> {
     const modeByte = mode === 0 ? 0x00 : 0x01;
     const stepByte = step === 0 ? 0x00 : 0x01;
     const weightBytes = step === 0 ? [0x00, 0x00] :
@@ -64,7 +63,7 @@ export class PPTorreDeviceControlExtF1 {
       0x2E, 0x05, 0x01, // 命令头
       modeByte,
       stepByte,
-      ...Array.from(weightBytes) // 先转标准数组再展开
+      ...Array.from(weightBytes)// 先转标准数组再展开
     ];
     const command = new Uint8Array(commandArray); // 最终转Uint8Array
     PPLogger.i(`PPTorreDeviceControl switchBaby command: ${Array.from(command)}`);
@@ -173,7 +172,7 @@ export class PPTorreDeviceControlExtF1 {
    * @param type 1设置 2获取
    * @param state 0设备未绑定 1已绑定
    */
-  async deviceBindStatus(type: number, state: number): Promise<boolean> {
+  async deviceBindStatus(type: number, state: number = 0): Promise<boolean> {
     if (type === 1) {
       return this.writeResponseBytesF1(new Uint8Array([0x1C, 0x02, 0x01, state === 0 ? 0x00 : 0x01]));
     } else {
@@ -295,6 +294,4 @@ export class PPTorreDeviceControlExtF1 {
     PPLogger.e(`PPTorreDeviceControl Write success`);
     return true;
   }
-
-
 }

@@ -79,34 +79,18 @@ export class PPTorreDeviceDataAnalysisExtF3 {
     if ((measuStateLow & 0x0C) === 0x0C) {
       PPLogger.d(`protocolDataF3 离秤 重量: ${weightKgInt}`);
       bodyBaseModel.weight = weightKgInt;
-      this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
+      bodyBaseModel.isOverload = false;
     } else if ((measuStateLow & 0x08) === 0x08) {
       PPLogger.d(`protocolDataF3 超重 重量: ${weightKgInt}`);
-      this.dataChangeListener?.monitorOverWeight?.();
+      bodyBaseModel.isOverload = true;
     } else if ((measuStateLow & 0x04) === 0x04) {
       PPLogger.d(`protocolDataF3 稳定重量: ${weightKgInt}`);
       bodyBaseModel.weight = weightKgInt;
-      this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
+      bodyBaseModel.isOverload = false;
     } else {
       PPLogger.d(`protocolDataF3 实时重量: ${weightKgInt}`);
       bodyBaseModel.weight = weightKgInt;
-      this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
-    }
-
-    // 处理阻抗测量状态
-    if ((measuStateLow & 0x30) === 0x30) {
-      // 阻抗测量失败
-    } else if ((measuStateLow & 0x20) === 0x20) {
-      // 阻抗测量成功
-      bodyBaseModel.isHeartRating = false;
-    } else if ((measuStateLow & 0x10) === 0x10) {
-      // 阻抗测量中
-      this.dataChangeListener?.onImpedanceFatting?.();
-    }
-
-    // 处理关机状态
-    if ((measuStateHigh & 0x40) === 0x40) {
-      this.dataChangeListener?.onDeviceShutdown?.();
+      bodyBaseModel.isOverload = false;
     }
 
     //处理脚长测量状态
@@ -116,7 +100,8 @@ export class PPTorreDeviceDataAnalysisExtF3 {
         const footLenBytes = data.subarray(15, 17);
         bodyBaseModel.footLen = TorreHelper.getWeightG(footLenBytes);
         PPLogger.d(`protocolDataF3 lock footLen: ${bodyBaseModel.footLen}`);
-        this.dataChangeListener?.monitorFootLenMeasure?.(scaleState?.footState ?? PPScaleFootState.PPScaleFootStateMeasurementSuccessful, bodyBaseModel.footLen);
+        this.dataChangeListener?.monitorFootLenMeasure?.(scaleState?.footState ?? PPScaleFootState.PPScaleFootStateMeasurementSuccessful,
+          bodyBaseModel.footLen);
       }
     } else if ((measuStateHigh & 0x04) === 0x04) {
       // 脚长准备中
@@ -139,25 +124,11 @@ export class PPTorreDeviceDataAnalysisExtF3 {
       PPLogger.d("protocolDataF3 脚长未测量");
     }
 
-    // 处理心率状态
-    if ((measuStateLow & 0xC0) === 0xC0) {
-      // 心率测量失败
-      bodyBaseModel.isHeartRating = false;
-    } else if ((measuStateLow & 0x80) === 0x80) {
-      // 心率测量成功
-      bodyBaseModel.heartRate = data[7] | (data[8] << 8); // 假设心率数据在7-8字节
-      bodyBaseModel.isHeartRating = false;
-    } else if ((measuStateLow & 0x40) === 0x40) {
-      // 心率测量中
-      bodyBaseModel.isHeartRating = true;
-      this.dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);
-      return;
-    }
-
     // 处理测量完成状态
     if ((measuStateHigh & 0x80) === 0x80) {
       this.dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);
-      return;
+    } else {
+      this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
     }
 
     // 处理阻抗数据（如果存在）

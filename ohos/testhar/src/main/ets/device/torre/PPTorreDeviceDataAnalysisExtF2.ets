@@ -13,7 +13,7 @@ import { PPUserInfoSyncCmd } from "./userinfo/PPUserInfoSyncCmd";
 
 export class PPTorreDeviceDataAnalysisExtF2 {
   // 回调函数类型定义
-  bleRequestLogCallBack?: (error: PPBleFFF2ErrorCode, logData: string, progress: number, isComplete: boolean) => void;
+  bleRequestLogCallBack?: (error: PPBleFFF2ErrorCode, filePath: string, progress: number, isComplete: boolean) => void;
   fetchLogSizeAndStartAddressCallBack?: (error: PPBleFFF2ErrorCode) => void;
   queryDfuProtocolVersionCallBack?: (result: Object) => void;
   queryDFUStateCallBack?: (result: Object) => void;
@@ -51,7 +51,8 @@ export class PPTorreDeviceDataAnalysisExtF2 {
           this.fetchLogSizeAndStartAddressCallBack?.(result);
         } else if (data[2] === 0x03) {
           const result = PPLogSyncCmd.logEndBack(data);
-          this.bleRequestLogCallBack?.(result, "", 100, true);
+          let filePath = PPLogSyncCmd.getLogFilePath();
+          this.bleRequestLogCallBack?.(result, filePath, 100, true);
         }
         break;
       }
@@ -138,8 +139,9 @@ export class PPTorreDeviceDataAnalysisExtF2 {
     switch (this.sendTag) {
       case TorreHelper.SEND_TAG_LOG:
         // this.bufferList.push(dataContent);
-        let result = PPLogSyncCmd.requestLogDataBack(receiveData);
-        this.bleRequestLogCallBack?.(PPBleFFF2ErrorCode.Ok, result.get("logData") as string, result.get("progress") as number,
+        let progress = PPLogSyncCmd.requestLogDataBack(receiveData);
+        let filePath = PPLogSyncCmd.getLogFilePath();
+        this.bleRequestLogCallBack?.(PPBleFFF2ErrorCode.Ok, filePath, progress,
           false
         );
         break;

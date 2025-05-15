@@ -1,3 +1,5 @@
+package android
+
 group 'com.example.pp_bluetooth_kit_flutter'
 version '1.0-SNAPSHOT'
 

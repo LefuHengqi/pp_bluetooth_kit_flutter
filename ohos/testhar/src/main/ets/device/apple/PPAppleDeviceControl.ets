@@ -91,7 +91,7 @@ export class PPAppleDeviceControl extends PPBaseDeviceControl {
   }
 
   // 配置WiFi
-  async configWifi(ssid: string, password: string,
+  async configWifi(ssid: string, password: string | null,
     configWifiCallBack?: (sn: string | null, stateMenu: PPConfigWifiStateMenu | null) => void): Promise<boolean> {
 
     this.dataAnalysis.monitorConfigResultCallback = configWifiCallBack;

@@ -31,10 +31,11 @@ export class PPTorreDeviceControlExtF2 {
   deviceModel: PPDeviceModel | null = null;
 
   // 保持原始方法名和参数
-  async fetchLog(onProgress?: (progress: number, logStr: string) => void): Promise<boolean> {
+  async fetchLog(logFolder: string,
+    onProgress?: (progress: number, logFilePath: string, isEnd: boolean) => void): Promise<boolean> {
     try {
       PPLogger.d("PPTorreDeviceControlExtF2 获取Log大小和开始地址");
-      const cmd1 = PPLogSyncCmd.fetchLogSizeAndStartAddress();
+      const cmd1 = PPLogSyncCmd.fetchLogSizeAndStartAddress(logFolder, this.deviceModel?.deviceName ?? "", this.deviceModel?.deviceMac ?? "");
       if (!this.deviceDataAnalysis) {
         PPLogger.e("PPTorreDeviceControlExtF2 fetchLog deviceDataAnalysis is null");
         return false;
@@ -62,8 +63,7 @@ export class PPTorreDeviceControlExtF2 {
     }
   }
 
-  async requestLogWithProgress(onProgress?: (progress: number,
-    log: string) => void): Promise<PPBleFFF2ErrorCode> {
+  async requestLogWithProgress(onProgress?: (progress: number, logFilePath: string, isEnd: boolean) => void): Promise<PPBleFFF2ErrorCode> {
     if (!this.deviceDataAnalysis) {
       return PPBleFFF2ErrorCode.Unknown
     }
@@ -83,15 +83,10 @@ export class PPTorreDeviceControlExtF2 {
     try {
       let endResult = false
       // 3. 注册回调（确保单次绑定）
-      this.deviceDataAnalysis.bleRequestLogCallBack = (
-        errorCode: PPBleFFF2ErrorCode,
-        logStr: string,
-        progress: number,
-        isEnd: boolean
-      ) => {
-        PPLogger.v(`PPTorreDeviceControlExtF2  progress: ${progress}, isEnd: ${isEnd}, logStr: ${logStr}, errorCode: ${errorCode}`);
+      this.deviceDataAnalysis.bleRequestLogCallBack = (errorCode: PPBleFFF2ErrorCode, logFilePath: string, progress: number, isEnd: boolean) => {
+        PPLogger.v(`PPTorreDeviceControlExtF2  progress: ${progress}, isEnd: ${isEnd}, logFilePath: ${logFilePath}, errorCode: ${errorCode}`);
         // 实时进度回调
-        onProgress?.(progress, logStr);
+        onProgress?.(progress, logFilePath, isEnd);
         if (timeoutId != 0) {
           clearTimeout(timeoutId); // 取消超时检测
           timeoutId = 0;
@@ -180,7 +175,7 @@ export class PPTorreDeviceControlExtF2 {
     return await this._writeResponseBytesF2(PPTorreWifiSyncCmd.confirmWifiListEndCmd());
   }
 
-  async configWifi(domainName: string, ssid: string, password: string,
+  async configWifi(domainName: string, ssid: string, password: string | null,
     configWifiResultCallBack?: (configState: PPConfigWifiStateMenu, resultCode: string) => void): Promise<boolean> {
 
     PPLogger.d(`PPTorreDeviceControlExtF2 configWifi ssid: ${ssid}, password: ${password}, domainName: ${domainName}`);
@@ -197,18 +192,20 @@ export class PPTorreDeviceControlExtF2 {
       return false;
     }
     PPLogger.d("PPTorreDeviceControlExtF2 configWifi start success");
-    const domainNameStartCmdResult = await this._writeResponseBytesF2WaitResult(PPTorreWifiSyncCmd.domainNameStartCmd(domainName),
-      {
-        operationName: 'domainNameStartCmd',
-        setCallback: (callback) => PPTorreWifiSyncCmd.configWifiConfirmSendDataCallBack = callback,
-        timeoutMs: 3000
-      });
+    const domainNameStartCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPTorreWifiSyncCmd.domainNameStartCmd(domainName),
+        {
+          operationName: 'domainNameStartCmd',
+          setCallback: (callback) => PPTorreWifiSyncCmd.configWifiConfirmSendDataCallBack = callback,
+          timeoutMs: 3000
+        });
     if (domainNameStartCmdResult !== PPBleFFF2ErrorCode.Ok) {
       PPLogger.e("PPTorreDeviceControlExtF2 configWifi domain start error");
       return false;
     }
     PPLogger.d("PPTorreDeviceControlExtF2 configWifi start send domain data");
-    const domainNameCmdResult = await this._writeResponseBytesF2List(PPTorreWifiSyncCmd.domainNameCmd(this.deviceModel?.mtu ?? 20));
+    const domainNameCmdResult =
+      await this._writeResponseBytesF2List(PPTorreWifiSyncCmd.domainNameCmd(this.deviceModel?.mtu ?? 20));
 
     if (domainNameCmdResult == false) {
       PPLogger.d("PPTorreDeviceControlExtF2 configWifi send domain data error");
@@ -280,12 +277,13 @@ export class PPTorreDeviceControlExtF2 {
     }
     PPLogger.d("PPTorreDeviceControlExtF2 configWifi pwd success");
 
-    const registerToServerCmdResult = await this._writeResponseBytesF2WaitResult(PPTorreWifiSyncCmd.registerToServerCmd(),
-      {
-        operationName: 'confirmCmd',
-        setCallback: (callback) => PPTorreWifiSyncCmd.configWifiRegisterResultCallBack = callback,
-        timeoutMs: 3000
-      });
+    const registerToServerCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPTorreWifiSyncCmd.registerToServerCmd(),
+        {
+          operationName: 'confirmCmd',
+          setCallback: (callback) => PPTorreWifiSyncCmd.configWifiRegisterResultCallBack = callback,
+          timeoutMs: 3000
+        });
     if (registerToServerCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
@@ -299,17 +297,19 @@ export class PPTorreDeviceControlExtF2 {
 
     PPHistorySyncCmd.historyDataInterface = historyDataInterface;
 
-    const syncUserHistoryStartCmdResult = await this._writeResponseBytesF2WaitResult(PPHistorySyncCmd.syncUserHistoryStartCmd(userModel.userID ?? ""),
-      {
-        operationName: 'syncUserHistoryStartCmd',
-        setCallback: (callback) => PPHistorySyncCmd.historyStartSendUserInfoCallBack = callback,
-        timeoutMs: 5000
-      });
+    const syncUserHistoryStartCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPHistorySyncCmd.syncUserHistoryStartCmd(userModel.userID ?? ""),
+        {
+          operationName: 'syncUserHistoryStartCmd',
+          setCallback: (callback) => PPHistorySyncCmd.historyStartSendUserInfoCallBack = callback,
+          timeoutMs: 5000
+        });
     if (syncUserHistoryStartCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
     PPLogger.d("PPTorreDeviceControlExtF2 syncUserHistory start send userid data");
-    const syncUserHistoryToUserInfoCmdResult = await this._writeResponseBytesF2List(PPHistorySyncCmd.syncUserHistoryToUserInfoCmd(this.deviceModel?.mtu ?? 20));
+    const syncUserHistoryToUserInfoCmdResult =
+      await this._writeResponseBytesF2List(PPHistorySyncCmd.syncUserHistoryToUserInfoCmd(this.deviceModel?.mtu ?? 20));
 
     if (!syncUserHistoryToUserInfoCmdResult) {
       PPLogger.d("PPTorreDeviceControlExtF2 syncUserHistory send userid data error");
@@ -317,12 +317,13 @@ export class PPTorreDeviceControlExtF2 {
     }
     PPLogger.d("PPTorreDeviceControlExtF2 syncUserHistory send userid data success");
 
-    const syncUserHistoryToUserInfoEndCmdResult = await this._writeResponseBytesF2WaitResult(PPHistorySyncCmd.syncUserHistoryToUserInfoEndCmd(),
-      {
-        operationName: 'syncUserHistoryToUserInfoEndCmd',
-        setCallback: (callback) => PPHistorySyncCmd.historySendUserInfoEndCallBack = callback,
-        timeoutMs: 5000
-      });
+    const syncUserHistoryToUserInfoEndCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPHistorySyncCmd.syncUserHistoryToUserInfoEndCmd(),
+        {
+          operationName: 'syncUserHistoryToUserInfoEndCmd',
+          setCallback: (callback) => PPHistorySyncCmd.historySendUserInfoEndCallBack = callback,
+          timeoutMs: 5000
+        });
     if (syncUserHistoryToUserInfoEndCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
@@ -342,22 +343,24 @@ export class PPTorreDeviceControlExtF2 {
   }
 
 
-  async syncUserInfo(userModel:PPUserModel): Promise<boolean> {
+  async syncUserInfo(userModel: PPUserModel): Promise<boolean> {
 
     PPLogger.d(`PPTorreDeviceControlExtF2 syncUserInfo username: ${userModel.userName}, userId: ${userModel.userID}, memberId: ${userModel.memberID}`);
 
-    const syncUserInfoStartCmdResult = await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.syncUserInfoStartCmd(userModel, this.deviceModel),
-      {
-        operationName: 'syncUserInfoStartCmd',
-        setCallback: (callback) => PPUserInfoSyncCmd.syncUserInfoConfirmCallBack = callback,
-        timeoutMs: 5000
-      });
+    const syncUserInfoStartCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.syncUserInfoStartCmd(userModel, this.deviceModel),
+        {
+          operationName: 'syncUserInfoStartCmd',
+          setCallback: (callback) => PPUserInfoSyncCmd.syncUserInfoConfirmCallBack = callback,
+          timeoutMs: 5000
+        });
     if (syncUserInfoStartCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
     PPLogger.d("PPTorreDeviceControlExtF2 syncUserHistory start send UserInfo data");
 
-    const syncUserInfoCmdResult = await this._writeResponseBytesF2List(await PPUserInfoSyncCmd.syncUserInfoCmd(this.deviceModel?.mtu ?? 20));
+    const syncUserInfoCmdResult =
+      await this._writeResponseBytesF2List(await PPUserInfoSyncCmd.syncUserInfoCmd(this.deviceModel?.mtu ?? 20));
 
     if (!syncUserInfoCmdResult) {
       PPLogger.d("PPTorreDeviceControlExtF2 syncUserHistory send UserInfo data error");
@@ -385,22 +388,24 @@ export class PPTorreDeviceControlExtF2 {
    * @param userModel
    * @returns
    */
-  async deleteUserInfo(userModel:PPUserModel): Promise<boolean> {
+  async deleteUserInfo(userModel: PPUserModel): Promise<boolean> {
 
     PPLogger.d(`PPTorreDeviceControlExtF2 deleteUserInfo userId: ${userModel.userID}`);
 
-    const deleteAllUserInfoStartCmdResult = await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.deleteAllUserInfoStartCmd(userModel),
-      {
-        operationName: 'deleteAllUserInfoStartCmd',
-        setCallback: (callback) => PPUserInfoSyncCmd.delUserInfoConfirmCallBack = callback,
-        timeoutMs: 5000
-      });
+    const deleteAllUserInfoStartCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.deleteAllUserInfoStartCmd(userModel),
+        {
+          operationName: 'deleteAllUserInfoStartCmd',
+          setCallback: (callback) => PPUserInfoSyncCmd.delUserInfoConfirmCallBack = callback,
+          timeoutMs: 5000
+        });
     if (deleteAllUserInfoStartCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
     PPLogger.d("PPTorreDeviceControlExtF2 syncUserHistory start send UserInfo data");
 
-    const deleteAllUserInfoDataCmdResult = await this._writeResponseBytesF2List(PPUserInfoSyncCmd.deleteAllUserInfoDataCmd(this.deviceModel?.mtu ?? 20));
+    const deleteAllUserInfoDataCmdResult =
+      await this._writeResponseBytesF2List(PPUserInfoSyncCmd.deleteAllUserInfoDataCmd(this.deviceModel?.mtu ?? 20));
 
     if (!deleteAllUserInfoDataCmdResult) {
       PPLogger.d("PPTorreDeviceControlExtF2 deleteUserInfo send UserInfo data error");
@@ -408,12 +413,13 @@ export class PPTorreDeviceControlExtF2 {
     }
     PPLogger.d("PPTorreDeviceControlExtF2 deleteUserInfo send UserInfo data success");
 
-    const deleteAllUserInfoEndCmdResult = await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.deleteAllUserInfoEndCmd(),
-      {
-        operationName: 'deleteAllUserInfoEndCmd',
-        setCallback: (callback) => PPUserInfoSyncCmd.delUserInfoResultCallBack = callback,
-        timeoutMs: 5000
-      });
+    const deleteAllUserInfoEndCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.deleteAllUserInfoEndCmd(),
+        {
+          operationName: 'deleteAllUserInfoEndCmd',
+          setCallback: (callback) => PPUserInfoSyncCmd.delUserInfoResultCallBack = callback,
+          timeoutMs: 5000
+        });
     if (deleteAllUserInfoEndCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
@@ -428,22 +434,24 @@ export class PPTorreDeviceControlExtF2 {
    * @param userModel
    * @returns
    */
-  async sendCurrentUserInfo(userModel:PPUserModel): Promise<boolean> {
+  async sendCurrentUserInfo(userModel: PPUserModel): Promise<boolean> {
 
     PPLogger.d(`PPTorreDeviceControlExtF2 sendCurrentUserinfo userId: ${userModel.userID}`);
 
-    const sendCurrentUserinfoStartCmdResult = await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.sendCurrentUserinfoStartCmd(userModel),
-      {
-        operationName: 'sendCurrentUserinfoStartCmd',
-        setCallback: (callback) => PPUserInfoSyncCmd.confirmCurrentUserInfoConfirmCallBack = callback,
-        timeoutMs: 5000
-      });
+    const sendCurrentUserinfoStartCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.sendCurrentUserinfoStartCmd(userModel),
+        {
+          operationName: 'sendCurrentUserinfoStartCmd',
+          setCallback: (callback) => PPUserInfoSyncCmd.confirmCurrentUserInfoConfirmCallBack = callback,
+          timeoutMs: 5000
+        });
     if (sendCurrentUserinfoStartCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
     PPLogger.d("PPTorreDeviceControlExtF2 sendCurrentUserinfo start send UserInfo data");
 
-    const sendCurrentUserinfoDataCmdResult = await this._writeResponseBytesF2List(PPUserInfoSyncCmd.sendCurrentUserinfoDataCmd(this.deviceModel?.mtu ?? 20));
+    const sendCurrentUserinfoDataCmdResult =
+      await this._writeResponseBytesF2List(PPUserInfoSyncCmd.sendCurrentUserinfoDataCmd(this.deviceModel?.mtu ?? 20));
 
     if (!sendCurrentUserinfoDataCmdResult) {
       PPLogger.d("PPTorreDeviceControlExtF2 sendCurrentUserinfo send UserInfo data error");
@@ -451,12 +459,13 @@ export class PPTorreDeviceControlExtF2 {
     }
     PPLogger.d("PPTorreDeviceControlExtF2 sendCurrentUserinfo send UserInfo data success");
 
-    const sendCurrentUserinfoEndCmdResult = await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.sendCurrentUserinfoEndCmd(),
-      {
-        operationName: 'sendCurrentUserinfoEndCmd',
-        setCallback: (callback) => PPUserInfoSyncCmd.confirmCurrentUserInfoResultCallBack = callback,
-        timeoutMs: 5000
-      });
+    const sendCurrentUserinfoEndCmdResult =
+      await this._writeResponseBytesF2WaitResult(PPUserInfoSyncCmd.sendCurrentUserinfoEndCmd(),
+        {
+          operationName: 'sendCurrentUserinfoEndCmd',
+          setCallback: (callback) => PPUserInfoSyncCmd.confirmCurrentUserInfoResultCallBack = callback,
+          timeoutMs: 5000
+        });
     if (sendCurrentUserinfoEndCmdResult !== PPBleFFF2ErrorCode.Ok) {
       return false;
     }
@@ -735,7 +744,8 @@ export class PPTorreDeviceControlExtF2 {
    * @param bytes 要写入的二进制数据
    * @param options 配置参数
    */
-  async _writeResponseBytesF2ListWaitResult(bytesArray: Uint8Array[], options: WriteOptions): Promise<PPBleFFF2ErrorCode> {
+  async _writeResponseBytesF2ListWaitResult(bytesArray: Uint8Array[],
+    options: WriteOptions): Promise<PPBleFFF2ErrorCode> {
     const operationName = options.operationName;
     const setCallback = options.setCallback;
     const timeoutMs = options.timeoutMs ?? 2000;

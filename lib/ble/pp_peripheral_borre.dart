@@ -3,6 +3,7 @@ import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 
@@ -214,6 +215,11 @@ class PPPeripheralBorre {
   /// 退出Wi-Fi配网
   static Future<bool> exitNetworkConfig() async {
     return PPBluetoothKitFlutterPlatform.instance.exitNetworkConfig(_peripheralType);
+  }
+
+  /// 同步最近7天/7次数据
+  static Future<bool> syncLast7Data(PPLast7DataModel model) async {
+    return PPBluetoothKitFlutterPlatform.instance.last7Data(_peripheralType, model);
   }
 
 }

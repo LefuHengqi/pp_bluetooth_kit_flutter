@@ -14,28 +14,28 @@ export class PPTorreDeviceDataAnalysisExtF1 {
   public otaStateListener?: OnOTAStateListener;
   // 回调函数定义
   public mtuCallBack?: (mtu: number | null) => void;
-  public onLightCallBack?: (light: number | null) => void;
+  public onLightCallBack?: (light: number) => void;
   public onDeviceUnitCallBack?: (unitType: PPUnitType | null) => void;
   public onDeviceUnitResultCallBack?: (isSuccess: boolean | null) => void;
-  public onLightResultCallBack?: (isSuccess: boolean | null) => void;
-  public onControlHeartRateResultCallback?: (isSuccess: boolean | null) => void;
-  public onControlImpedanceResultCallBack?: (isSuccess: boolean | null) => void;
-  public onImpedanceStateCallBack?: (state: number | null) => void;
-  public onHeartRateStateCallBack?: (state: number | null) => void;
+  public onLightResultCallBack?: (isSuccess: boolean) => void;
+  public onControlHeartRateResultCallback?: (isSuccess: boolean) => void;
+  public onControlImpedanceResultCallBack?: (isSuccess: boolean) => void;
+  public onControlBabyResultCallBack?: (isSuccess: boolean) => void;
+  public onImpedanceStateCallBack?: (isOn: boolean) => void;
+  public onHeartRateStateCallBack?: (isOn: boolean) => void;
   public onResetStateResultCallBack?: (isSuccess: boolean | null) => void;
   public onConfigWifiStateResultCallback?: (state: number | null) => void;
-  public onClearDataResultCallBack?: (isSuccess: boolean | null) => void;
-  public onBindStateResultCallBack?: (isSuccess: boolean | null) => void;
-  public onBindStateCallBack?: (state: number | null) => void;
-  public onStartMeasureResultCallBack?: (state: number | null) => void;
+  public onClearDataResultCallBack?: (isSuccess: boolean) => void;
+  public onBindStateResultCallBack?: (isSuccess: boolean) => void;
+  public onBindStateCallBack?: (isBinding:boolean) => void;
+  public onStartMeasureResultCallBack?: (state: number) => void;
   public onReadDeviceWifiMacCallBack?: (mac: string | null) => void;
   public onDemoModeSwitchResultCallBack?: (isSuccess: boolean | null) => void;
   public onDemoModeSwitchStateCallBack?: (state: number | null) => void;
   public onSetRGBCallBack?: (state: number | null) => void;
-  public onSetLanguageCallBack?: (isSuccess: boolean | null) => void;
-  public onGetLanguageCallBack?: (language: number | null) => void;
-  public onGetLanguageListCallBack?: (languages: Array<number> | null) => void;
-
+  public onSetLanguageCallBack?: (isSuccess: boolean) => void;
+  public onGetLanguageCallBack?: (language: number) => void;
+  public onGetLanguageListCallBack?: (languages: Array<number>) => void;
   lockWeightKg?: number = 0.0;
   lockImpedance?: number = 0;
   myWeightKgInt?: number = 0;
@@ -43,7 +43,6 @@ export class PPTorreDeviceDataAnalysisExtF1 {
   impedance50?: number = 0;
   impedance100: number = 0;
   heartRate?: number = 0;
-
   lastReceiveData?: string = "";
   lastReceiveData11?: string = "";
 
@@ -114,7 +113,7 @@ export class PPTorreDeviceDataAnalysisExtF1 {
         } else {
           //获取心率 0开启，1关闭
           const heartRateState = ByteUtil.hexToTen(receiveData.substring(6, 8));
-          this.onHeartRateStateCallBack?.(heartRateState);
+          this.onHeartRateStateCallBack?.(heartRateState == 0);
         }
         break;
 
@@ -125,7 +124,7 @@ export class PPTorreDeviceDataAnalysisExtF1 {
         if (impedanceType === "01") {
           this.onControlImpedanceResultCallBack?.(impedanceState === "00");
         } else {
-          this.onImpedanceStateCallBack?.(impedanceState === "00" ? 0 : 1);
+          this.onImpedanceStateCallBack?.(impedanceState === "00");
         }
         break;
 
@@ -186,7 +185,7 @@ export class PPTorreDeviceDataAnalysisExtF1 {
         if (bindStateType === "01") {
           this.onBindStateResultCallBack?.(bindStateResult === "00");
         } else {
-          this.onBindStateCallBack?.(bindStateResult === "00" ? 0 : 1);
+          this.onBindStateCallBack?.(bindStateResult !== "00");
         }
         break;
 
@@ -219,7 +218,19 @@ export class PPTorreDeviceDataAnalysisExtF1 {
         } else {
           const impedanceState = receiveData.substring(6, 8);
           PPLogger.d(`controlImpedance 获取阻抗开关：${impedanceState}`);
-          this.onImpedanceStateCallBack?.(impedanceState === "00" ? 0 : 1);
+          this.onImpedanceStateCallBack?.(impedanceState === "00");
+        }
+        break;
+
+      case 0x2E: //婴儿模式设置和获取
+        if (dataArray[2] === 0x00) {
+          const babyModelResult = dataArray[3];
+          PPLogger.d(`controlBaby 婴儿模式启动：${babyModelResult}`);
+          this.onControlBabyResultCallBack?.(babyModelResult === 0x00);
+        } else {
+          const babyModelState = dataArray[3];
+          PPLogger.d(`controlImpedance 获取婴儿模式：${babyModelState}`);
+          this.onControlBabyResultCallBack?.(babyModelState === 0x00);
         }
         break;
 
@@ -293,6 +304,4 @@ export class PPTorreDeviceDataAnalysisExtF1 {
         break;
     }
   }
-
-
 }

@@ -73,9 +73,12 @@ export class PPTorreWifiSyncCmd {
     return ByteUtil.concatArrays([commandHeader, lenHex]);
   }
 
-  static pwdStartCmd(pwd: string): Uint8Array {
-
-    PPTorreWifiSyncCmd.pwdHex = ByteUtil.concatArrays([ByteUtil.stringToUint8Array(pwd), new Uint8Array([0x00])]);
+  static pwdStartCmd(pwd: string | null): Uint8Array {
+    if (pwd === null) {
+      PPTorreWifiSyncCmd.pwdHex = new Uint8Array([0x00]);
+    } else {
+      PPTorreWifiSyncCmd.pwdHex = ByteUtil.concatArrays([ByteUtil.stringToUint8Array(pwd), new Uint8Array([0x00])]);
+    }
 
     // 命令头 0xF1
     const commandHeader = new Uint8Array([0x03, 0x04, 0x02, 0x01]);

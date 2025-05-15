@@ -77,7 +77,9 @@ export class PPBananaDeviceDataAnalysis {
       // 检查超重标记（原substring(6,10) → 字节3-5）
       if (data.length > 5 && data[3] === 0xFF && data[4] === 0xFF) {
         PPLogger.i("analyticalData V2协议 超重");
-        this.dataChangeListener?.monitorOverWeight?.();
+        const bodyBaseModel = new PPBodyBaseModel();
+        bodyBaseModel.deviceModel = deviceModel ?? undefined;
+        this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
       } else {
         switch (prefixByte) {
           case 0xCF: // 'CF'

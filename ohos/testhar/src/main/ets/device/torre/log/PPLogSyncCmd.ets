@@ -2,14 +2,17 @@
 import util from '@ohos.util';
 import { PPBleFFF2ErrorCode } from '../../../enums/PPBleFFF2ErrorCode';
 import { PPLogger } from '../../../log/PPLogger';
+import { BleLoggerManager } from '../../../utils/BleLoggerManager';
 import { ByteUtil } from '../../../utils/ByteUtil';
 
 export class PPLogSyncCmd {
   private static logLength: number = 0;
   private static logStartIndex: number = 0;
   private static logIndex: number = 0;
+  static loggerFireManager: BleLoggerManager | null = null;
 
-  static fetchLogSizeAndStartAddress(): number[] {
+  static fetchLogSizeAndStartAddress(logFolder: string, deviceName: string, deviceMac: string): number[] {
+    PPLogSyncCmd.loggerFireManager = new BleLoggerManager(logFolder, deviceName, deviceMac);
     return [0x01, 0x01, 0x01];
   }
 
@@ -33,7 +36,7 @@ export class PPLogSyncCmd {
     return cmd;
   }
 
-  static requestLogDataBack(data: Uint8Array): Map<String, Object> {
+  static requestLogDataBack(data: Uint8Array): number {
     if (data.length > 2) {
       const logData = data.subarray(2);
       const textDecoder = new util.TextDecoder('ascii');
@@ -43,14 +46,19 @@ export class PPLogSyncCmd {
       PPLogger.v('PPLogSync _logIndex:' + PPLogSyncCmd.logIndex);
 
       const progress = Math.ceil((PPLogSyncCmd.logIndex / PPLogSyncCmd.logLength) * 100);
-
-      return new Map<String, Object>().set("logData", logDataStr).set("progress", progress);
+      PPLogSyncCmd.loggerFireManager?.receive(logDataStr);
+      return progress;
     }
-    return new Map<String, Object>().set("logData", "").set("progress", 0);
+    return 0;
   }
 
   static logEnd(): number[] {
+    PPLogSyncCmd.loggerFireManager?.forceFlush();
     return [0x01, 0x01, 0x03];
+  }
+
+  static getLogFilePath(): string {
+    return PPLogSyncCmd.loggerFireManager?.getLogFilePath() || "";
   }
 
   static logEndBack(data: Uint8Array): PPBleFFF2ErrorCode {

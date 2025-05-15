@@ -14,6 +14,7 @@ import { PPWifiModel } from '../../vo/PPWifiModel';
 import { ProtocolNormalDeviceHelper } from '../../utils/ProtocolNormalDeviceHelper';
 import { PPUserModel } from '../../vo/PPUserModel';
 import { PPDataChangeListener } from '../../listener/PPDataChangeListener';
+import { PPScaleState, PPScaleStateHeartRateType, PPScaleStateImpedanceType } from '../../../../../Index';
 
 /**
  * TORRE设备数据分析类
@@ -60,10 +61,10 @@ export class PPIceDeviceDataAnalysis {
   public onResetStateResultCallBack?: (isSuccess: boolean | null) => void;
   public otaStateListener?: OnOTAStateListener;
   public dataChangeListener?: PPDataChangeListener;
-  public onControlImpedanceResultCallBack?: (isSuccess: boolean | null) => void;
-  public onImpedanceStateCallBack?: (state: number | null) => void;
-  public onControlHeartRateResultCallback?: (isSuccess: boolean | null) => void;
-  public onHeartRateStateCallBack?: (state: number | null) => void;
+  public onControlImpedanceResultCallBack?: (isSuccess: boolean) => void;
+  public onImpedanceStateCallBack?: (isOn: boolean) => void;
+  public onControlHeartRateResultCallback?: (isSuccess: boolean) => void;
+  public onHeartRateStateCallBack?: (isOn: boolean) => void;
 
   //wifi列表回调 @state 0:成功，1:失败，2:电量低
   public monitorWiFiListCallBack?: (wifiModels: PPWifiModel[] | null, state: number) => void;
@@ -156,9 +157,9 @@ export class PPIceDeviceDataAnalysis {
       const impedanceState = data[2];
       const heartRateState = data[3];
       ////安全模式 0-失效，支持测脂。1-使能 不支持测脂
-      this.onImpedanceStateCallBack?.(impedanceState);
+      this.onImpedanceStateCallBack?.(impedanceState==0);
       //心率禁用 0-失效 支持心率测试 1-使能 不支持心率测试
-      this.onHeartRateStateCallBack?.(heartRateState);
+      this.onHeartRateStateCallBack?.(heartRateState==0);
     } else {
 
       switch (data[0]) {
@@ -364,26 +365,32 @@ export class PPIceDeviceDataAnalysis {
     bodyBaseModel.impedance = finalImpedance;
     bodyBaseModel.deviceModel = deviceModel ?? undefined;
     bodyBaseModel.unit = unitType;
+    let scaleState = bodyBaseModel?.scaleState ?? new PPScaleState();
+    bodyBaseModel.scaleState = scaleState;
 
     if (signLocked === 0x01) {
       bodyBaseModel.weight = weightKgInt;
       // Process data
       dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel ?? null);
     } else if (signLocked === 0x02) {
-      dataChangeListener?.monitorOverWeight?.();
+      bodyBaseModel.isOverload = true;
+      dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
     } else if (signLocked === 0x05) {
       //锁定数据+阻抗(发BF)
       if ((data[2] & 0x80) === 0x80) {
-        bodyBaseModel.isHeartRating = true;
+        scaleState.heartRateType = PPScaleStateHeartRateType.HEARTRATE_NO_MEASURE
+        bodyBaseModel.scaleState = scaleState;
         //心率测量中
-        dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);
+        dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
       }
       bodyBaseModel.weight = weightKgInt;
     } else if (signLocked === 0x06) {
       //锁定数据+阻抗测试失败
     } else if (signLocked === 0x08) {
       //阻抗测量中
-      dataChangeListener?.onImpedanceFatting?.();
+      scaleState.impedanceType = PPScaleStateImpedanceType.IMPEDANCE_MEASURING;
+      bodyBaseModel.scaleState = scaleState;
+      dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
     } else if (signLocked === 0x00) {
       //表示锁定数据/心率；测量结束
       if ((data[2] & 0xC0) === 0xC0) {
@@ -446,26 +453,30 @@ export class PPIceDeviceDataAnalysis {
     bodyBaseModel.impedance = finalImpedance;
     bodyBaseModel.deviceModel = deviceModel ?? undefined;
     bodyBaseModel.unit = unitType;
-
+    let scaleState = bodyBaseModel?.scaleState ?? new PPScaleState();
+    bodyBaseModel.scaleState = scaleState;
     if (signLocked === 0x01) {
       bodyBaseModel.weight = weightKgInt;
       // Process data
       dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel ?? null);
     } else if (signLocked === 0x02) {
-      dataChangeListener?.monitorOverWeight?.();
+      this.dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
     } else if (signLocked === 0x05) {
       //锁定数据+阻抗(发BF)
       if ((data[2] & 0x80) === 0x80) {
-        bodyBaseModel.isHeartRating = true;
+        scaleState.impedanceType = PPScaleStateImpedanceType.IMPEDANCE_MEASURING;
+        bodyBaseModel.scaleState = scaleState;
         //心率测量中
-        dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);
+        dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
       }
       bodyBaseModel.weight = weightKgInt;
     } else if (signLocked === 0x06) {
       //锁定数据+阻抗测试失败
     } else if (signLocked === 0x08) {
       //阻抗测量中
-      dataChangeListener?.onImpedanceFatting?.();
+      scaleState.impedanceType = PPScaleStateImpedanceType.IMPEDANCE_MEASURING;
+      bodyBaseModel.scaleState = scaleState;
+      dataChangeListener?.monitorProcessData?.(bodyBaseModel, deviceModel);
     } else if (signLocked === 0x00) {
       //表示锁定数据/心率；测量结束
       if ((data[2] & 0xC0) === 0xC0) {
@@ -473,7 +484,8 @@ export class PPIceDeviceDataAnalysis {
       } else {
         bodyBaseModel.weight = weightKgInt;
       }
-      bodyBaseModel.isHeartRating = false;
+      scaleState.heartRateType = PPScaleStateHeartRateType.HEARTRATE_SUCCESS
+      bodyBaseModel.scaleState = scaleState;
 
       dataChangeListener?.monitorLockData?.(bodyBaseModel, deviceModel);
     }

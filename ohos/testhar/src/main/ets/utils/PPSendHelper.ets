@@ -8,7 +8,7 @@ export class PPSendHelper {
   static number: number = 0; // 假设有全局变量管理序号，此处简化
 
   // 将SSID和密码编码为字节数组列表
-  static codeBySSIDAndPassword(ssid: string, password: string): Uint8Array[] {
+  static codeBySSIDAndPassword(ssid: string, password: string | null): Uint8Array[] {
     const ssidHex = ByteUtil.stringToHexString(ssid);
     const ssidArray: Uint8Array[] = [];
 
@@ -44,32 +44,53 @@ export class PPSendHelper {
   }
 
   // 密码编码处理
-  private static getPassHex(password: string): Uint8Array[] {
-    const passwordHex = ByteUtil.stringToHexString(password);
+  private static getPassHex(password: string | null): Uint8Array[] {
     const arrayHex: Uint8Array[] = [];
+    if (password) {
+      const passwordHex = ByteUtil.stringToHexString(password);
 
-    if (passwordHex.length > 0) {
+      if (passwordHex.length > 0) {
+        const head = "0B";
+        const len = passwordHex.length;
+        const total = Math.floor(len / 30) + (len % 30 > 0 ? 1 : 0);
+        let num = 0;
+
+        for (let i = 0; i < total; i++) {
+          const start = i * 30;
+          const end = Math.min((i + 1) * 30, len);
+          const dataBody = head +
+          ByteUtil.decimalToHex(total) +
+          ByteUtil.decimalToHex(num) +
+          ByteUtil.decimalToHex(Math.floor(len / 2)) +
+          passwordHex.substring(start, end);
+
+          const xorValue = ByteUtil.getXorValue(ByteUtil.hexToBytes(dataBody));
+          const xorHex = xorValue.toString(16).toUpperCase().padStart(2, '0');
+          const data = dataBody + xorHex;
+          num++;
+          arrayHex.push(ByteUtil.hexToBytes(data));
+        }
+      }
+    } else {
+      const passwordHex = "";
+
       const head = "0B";
       const len = passwordHex.length;
       const total = Math.floor(len / 30) + (len % 30 > 0 ? 1 : 0);
       let num = 0;
 
-      for (let i = 0; i < total; i++) {
-        const start = i * 30;
-        const end = Math.min((i + 1) * 30, len);
-        const dataBody = head +
-        ByteUtil.decimalToHex(total) +
-        ByteUtil.decimalToHex(num) +
-        ByteUtil.decimalToHex(Math.floor(len / 2)) +
-        passwordHex.substring(start, end);
+      const dataBody = head +
+      ByteUtil.decimalToHex(total) +
+      ByteUtil.decimalToHex(num) +
+      ByteUtil.decimalToHex(Math.floor(len / 2)) +
+        passwordHex;
 
-        const xorValue = ByteUtil.getXorValue(ByteUtil.hexToBytes(dataBody));
-        const xorHex = xorValue.toString(16).toUpperCase().padStart(2, '0');
-        const data = dataBody + xorHex;
-        num++;
-        arrayHex.push(ByteUtil.hexToBytes(data));
-      }
+      const xorValue = ByteUtil.getXorValue(ByteUtil.hexToBytes(dataBody));
+      const xorHex = xorValue.toString(16).toUpperCase().padStart(2, '0');
+      const data = dataBody + xorHex;
+      arrayHex.push(ByteUtil.hexToBytes(data));
     }
+
     return arrayHex;
   }
 
@@ -116,7 +137,4 @@ export class PPSendHelper {
     // 最终转换为Uint8Array
     return ByteUtil.hexStringToUint8Array(finalDataStr);
   }
-
-
-
 }

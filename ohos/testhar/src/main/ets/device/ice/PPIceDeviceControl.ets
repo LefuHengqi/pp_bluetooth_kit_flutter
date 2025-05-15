@@ -22,6 +22,7 @@ import { PPSendHelper } from '../../utils/PPSendHelper';
 import { UnitUtil } from '../../utils/UnitUtil';
 import PPLogSyncCmd from '../torre/log/PPLogSyncCmd';
 import { PPBleFFF2ErrorCode } from '../../enums/PPBleFFF2ErrorCode';
+import { OnOTAStateListener } from '../../listener/OnOTAStateListener';
 
 
 /**
@@ -165,12 +166,12 @@ export class PPIceDeviceControl extends PPBaseDeviceControl {
     const dataArray = new Uint8Array(characteristic.characteristicValue)
     let data: string = HexUtil.formatHexString(dataArray);
     if (characteristic.characteristicUuid === BleUUID.CHARACTERISTIC_NOTIFY) {
-      PPLogger.i("TorreControl Received F2:" + data + " randomNum:" + this.randomNum);
+      PPLogger.i("IceControl Received F4:" + data + " randomNum:" + this.randomNum);
       if (dataArray) {
         this.dataAnalysis.protocolDataF4(dataArray, this.deviceModel, this.bodyBaseModel);
       }
     } else if (characteristic.characteristicUuid === BleUUID.CHARACTERISTIC_F2) {
-      PPLogger.i("TorreControl Received F2:" + data);
+      PPLogger.i("IceControl Received F2:" + data);
       if (dataArray && this.bodyBaseModel) {
         this.deviceDataAnalysisF2.protocolDataF2(dataArray, this.deviceModel);
       }
@@ -215,44 +216,47 @@ export class PPIceDeviceControl extends PPBaseDeviceControl {
   }
 
   // 启动本地升级
-  async startLocalOTA(): Promise<boolean> {
+  async startLocalOTA(otaStateListener: OnOTAStateListener): Promise<boolean> {
     const cmd = "AT+TTA";
     const hexCMD = ByteUtil.stringToHexString(cmd);
+    this.dataAnalysis.otaStateListener = otaStateListener;
     return this.writeResponseBytesF1(ByteUtil.hexStringToUint8Array(hexCMD));
   }
 
   // 正常用户升级
-  async startUserOTA(): Promise<boolean> {
+  async startUserOTA(otaStateListener: OnOTAStateListener): Promise<boolean> {
+    this.dataAnalysis.otaStateListener = otaStateListener;
     return this.writeResponseBytesF1(new Uint8Array([0xEF, 0x00]));
   }
 
   //0x00：关闭基础模式,可以测脂肪
   //0x01：打开基础模式，无法测脂肪
-  async controlImpedance(state: number,
-    onControlImpedanceResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async controlImpedance(isOn: boolean,
+    onControlImpedanceResultCallBack?: (isSuccess: boolean | false) => void): Promise<boolean> {
     this.dataAnalysis.onControlImpedanceResultCallBack = onControlImpedanceResultCallBack;
-    if (state == 0) {
+    if (isOn) {
       return this.writeResponseBytesF1(new Uint8Array([0xFD, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBC]));
     } else {
       return this.writeResponseBytesF1(new Uint8Array([0xFD, 0x38, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5]));
     }
   }
 
-  async controlHeartRate(state: number, onControlImpedanceResultCallBack?: (isSuccess: boolean | null) => void): Promise<boolean> {
+  async controlHeartRate(open: boolean,
+    onControlImpedanceResultCallBack?: (isSuccess: boolean | false) => void): Promise<boolean> {
     this.dataAnalysis.onControlHeartRateResultCallback = onControlImpedanceResultCallBack;
     //  sendDataToWrite(state == 0 ? "FD440000000000000000B9" : "FD430000000000000000BE");
-    return this.writeResponseBytesF1(state == 0 ?
+    return this.writeResponseBytesF1(open ?
       new Uint8Array([0xFD, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB9]) :
       new Uint8Array([0xFD, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBE]));
   }
 
-  async getImpedanceState(onImpedanceStateCallBack?: (state: number | null) => void): Promise<boolean> {
+  async getImpedanceState(onImpedanceStateCallBack?: (isOn: boolean | true) => void): Promise<boolean> {
     this.dataAnalysis.onImpedanceStateCallBack = onImpedanceStateCallBack;
     // sendDataToWrite("FDA000000000000000005D");
     return this.writeResponseBytesF1(new Uint8Array([0xFD, 0xDA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x005D]));
   }
 
-  async getHeartRateState(onHeartRateStateCallBack?: (state: number | null) => void): Promise<boolean> {
+  async getHeartRateState(onHeartRateStateCallBack?: (isOn: boolean | true) => void): Promise<boolean> {
     this.dataAnalysis.onHeartRateStateCallBack = onHeartRateStateCallBack;
     //    sendDataToWrite("FDA000000000000000005D");
     return this.writeResponseBytesF1(new Uint8Array([0xFD, 0xDA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x005D]));
@@ -319,7 +323,8 @@ export class PPIceDeviceControl extends PPBaseDeviceControl {
     return this.writeResponseBytesF1(new Uint8Array([0x0D, 0x00]));
   }
 
-  async getWifiList(monitorWiFiListCallBack?: (wifiModels: PPWifiModel[] | null, state: number) => void): Promise<boolean> {
+  async getWifiList(monitorWiFiListCallBack?: (wifiModels: PPWifiModel[] | null,
+    state: number) => void): Promise<boolean> {
     this.deviceDataAnalysisF2.sendTag = TorreHelper.SEND_TAG_WIFI_LIST;
     this.deviceDataAnalysisF2.cacheReceiveData = new Uint8Array(0);
     this.dataAnalysis.monitorWiFiListCallBack = monitorWiFiListCallBack;
@@ -401,10 +406,10 @@ export class PPIceDeviceControl extends PPBaseDeviceControl {
   /**********************************************************日志同步***************************************************************************************/
 
   // 保持原始方法名和参数
-  async fetchLog(onProgress?: (progress: number, logStr: string) => void): Promise<boolean> {
+  async syncLog(logFolder: string, onProgress?: (progress: number, logFilePath: string, isEnd: boolean) => void): Promise<boolean> {
     try {
       PPLogger.d("PPTorreDeviceControlExtF2 获取Log大小和开始地址");
-      const cmd1 = PPLogSyncCmd.fetchLogSizeAndStartAddress();
+      const cmd1 = PPLogSyncCmd.fetchLogSizeAndStartAddress(logFolder, this.deviceModel?.deviceName ?? "", this.deviceModel?.deviceMac ?? "");
       if (!this.deviceDataAnalysisF2) {
         PPLogger.e("PPTorreDeviceControlExtF2 fetchLog deviceDataAnalysis is null");
         return false;
@@ -432,8 +437,7 @@ export class PPIceDeviceControl extends PPBaseDeviceControl {
     }
   }
 
-  async requestLogWithProgress(onProgress?: (progress: number,
-    log: string) => void): Promise<PPBleFFF2ErrorCode> {
+  private async requestLogWithProgress(onProgress?: (progress: number, logFilePath: string, isEnd: boolean) => void): Promise<PPBleFFF2ErrorCode> {
     if (!this.deviceDataAnalysisF2) {
       return PPBleFFF2ErrorCode.Unknown
     }
@@ -453,15 +457,10 @@ export class PPIceDeviceControl extends PPBaseDeviceControl {
     try {
       let endResult = false
       // 3. 注册回调（确保单次绑定）
-      this.deviceDataAnalysisF2.bleRequestLogCallBack = (
-        errorCode: PPBleFFF2ErrorCode,
-        logStr: string,
-        progress: number,
-        isEnd: boolean
-      ) => {
-        PPLogger.v(`PPTorreDeviceControlExtF2  progress: ${progress}, isEnd: ${isEnd}, logStr: ${logStr}, errorCode: ${errorCode}`);
+      this.deviceDataAnalysisF2.bleRequestLogCallBack = (errorCode: PPBleFFF2ErrorCode, logFilePath: string, progress: number, isEnd: boolean) => {
+        PPLogger.v(`PPTorreDeviceControlExtF2  progress: ${progress}, isEnd: ${isEnd}, logFilePath: ${logFilePath}, errorCode: ${errorCode}`);
         // 实时进度回调
-        onProgress?.(progress, logStr);
+        onProgress?.(progress, logFilePath, isEnd);
         if (timeoutId != 0) {
           clearTimeout(timeoutId); // 取消超时检测
           timeoutId = 0;

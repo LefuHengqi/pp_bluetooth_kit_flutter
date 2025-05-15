@@ -4,6 +4,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_180a_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'pp_bluetooth_kit_flutter_method_channel.dart';
@@ -242,6 +243,20 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
 
   Future<bool> sendBroadcastData(PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) {
     throw UnimplementedError('sendBroadcastData has not been implemented.');
+  }
+
+
+  /// 厨房秤
+  Future<void> addKitchenMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
+    throw UnimplementedError('addKitchenMeasurementListener has not been implemented.');
+  }
+
+  Future<bool> toZero(int peripheralType) {
+    throw UnimplementedError('toZero has not been implemented.');
+  }
+
+  Future<bool> last7Data(int peripheralType, PPLast7DataModel model) {
+    throw UnimplementedError('last7Data has not been implemented.');
   }
 
 }

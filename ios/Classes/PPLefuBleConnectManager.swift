@@ -31,6 +31,8 @@ public class PPLefuBleConnectManager:NSObject {
     var deviceLogStreamHandler:PPLefuStreamHandler?
     var scanStateStreamHandler:PPLefuStreamHandler?
     
+    var kitchenStreamHandler:PPLefuStreamHandler?
+    
     lazy var scaleManager:PPBluetoothConnectManager = PPBluetoothConnectManager()
     
     private var bluetoothState:PPBluetoothState?
@@ -41,6 +43,8 @@ public class PPLefuBleConnectManager:NSObject {
     private var connectState:Int = 0
     private var tempScaleHistoryList : Array<PPBluetoothScaleBaseModel>?
     
+    private var durianMeasurementHandler:PPDurianMeasurementHandler?
+    
     var currentDevice: PPBluetoothAdvDeviceModel?
     var appleControl : PPBluetoothPeripheralApple?
     var coconutControl : PPBluetoothPeripheralCoconut?
@@ -50,6 +54,11 @@ public class PPLefuBleConnectManager:NSObject {
     var jambulControl : PPBluetoothPeripheralJambul?
     var borreControl : PPBluetoothPeripheralBorre?
     var forreControl : PPBluetoothPeripheralForre?
+    var fishControl : PPBluetoothPeripheralFish?
+    var eggControl : PPBluetoothPeripheralEgg?
+    var hamburgerControl : PPBluetoothPeripheralHamburger?
+    var grapesControl : PPBluetoothPeripheralGrapes?
+    var durianControl : PPBluetoothPeripheralDurian?
     
     var unzipFilePath : String?
     var dfuConfig : PPDfuPackageModel?
@@ -117,53 +126,60 @@ public class PPLefuBleConnectManager:NSObject {
             
             self.loggerStreamHandler?.event?("开始连接设备:\(device.deviceName) mac:\(device.deviceMac) \(device.peripheralType)")
             
-            if device.peripheralType == .peripheralApple {
-                
+            let peripheralType = device.peripheralType
+            switch peripheralType {
+            case .peripheralApple:
                 self.scaleManager.connect(peripheral, withDevice: device)
                 
                 self.appleControl = PPBluetoothPeripheralApple(peripheral: peripheral, andDevice: device)
                 self.appleControl?.serviceDelegate = self
                 self.appleControl?.cmdDelegate = self
-            } else if device.peripheralType == .peripheralCoconut {
-                
+            case .peripheralCoconut:
                 self.scaleManager.connect(peripheral, withDevice: device)
                 
                 self.coconutControl = PPBluetoothPeripheralCoconut(peripheral: peripheral, andDevice: device)
                 self.coconutControl?.serviceDelegate = self
                 self.coconutControl?.cmdDelegate = self
-            } else if device.peripheralType == .peripheralTorre {
-                
+            case .peripheralTorre:
                 self.scaleManager.connect(peripheral, withDevice: device)
                 
                 self.torreControl = PPBluetoothPeripheralTorre(peripheral: peripheral, andDevice: device)
                 self.torreControl?.serviceDelegate = self
-
-            } else if device.peripheralType == .peripheralIce {
-                
+            case .peripheralIce:
                 self.scaleManager.connect(peripheral, withDevice: device)
                 
                 self.iceControl = PPBluetoothPeripheralIce(peripheral: peripheral, andDevice: device)
                 self.iceControl?.serviceDelegate = self
-
-            } else if device.peripheralType == .peripheralBorre {
-                
+            case .peripheralBorre:
                 self.scaleManager.connect(peripheral, withDevice: device)
                 
                 self.borreControl = PPBluetoothPeripheralBorre(peripheral: peripheral, andDevice: device)
                 self.borreControl?.serviceDelegate = self
-
-            } else if device.peripheralType == .peripheralForre {
-                
+            case .peripheralForre:
                 self.scaleManager.connect(peripheral, withDevice: device)
                 
                 self.forreControl = PPBluetoothPeripheralForre(peripheral: peripheral, andDevice: device)
                 self.forreControl?.serviceDelegate = self
-            } else {
+            case .peripheralFish:
+                self.scaleManager.connect(peripheral, withDevice: device)
+                self.fishControl = PPBluetoothPeripheralFish(peripheral: peripheral, andDevice: device)
+                self.fishControl?.serviceDelegate = self
+            case .peripheralEgg:
+                self.scaleManager.connect(peripheral, withDevice: device)
+                self.eggControl = PPBluetoothPeripheralEgg(peripheral: peripheral, andDevice: device)
+                self.eggControl?.serviceDelegate = self
+            case .peripheralDurian:
+                self.scaleManager.connect(peripheral, withDevice: device)
                 
+                self.durianControl = PPBluetoothPeripheralDurian(peripheral: peripheral, andDevice: device)
+                self.durianControl?.serviceDelegate = self
+                self.durianControl?.cmdDelegate = self
+
+            default:
                 self.loggerStreamHandler?.event?("不支持的设备类型-peripheralType:\(device.peripheralType)-\(deviceMac)")
                 sendConnectState(2)
             }
-            
+
         } else {
             
             self.loggerStreamHandler?.event?("找不到设备-\(deviceMac)")
@@ -191,8 +207,8 @@ public class PPLefuBleConnectManager:NSObject {
         if let apple = self.appleControl?.peripheral {
             self.scaleManager.disconnect(apple)
         }
-        if let coconut = self.coconutControl?.peripheral {
-            self.scaleManager.disconnect(coconut)
+        if let coconutControl = self.coconutControl?.peripheral {
+            self.scaleManager.disconnect(coconutControl)
         }
         if let torreControl = self.torreControl?.peripheral {
             self.scaleManager.disconnect(torreControl)
@@ -206,6 +222,9 @@ public class PPLefuBleConnectManager:NSObject {
         if let forreControl = self.forreControl?.peripheral {
             self.scaleManager.disconnect(forreControl)
         }
+        if let durianControl = self.durianControl?.peripheral {
+            self.scaleManager.disconnect(durianControl)
+        }
         
         self.clearData()
     }
@@ -218,14 +237,26 @@ public class PPLefuBleConnectManager:NSObject {
         self.iceControl = nil
         self.borreControl = nil
         self.forreControl = nil
+        self.fishControl = nil
+        self.eggControl = nil
+        self.durianControl = nil
         
-        self.bananaControl?.scaleDataDelegate = nil;
-        self.bananaControl?.updateStateDelegate = nil;
+        self.bananaControl?.scaleDataDelegate = nil
+        self.bananaControl?.updateStateDelegate = nil
         self.bananaControl?.stopSearch()
         
-        self.jambulControl?.scaleDataDelegate = nil;
-        self.jambulControl?.updateStateDelegate = nil;
+        self.jambulControl?.scaleDataDelegate = nil
+        self.jambulControl?.updateStateDelegate = nil
         self.jambulControl?.stopSearch()
+        
+        self.hamburgerControl?.scaleDataDelegate = nil
+        self.hamburgerControl?.updateStateDelegate = nil
+        self.hamburgerControl?.stopSearch()
+        
+        self.grapesControl?.scaleDataDelegate = nil
+        self.grapesControl?.updateStateDelegate = nil
+        self.grapesControl?.stopSearch()
+
         
         self.needScan = false
         self.currentDevice = nil
@@ -386,7 +417,7 @@ public class PPLefuBleConnectManager:NSObject {
         
         let advDevice = device.0
         
-        if advDevice.peripheralType != .peripheralBanana && advDevice.peripheralType != .peripheralJambul {
+        if advDevice.peripheralType != .peripheralBanana && advDevice.peripheralType != .peripheralJambul && advDevice.peripheralType != .peripheralHamburger && advDevice.peripheralType != .peripheralGrapes {
             
             self.loggerStreamHandler?.event?("\(advDevice.deviceName)-\(advDevice.deviceMac)不是广播秤")
             self.sendCommonState(false, callBack: callBack)
@@ -406,20 +437,30 @@ public class PPLefuBleConnectManager:NSObject {
         
         self.currentDevice = advDevice
         
-        if advDevice.peripheralType == .peripheralBanana {
-            
+        let peripheralType = advDevice.peripheralType
+        
+        switch peripheralType {
+        case .peripheralBanana:
             let banana = PPBluetoothPeripheralBanana.init(device: advDevice)
             banana.updateStateDelegate = self
             banana.scaleDataDelegate = self
             self.bananaControl = banana
-        } else if advDevice.peripheralType == .peripheralJambul {
-            
+        case .peripheralJambul:
             let jambul = PPBluetoothPeripheralJambul.init(device: advDevice)
             jambul.updateStateDelegate = self
             jambul.scaleDataDelegate = self
             self.jambulControl = jambul
-        } else {
-            
+        case .peripheralHamburger:
+            let hamburger = PPBluetoothPeripheralHamburger.init(device: advDevice)
+            hamburger.updateStateDelegate = self
+            hamburger.scaleDataDelegate = self
+            self.hamburgerControl = hamburger
+        case .peripheralGrapes:
+            let grapes = PPBluetoothPeripheralGrapes.init(device: advDevice)
+            grapes.updateStateDelegate = self
+            grapes.scaleDataDelegate = self
+            self.grapesControl = grapes
+        default:
             self.currentDevice = nil
         }
         
@@ -471,6 +512,24 @@ public class PPLefuBleConnectManager:NSObject {
             self.scaleManager.updateStateDelegate = self
         }
     }
+    
+    func toZero(callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            return
+        }
+        let peripheralType = currentDevice.peripheralType
+        switch peripheralType {
+        case .peripheralFish:
+            self.fishControl?.toZero()
+            self.sendCommonState(true, callBack: callBack)
+        case .peripheralEgg:
+            self.eggControl?.toZero()
+            self.sendCommonState(true, callBack: callBack)
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(peripheralType)")
+        }
+    }
 
 }
 
@@ -511,6 +570,12 @@ extension PPLefuBleConnectManager:PPBluetoothUpdateStateDelegate,PPBluetoothSurr
             } else if peripheralType == .peripheralJambul {
                 
                 self.jambulControl?.receivedDeviceData()
+            } else if peripheralType == .peripheralHamburger {
+                
+                self.hamburgerControl?.receivedDeviceData()
+            } else if peripheralType == .peripheralGrapes {
+                
+                self.grapesControl?.receivedDeviceData()
             }
             
         }
@@ -542,8 +607,10 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
 
         self.current180A = nil
         
-        if self.currentDevice?.peripheralType == .peripheralApple {
-            
+        let peripheralType = self.currentDevice?.peripheralType
+        
+        switch peripheralType {
+        case .peripheralApple:
             self.appleControl?.discoverDeviceInfoService({[weak self] model in
                 guard let `self` = self else {
                     return
@@ -554,24 +621,42 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
                 self.appleControl?.discoverFFF0Service()
 
             })
-        } else if self.currentDevice?.peripheralType == .peripheralCoconut {
-            
+        case .peripheralCoconut:
             self.coconutControl?.discoverFFF0Service()
-        } else if self.currentDevice?.peripheralType == .peripheralTorre {
-            
+        case .peripheralTorre:
             self.torreControl?.discoverFFF0Service()
-        } else if self.currentDevice?.peripheralType == .peripheralIce {
-            
+        case .peripheralIce:
             self.iceControl?.discoverFFF0Service()
-        } else if self.currentDevice?.peripheralType == .peripheralBorre {
-            
+        case .peripheralBorre:
             self.borreControl?.discoverFFF0Service()
-        } else if self.currentDevice?.peripheralType == .peripheralForre {
-            
+        case .peripheralForre:
             self.forreControl?.discoverFFF0Service()
+        case .peripheralFish:
+            self.fishControl?.discoverDeviceInfoService({[weak self] model in
+                guard let `self` = self else {
+                    return
+                }
+                self.current180A = model
+                self.fishControl?.discoverFFF0Service()
+                
+            })
+        case .peripheralEgg:
+            self.eggControl?.discoverDeviceInfoService({[weak self] model in
+                guard let `self` = self else {
+                    return
+                }
+                self.current180A = model
+                self.eggControl?.discoverFFF0Service()
+                
+            })
+        case .peripheralDurian:
+            self.durianControl?.discoverFFF0Service()
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(String(describing: peripheralType))")
         }
 
     }
+    
     
     public func centralManagerDidDisconnect() {
         self.sendConnectState(0)
@@ -633,6 +718,41 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
                 self.forreControl?.scaleDataDelegate = self
                 self.sendConnectState(1)
             })
+        case .peripheralFish:
+            self.fishControl?.scaleDataDelegate = self
+            self.sendConnectState(1)
+        case .peripheralEgg:
+            self.eggControl?.scaleDataDelegate = self
+            self.sendConnectState(1)
+        case .peripheralDurian:
+            self.durianMeasurementHandler = PPDurianMeasurementHandler()
+//            self.durianMeasurementHandler?.monitorProcessDataHandler = {[weak self] (model, advModel) in
+//                guard let `self` = self else {
+//                    return
+//                }
+//                
+//                
+//            }
+//            self.durianMeasurementHandler?.monitorLockDataHandler = {[weak self] (model, advModel) in
+//                guard let `self` = self else {
+//                    return
+//                }
+//                
+//                
+//            }
+            self.durianMeasurementHandler?.monitorBatteryInfoChangeHandler = {[weak self] (model, advModel) in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict:[String:Any?] = ["power":model.power]
+                let filtedDict = dict.compactMapValues { $0 }
+                
+                self.batteryStreamHandler?.event?(filtedDict)
+            }
+            
+            self.durianControl?.scaleDataDelegate = self.durianMeasurementHandler
+            self.sendConnectState(1)
         default:
             self.loggerStreamHandler?.event?("未知类型:\(String(describing: peripheralType))")
         }
@@ -674,7 +794,8 @@ extension PPLefuBleConnectManager: PPBluetoothCMDDataDelegate{
     }
 }
 
-extension PPLefuBleConnectManager:PPBluetoothScaleDataDelegate{
+extension PPLefuBleConnectManager:PPBluetoothScaleDataDelegate {
+    
     
     public func monitorProcessData(_ model: PPBluetoothScaleBaseModel!, advModel: PPBluetoothAdvDeviceModel!) {
         
@@ -703,5 +824,24 @@ extension PPLefuBleConnectManager:PPBluetoothScaleDataDelegate{
     public func monitorHistoryData(_ model: PPBluetoothScaleBaseModel!, advModel: PPBluetoothAdvDeviceModel!) {
         self.tempScaleHistoryList?.append(model)
     }
+
+}
+
+
+
+extension PPLefuBleConnectManager: PPBluetoothFoodScaleDataDelegate{
     
+    public func monitorData(_ model: PPBluetoothScaleBaseModel!, advModel: PPBluetoothAdvDeviceModel!) {
+        
+        // 0:过程数据，10:测量完成（广播秤等可能没有这个状态）
+        var measurementState = 0
+        if model.isEnd {
+            
+            measurementState = 10
+        }
+        
+        
+        
+        self.sendKitchenData(model, advModel: advModel, measureState: measurementState)
+    }
 }

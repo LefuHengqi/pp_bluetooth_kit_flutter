@@ -12,6 +12,7 @@ import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 class PPDeviceModel {
   String? deviceMac = ""; //设备mac设备唯一标识
   String? deviceName = ""; //设备蓝牙名称，设备名称标识
+  String? customDeviceName = "";//自定义设备名称
   int? devicePower = -1; //电量 -1标识不支持 >0为有效值
   int? rssi = 0; //蓝牙信号强度
   String? firmwareVersion = ""; //固件版本号
@@ -97,6 +98,7 @@ class PPDeviceModel {
     return {
       'deviceMac': deviceMac,
       'deviceName': deviceName,
+      'customDeviceName': customDeviceName,
       'devicePower': devicePower,
       'rssi': rssi,
       'firmwareVersion': firmwareVersion,
@@ -130,6 +132,7 @@ class PPDeviceModel {
     PPDeviceModel model = PPDeviceModel("", "");
     model.deviceMac = json['deviceMac'];
     model.deviceName = json['deviceName'];
+    model.customDeviceName = json['customDeviceName'];
     model.devicePower = json['devicePower'];
     model.rssi = json['rssi'];
     model.firmwareVersion = json['firmwareVersion'];

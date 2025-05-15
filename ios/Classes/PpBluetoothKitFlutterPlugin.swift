@@ -68,6 +68,12 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       let scanStateEventChannel = FlutterEventChannel(name: "pp_scan_state_streams", binaryMessenger: registrar.messenger())
       scanStateEventChannel.setStreamHandler(scanStateStreamHandler)
       
+      
+      let kitchenStreamHandler = PPLefuStreamHandler()
+      instance.bleManager.kitchenStreamHandler = kitchenStreamHandler
+      let kitchenEventChannel = FlutterEventChannel(name: "pp_kitchen_streams", binaryMessenger: registrar.messenger())
+      kitchenEventChannel.setStreamHandler(kitchenStreamHandler)
+      
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -191,13 +197,13 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
       } else if method == "syncTime" {
           
-          let is24Hour = params?["sex"] as? Bool ?? true
+          let is24Hour = params?["is24Hour"] as? Bool ?? true
           self.bleManager.syncTime(is24Hour: is24Hour, callBack: result)
           
       } else if method == "configWifi" {
           let domain = params?["domain"] as? String
           let ssId = params?["ssId"] as? String
-          let password = params?["password"] as? String
+          var password = params?["password"] as? String ?? ""
           
           guard let domain = domain else {
               result(["success":false,"errorCode":-1])
@@ -209,10 +215,9 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
               return
           }
           
-          guard let password = password else {
-              result(["success":false,"errorCode":-1])
-              return
-          }
+//          guard let pwd = password else {
+//              password = ""
+//          }
           
           self.bleManager.configWifi(domain: domain, ssId: ssId, password: password, callBack: result)
           
@@ -387,6 +392,39 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           }
 
           self.bleManager.sendBroadcastData(cmd: cmd, unitType: unitType, callBack: result)
+      } else if method == "toZero" {
+          self.bleManager.toZero(callBack: result)
+      } else if method == "syncLast7Data" {
+          
+          var recentList = [PPUserRecentBodyData]()
+          let list = params?["weightList"] as? [[String:Any]] ?? []
+          for item in list {
+              let data = PPUserRecentBodyData()
+              data.timeStamp = Double(item["timeStamp"] as? Int64 ?? 0)
+              data.value = item["value"] as? Int ?? 0
+              recentList.append(data)
+          }
+          
+          let last = PPUserRecentBodyData()
+          last.bmi = CGFloat(params?["lastBMI"] as? Int ?? 0)
+          last.muscleRate = CGFloat(params?["lastMuscleRate"] as? Int ?? 0)
+          last.waterRate = CGFloat(params?["lastWaterRate"] as? Int ?? 0)
+          last.bodyfat = CGFloat(params?["lastBodyFat"] as? Int ?? 0)
+          last.heartRate = CGFloat(params?["lastHeartRate"] as? Int ?? 0)
+          last.muscle = CGFloat(params?["lastMuscle"] as? Int ?? 0)
+          last.bone = CGFloat(params?["lastBone"] as? Int ?? 0)
+          last.boneRate = CGFloat(params?["lastBoneRate"] as? Int ?? 0)
+          
+          let typeValue = params?["type"] as? Int ?? 0
+          let type = PPUserBodyDataType(rawValue: typeValue) ?? .weight
+          
+          let user = PPTorreSettingModel()
+          user.userID = params?["userID"] as? String ?? ""
+          user.memberID = params?["memberID"] as? String ?? ""
+          user.targetWeight = params?["targetWeight"] as? CGFloat ?? 0
+          user.idealWeight = params?["idealWeight"] as? CGFloat ?? 0
+
+          self.bleManager.syncLast7Data(recentList: recentList, lastBodyData: last, type: type, user: user, callBack: result)
       }
       
   }
@@ -409,6 +447,7 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
         let targetWeight = params?["targetWeight"] as? CGFloat ?? 0
         let idealWeight = params?["idealWeight"] as? CGFloat ?? 0
         let recentData = params?["recentData"] as? [[String:Any?]] ?? []
+        let pIndex = params?["pIndex"] as? Int ?? 0
         
         var historyList = [PPUserHistoryData]()
         for item in recentData {
@@ -437,6 +476,7 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
         model.targetWeight = targetWeight
         model.idealWeight = idealWeight
         model.recentData = historyList
+        model.pIndex = pIndex
         
         return model
     }

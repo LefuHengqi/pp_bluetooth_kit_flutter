@@ -3,7 +3,6 @@ import { FlutterPlugin, FlutterPluginBinding, MethodCall, MethodCallHandler, Met
 import { EventSink } from '@ohos/flutter_ohos/src/main/ets/plugin/common/EventChannel';
 
 import { PPUserGender } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
-import { PPLogger } from 'ppsdkkit/src/main/ets/log/PPLogger';
 
 import { PPBluetoothKit } from 'ppsdkkit/src/main/ets/PPBluetoothKit';
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
@@ -16,8 +15,7 @@ import { PPLoggerPluginOhos } from './util/PPLoggerPluginOhos';
 export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, MethodCallHandler {
   private channel: MethodChannel | null = null;
   private bleChannel: MethodChannel | null = null;
-  private bleManager: PPLefuBleConnectManager = new PPLefuBleConnectManager();
-  // 这里需要引入鸿蒙对应的蓝牙管理类
+  private bleManager: PPLefuBleConnectManager = new PPLefuBleConnectManager();// 这里需要实例化鸿蒙对应的蓝牙管理类
 
   // 事件通道
   private measurementEventChannel: EventChannel | null = null;
@@ -35,8 +33,6 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
   private abilityPluginBinding: AbilityPluginBinding | null = null;
 
   constructor() {
-    // 初始化蓝牙管理器
-    // this.bleManager = new PPBluetoothKit(); // 这里需要实例化鸿蒙对应的蓝牙管理类
   }
 
   getUniqueClassName(): string {
@@ -59,122 +55,64 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     // 测量数据事件通道
     let measureStreamHandler = new PPLefuStreamHandler();
     this.measurementEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_measurement_streams");
-    this.measurementEventChannel.setStreamHandler({
-      onListen: (args: Any, events: EventSink) => {
-        this.bleManager.measureStreamHandler = measureStreamHandler;
-      },
-      onCancel: (event: Any) => {
-        this.bleManager.measureStreamHandler = null;
-      }
-    });
+    this.bleManager.measureStreamHandler = measureStreamHandler;
+    this.measurementEventChannel.setStreamHandler(measureStreamHandler);
 
     // 日志事件通道
     let loggerStreamHandler = new PPLefuStreamHandler()
     this.loggerEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_logger_streams");
-    this.loggerEventChannel.setStreamHandler({
-      onListen: (event: Any, events: EventSink) => {
-        this.bleManager.loggerStreamHandler = loggerStreamHandler;
-      },
-      onCancel: (event: string) => {
-        this.bleManager.loggerStreamHandler = null;
-      }
-    });
+    this.bleManager.loggerStreamHandler = loggerStreamHandler;
+    this.loggerEventChannel.setStreamHandler(loggerStreamHandler);
 
     // 连接状态事件通道
     let connectStateStreamHandler = new PPLefuStreamHandler();
     this.connectStateEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_connect_state_streams");
-    this.connectStateEventChannel.setStreamHandler({
-      onListen: (event: Any, events: EventSink) => {
-        this.bleManager.connectStateStreamHandler = connectStateStreamHandler;
-      },
-      onCancel: (event: Any) => {
-        this.bleManager.connectStateStreamHandler = null;
-      }
-    });
+    this.bleManager.connectStateStreamHandler = connectStateStreamHandler;
+    this.connectStateEventChannel.setStreamHandler(connectStateStreamHandler);
 
     // 扫描结果事件通道
     let scanResultStreamHandler = new PPLefuStreamHandler();
     this.scanResultEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_device_list_streams");
-    this.scanResultEventChannel.setStreamHandler({
-      onListen: (event: Any, events: EventSink) => {
-        this.bleManager.scanResultStreamHandler = scanResultStreamHandler;
-      },
-      onCancel: (event: Any) => {
-        this.bleManager.scanResultStreamHandler = null;
-      }
-    });
-
+    this.bleManager.scanResultStreamHandler = scanResultStreamHandler;
+    this.scanResultEventChannel.setStreamHandler(scanResultStreamHandler);
     // 历史数据事件通道
     let historyStreamHandler = new PPLefuStreamHandler()
     this.historyEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_history_data_streams");
-    this.historyEventChannel.setStreamHandler({
-      onListen: (event: Any, events: EventSink) => {
-        this.bleManager.historyStreamHandler = historyStreamHandler;
-      },
-      onCancel: (event: Any) => {
-        this.bleManager.historyStreamHandler = null;
-      }
-    });
+    this.bleManager.historyStreamHandler = historyStreamHandler;
+    this.historyEventChannel.setStreamHandler(historyStreamHandler);
 
     // 电池事件通道
     let batteryStreamHandler = new PPLefuStreamHandler()
     this.batteryEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_battery_streams");
-    this.batteryEventChannel.setStreamHandler({
-      onListen: (event: string, events: EventSink) => {
-        this.bleManager.batteryStreamHandler = batteryStreamHandler;
-      },
-      onCancel: (event: string) => {
-        this.bleManager.batteryStreamHandler = null;
-      }
-    });
+    this.bleManager.batteryStreamHandler = batteryStreamHandler;
+
+    this.batteryEventChannel.setStreamHandler(batteryStreamHandler);
 
     // 蓝牙权限事件通道
     let blePermissionStreamHandler = new PPLefuStreamHandler()
     this.blePermissionEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_ble_permission_streams");
-    this.blePermissionEventChannel.setStreamHandler({
-      onListen: (event: string, events: EventSink) => {
-        this.bleManager.blePermissionStreamHandler = blePermissionStreamHandler;
-      },
-      onCancel: (event: string) => {
-        this.bleManager.blePermissionStreamHandler = null;
-      }
-    });
+    this.bleManager.blePermissionStreamHandler = blePermissionStreamHandler;
+
+    this.blePermissionEventChannel.setStreamHandler(blePermissionStreamHandler);
 
     // DFU事件通道
     let dfuStreamHandler = new PPLefuStreamHandler()
     this.dfuEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_dfu_streams");
-    this.dfuEventChannel.setStreamHandler({
-      onListen: (event: string, events: EventSink) => {
-        this.bleManager.dfuStreamHandler = dfuStreamHandler;
-      },
-      onCancel: (event: string) => {
-        this.bleManager.dfuStreamHandler = null;
-      }
-    });
+    this.bleManager.dfuStreamHandler = dfuStreamHandler;
+    this.dfuEventChannel.setStreamHandler(dfuStreamHandler);
 
     // 设备日志事件通道
     let deviceLogStreamHandler = new PPLefuStreamHandler()
     this.deviceLogEventChannel = new EventChannel(binding.getBinaryMessenger(), "device_log_streams");
-    this.deviceLogEventChannel.setStreamHandler({
-      onListen: (event: string, events: EventSink) => {
-        this.bleManager.deviceLogStreamHandler = deviceLogStreamHandler;
-      },
-      onCancel: (event: string) => {
-        this.bleManager.deviceLogStreamHandler = null;
-      }
-    });
+    this.bleManager.deviceLogStreamHandler = deviceLogStreamHandler;
+    this.deviceLogEventChannel.setStreamHandler(deviceLogStreamHandler);
 
     // 扫描状态事件通道
     let scanStateStreamHandler = new PPLefuStreamHandler()
     this.scanStateEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_scan_state_streams");
-    this.scanStateEventChannel.setStreamHandler({
-      onListen: (event: string, events: EventSink) => {
-        this.bleManager.scanStateStreamHandler = scanStateStreamHandler;
-      },
-      onCancel: (event: string) => {
-        this.bleManager.scanStateStreamHandler = null;
-      }
-    });
+    this.bleManager.scanStateStreamHandler = scanStateStreamHandler;
+
+    this.scanStateEventChannel.setStreamHandler(scanStateStreamHandler);
   }
 
   onAttachedToAbility(binding: AbilityPluginBinding) {
@@ -205,13 +143,12 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       PPLoggerPluginOhos.e("onMethodCall params is null")
     }
 
-
     if (method == "getPlatformVersion") {
       result.success("HarmonyOS 桥接返回结果");
     } else if (method == "initSDK") {
-      const appKey = params["appKey"] as string;
-      const appSecret = params["appSecret"] as string;
-      const deviceContent = params["deviceContent"] as string;
+      const appKey = params.get("appKey") as string;
+      const appSecret = params.get("appSecret") as string;
+      const deviceContent = params.get("deviceContent") as string;
 
       if (!appKey) {
         this.bleManager.loggerStreamHandler?.error("appKey为空");
@@ -285,9 +222,9 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       this.bleManager.stopScan();
       this.bleManager.sendCommonState(true, result)
     } else if (method == "connectDevice") {
-      const deviceMac = params["deviceMac"] as string;
-      const deviceName = params["deviceName"] as string;
-
+      const deviceMac = params.get("deviceMac") as string;
+      const deviceName = params.get("deviceName") as string;
+      PPLoggerPluginOhos.d(`connectDevice deviceMac:${deviceMac} deviceName:${deviceName}`)
       if (!deviceMac) {
         this.bleManager.loggerStreamHandler?.success("deviceMac为空");
         return;
@@ -299,27 +236,27 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       this.bleManager.disconnect();
       result.success({});
     } else if (method == "fetchHistory") {
-      let userID = params["userID"] as string
-      let memberID = params["memberID"] as string
+      let userID = params.get("userID") as string
+      let memberID = params.get("memberID") as string
       this.bleManager.fetchHistory(userID, memberID, result)
     } else if (method == "deleteHistory") {
       this.bleManager.deleteHistory()
     } else if (method == "syncUnit") {
-      let unit = params["unit"] as number ?? 0;
-      let sex = params["sex"] as number ?? 0;
-      let age = params["age"] as number ?? 18;
-      let height = params["height"] as number ?? 100;
-      let isPregnantMode = params["isPregnantMode"] as boolean ?? false;
-      let isAthleteMode = params["isAthleteMode"] as boolean ?? false;
+      let unit = params.get("unit") as number ?? 0;
+      let sex = params.get("sex") as number ?? 0;
+      let age = params.get("age") as number ?? 18;
+      let height = params.get("height") as number ?? 100;
+      let isPregnantMode = params.get("isPregnantMode") as boolean ?? false;
+      let isAthleteMode = params.get("isAthleteMode") as boolean ?? false;
 
       this.bleManager.syncUnit(unit, sex, age, height, isPregnantMode, isAthleteMode)
     } else if (method == "syncTime") {
-      let is24Hour = params["is24Hour"] as boolean ?? true;
+      let is24Hour = params.get("is24Hour") as boolean ?? true;
       this.bleManager.syncTime(is24Hour, result)
     } else if (method == "configWifi") {
-      let domain = params["domain"] as string ?? "";
-      let ssId = params["ssId"] as string ?? "";
-      let password = params["password"] as string ?? "";
+      let domain = params.get("domain") as string ?? "";
+      let ssId = params.get("ssId") as string ?? "";
+      let password = params.get("password") as string ?? "";
       if (!domain) {
         result.success({
           success: false, errorCode: -1
@@ -349,22 +286,22 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     } else if (method == "wifiOTA") {
       this.bleManager.wifiOTA(result)
     } else if (method == "heartRateSwitchControl") {
-      const open = params["open"] as boolean ?? false
+      const open = params.get("open") as boolean ?? false
       this.bleManager.heartRateSwitchControl(open, result)
     } else if (method == "fetchHeartRateSwitch") {
       this.bleManager.fetchHeartRateSwitch(result)
     } else if (method == "impedanceSwitchControl") {
-      const open = params["open"] as boolean ?? false
+      const open = params.get("open") as boolean ?? false
       this.bleManager.impedanceSwitchControl(open, result)
     } else if (method == "fetchImpedanceSwitch") {
       this.bleManager.fetchImpedanceSwitch(result)
     } else if (method == "setBindingState") {
-      const binding = params["binding"] as boolean ?? false
+      const binding = params.get("binding") as boolean ?? false
       this.bleManager.setBindingState(binding, result)
     } else if (method == "fetchBindingState") {
       this.bleManager.fetchBindingState(result)
     } else if (method == "setScreenBrightness") {
-      const brightness = params["brightness"] as number ?? 50
+      const brightness = params.get("brightness") as number ?? 50
       this.bleManager.setScreenBrightness(brightness, result)
     } else if (method == "getScreenBrightness") {
       this.bleManager.getScreenBrightness(result)
@@ -373,7 +310,7 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       this.bleManager.syncUserInfo(model, result)
     } else if (method == "syncUserList") {
       const userArray: PPUserModel[] = []
-      const array = params["userList"] as Array<Record<string, Any>> ?? []
+      const array = params.get("userList") as Array<Record<string, Any>> ?? []
 
       for (const item of array) {
         const model = this.getUserInfo(item)
@@ -385,8 +322,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     } else if (method == "fetchUserIDList") {
       this.bleManager.fetchUserIDList(result)
     } else if (method == "selectUser") {
-      const userID = params["userID"] as string ?? ""
-      const memberID = params["memberID"] as string ?? ""
+      const userID = params.get("userID") as string ?? ""
+      const memberID = params.get("memberID") as string ?? ""
 
       const user = new PPUserModel()
       user.userID = userID
@@ -394,8 +331,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
 
       this.bleManager.selectUser(user, result)
     } else if (method == "deleteUser") {
-      const userID = params["userID"] as string ?? ""
-      const memberID = params["memberID"] as string ?? ""
+      const userID = params.get("userID") as string ?? ""
+      const memberID = params.get("memberID") as string ?? ""
 
       const user = new PPUserModel()
       user.userID = userID
@@ -407,40 +344,40 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     } else if (method == "stopMeasure") {
       this.bleManager.stopMeasure(result)
     } else if (method == "startBabyModel") {
-      const step = params["step"] as number ?? 0
-      const weight = params["weight"] as number ?? 0
+      const step = params.get("step") as number ?? 0
+      const weight = params.get("weight") as number ?? 0
 
       this.bleManager.startBabyModel(step, weight, result)
     } else if (method == "exitBabyModel") {
       this.bleManager.exitBabyModel(result)
     } else if (method == "startDFU") {
-      const filePath = params["filePath"] as string ?? ""
-      const deviceFirmwareVersion = params["deviceFirmwareVersion"] as string ?? ""
-      const isForceCompleteUpdate = params["isForceCompleteUpdate"] as boolean ?? false
+      const filePath = params.get("filePath") as string ?? ""
+      const deviceFirmwareVersion = params.get("deviceFirmwareVersion") as string ?? ""
+      const isForceCompleteUpdate = params.get("isForceCompleteUpdate") as boolean ?? false
 
       this.bleManager.startDFU(filePath, deviceFirmwareVersion, isForceCompleteUpdate, result)
     } else if (method == "syncDeviceLog") {
-      const logFolder = params["logFolder"] as string ?? ""
+      const logFolder = params.get("logFolder") as string ?? ""
       this.bleManager.syncDeviceLog(logFolder)
     } else if (method == "keepAlive") {
       this.bleManager.keepAlive()
     } else if (method == "clearDeviceData") {
-      const type = params["type"] as number ?? 0
+      const type = params.get("type") as number ?? 0
       this.bleManager.clearDeviceData(type, result)
     } else if (method == "setDeviceLanguage") {
-      const type = params["type"] as number ?? 0
+      const type = params.get("type") as number ?? 0
       this.bleManager.setDeviceLanguage(type, result)
     } else if (method == "fetchDeviceLanguage") {
       this.bleManager.fetchDeviceLanguage(result)
     } else if (method == "setDisplayBodyFat") {
-      const bodyFat = params["bodyFat"] as number ?? 0
+      const bodyFat = params.get("bodyFat") as number ?? 0
       this.bleManager.setDisplayBodyFat(bodyFat, result)
     } else if (method == "exitScanWifiNetworks") {
       this.bleManager.exitScanWifiNetworks(result)
     } else if (method == "exitNetworkConfig") {
       this.bleManager.exitNetworkConfig(result)
     } else if (method == "receiveBroadcastData") {
-      const deviceMac = params["deviceMac"] as string
+      const deviceMac = params.get("deviceMac") as string
 
       if (!deviceMac) {
         this.bleManager.loggerStreamHandler?.success("deviceMac为空")
@@ -450,8 +387,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
 
       this.bleManager.receiveBroadcastData(deviceMac, result)
     } else if (method == "sendBroadcastData") {
-      const cmd = params["cmd"] as string
-      const unit = params["unit"] as number ?? 0
+      const cmd = params.get("cmd") as string
+      const unit = params.get("unit") as number ?? 0
 
       if (!cmd) {
         this.bleManager.loggerStreamHandler?.success("cmd为空")
@@ -464,20 +401,20 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
   }
 
   private getUserInfo(params: Record<string, Any>): PPUserModel {
-    const userID = params["userID"] as string ?? ""
-    const memberID = params["memberID"] as string ?? ""
-    const isPregnantMode = params["isPregnantMode"] as boolean ?? false
-    const isAthleteMode = params["isAthleteMode"] as boolean ?? false
-    const unitType = params["unitType"] as number ?? 0
-    const age = params["age"] as number ?? 0
-    const sex = params["sex"] as number ?? 0
-    const userHeight = params["userHeight"] as number ?? 0
-    const userName = params["userName"] as string ?? ""
-    const deviceHeaderIndex = params["deviceHeaderIndex"] as number ?? 0
-    const currentWeight = params["currentWeight"] as number ?? 0
-    const targetWeight = params["targetWeight"] as number ?? 0
-    const idealWeight = params["idealWeight"] as number ?? 0
-    const recentData = params["recentData"] as Array<Record<string, Any>> ?? []
+    const userID = params.get("userID") as string ?? ""
+    const memberID = params.get("memberID") as string ?? ""
+    const isPregnantMode = params.get("isPregnantMode") as boolean ?? false
+    const isAthleteMode = params.get("isAthleteMode") as boolean ?? false
+    const unitType = params.get("unitType") as number ?? 0
+    const age = params.get("age") as number ?? 0
+    const sex = params.get("sex") as number ?? 0
+    const userHeight = params.get("userHeight") as number ?? 0
+    const userName = params.get("userName") as string ?? ""
+    const deviceHeaderIndex = params.get("deviceHeaderIndex") as number ?? 0
+    const currentWeight = params.get("currentWeight") as number ?? 0
+    const targetWeight = params.get("targetWeight") as number ?? 0
+    const idealWeight = params.get("idealWeight") as number ?? 0
+    const recentData = params.get("recentData") as Array<Record<string, Any>> ?? []
 
     const model = new PPUserModel()
 
