@@ -56,7 +56,6 @@ export class PPLefuBleConnectManager {
   currentDevice: PPDeviceModel | null = null;
   deviceModels: Map<String, PPDeviceModel> = new Map();
   private abilityPluginBinding: AbilityPluginBinding | null = null;
-
   historyModels: PPBodyBaseModel[] = [];
 
   constructor() {
@@ -79,11 +78,12 @@ export class PPLefuBleConnectManager {
     this.bluetoothState = state;
     this.loggerStreamHandler?.success(`蓝牙状态:${state}`);
 
-    if (this.needScan && access.BluetoothState.STATE_ON === state) {
+    if (this.needScan && access.BluetoothState.STATE_ON === state || access.BluetoothState.STATE_BLE_ON) {
       this.needScan = false;
-      // this.startScan();
+      this.sendBlePermissionState(2)
     } else if (state === access.BluetoothState.STATE_OFF) {
       this.needScan = false;
+      this.sendBlePermissionState(3)
       if (this.isScaning) {
         this.stopScan();
       }
@@ -482,7 +482,7 @@ export class PPLefuBleConnectManager {
           if (this.deviceControl instanceof PPAppleDeviceControl) {
             this.deviceControl?.configWifi(ssId, password, (sn, stateMenu) => {
               this.addLog(`配置Wifi Success sn:${sn} ${stateMenu}`);
-              result.success({ sn: sn, erroCode:0,success:true })
+              result.success({ sn: sn, erroCode: 0, success: true })
             })
           }
         } else {
@@ -491,7 +491,7 @@ export class PPLefuBleConnectManager {
       })
 
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
-      this.deviceControl.configWifi(domain, ssId, password,(configState: PPConfigWifiStateMenu, resultCode: string) => {
+      this.deviceControl.configWifi(domain, ssId, password, (configState: PPConfigWifiStateMenu, resultCode: string) => {
 
       });
     }

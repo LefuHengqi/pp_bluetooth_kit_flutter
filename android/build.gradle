@@ -1,23 +1,24 @@
-package android
 
 group 'com.example.pp_bluetooth_kit_flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.21'
     repositories {
+        maven { url "https://raw.githubusercontent.com/LefuHengqi/PPBaseKit-Android/main" }
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.0'
+        classpath 'com.android.tools.build:gradle:7.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
     repositories {
+        maven { url "https://raw.githubusercontent.com/LefuHengqi/PPBaseKit-Android/main" }
         google()
         mavenCentral()
     }
@@ -27,7 +28,9 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 31
+    compileSdk 33
+
+    namespace 'com.example.pp_bluetooth_kit_flutter'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -43,6 +46,28 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
     }
 }
+
+dependencies {
+
+
+//    implementation files('libs/ppbasekit-4.1.9.aar')
+//    implementation files('libs/ppbluetoothkit-4.1.9.aar')
+//    implementation files('libs/ppcalculatekit-4.1.8.1.aar')
+
+    //https://github.com/LefuHengqi/PPBaseKit-Android
+    //基础模块，必须/Basic module, must
+    api 'com.lefu.ppbasekit:ppbasekit:4.1.8.1'
+    //蓝牙协议模块，集成设备和解析体重信息/Bluetooth protocol module, integrating devices and parsing weight information
+    api 'com.lefu.ppbluetoothkit:ppbluetoothkit:4.1.8.1'
+    //体脂计算库，根据需要引入/Body fat calculation library, introduced as needed
+    api 'com.lefu.ppcalculatekit:ppcalculatekit:4.1.8.1'
+
+//    api(project(":ppsdkkit:ppbasekit"))
+//    api(project(":ppsdkkit:ppbluetoothkit"))
+//    api(project(":ppsdkkit:ppcalculatekit"))
+
+}
+
