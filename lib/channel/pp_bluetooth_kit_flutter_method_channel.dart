@@ -236,8 +236,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
         callBack([], false);
       }
 
-      // 返回数据，则不需要订阅
-      _historySubscription?.cancel();
+      // // 返回数据，则不需要订阅
+      // _historySubscription?.cancel();
 
     });
 
