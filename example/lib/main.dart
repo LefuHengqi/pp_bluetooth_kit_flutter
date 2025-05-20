@@ -262,9 +262,9 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
                           // final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
                           // final device = PPDeviceModel("CF632","CF:E9:02:11:C0:12");
-                          // final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
+                          final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
                           // final device  = PPDeviceModel("LFSmart Scale", "CA:E6:08:24:04:A7");
-                          final device = PPDeviceModel("LEFU-CF577","CF:E7:0B:14:00:B3");
+                          // final device = PPDeviceModel("LEFU-CF577","CF:E7:0B:14:00:B3");
 
 
                           // 人体秤
