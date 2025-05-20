@@ -142,7 +142,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     val method = call.method
     val params = call.arguments as? Map<String, Any?>
-    Logger.e("method: $method, params: $params")
+    Logger.e("method: $method")
     when (method) {
       "getPlatformVersion" -> {
         result.success("Android ${android.os.Build.VERSION.RELEASE}")

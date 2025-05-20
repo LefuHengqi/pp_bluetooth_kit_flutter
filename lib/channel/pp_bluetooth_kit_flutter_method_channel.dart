@@ -71,7 +71,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> setDeviceSetting(String deviceContent) async {
-    PPBluetoothKitLogger.i('执行初始化-setDeviceSetting $deviceContent');
+    PPBluetoothKitLogger.i('执行初始化-setDeviceSetting deviceContent len:${deviceContent.length}');
     await _bleChannel.invokeMethod('setDeviceSetting',<String, dynamic>{'deviceContent':deviceContent});
   }
 

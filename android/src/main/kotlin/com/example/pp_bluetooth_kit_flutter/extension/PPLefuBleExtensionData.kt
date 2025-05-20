@@ -1,19 +1,13 @@
 package com.example.pp_bluetooth_kit_flutter.extension
 
-import android.content.Context
 import com.example.pp_bluetooth_kit_flutter.PPLefuBleConnectManager
-import com.example.pp_bluetooth_kit_flutter.model.PPDfuPackageModel
 import com.example.pp_bluetooth_kit_flutter.util.PPBluetoothState
 import com.lefu.ppbase.PPBodyBaseModel
 import com.lefu.ppbase.PPDeviceModel
-import com.lefu.ppbase.PPSDKKit
-import com.lefu.ppbase.util.OnLogCallBack
 import com.lefu.ppbase.vo.PPScaleStatePowerType
-import com.lefu.ppcalculate.PPCalculateKit
 import com.peng.ppscale.PPBluetoothKit
 import com.peng.ppscale.util.DateUtil
 import com.peng.ppscale.vo.LFFoodScaleGeneral
-import com.peng.ppscale.vo.PPWifiModel
 import io.flutter.plugin.common.MethodChannel.Result
 
 
@@ -117,7 +111,7 @@ fun PPLefuBleConnectManager.sendMeasureData(model: PPBodyBaseModel, advModel: PP
     val deviceDict = this.convertDeviceDict(advModel)
     val dataDict = this.convertMeasurementDict(model)
 
-    this.loggerStreamHandler?.eventSink?.success("测量状态:$measureState")
+    this.loggerStreamHandler?.sendEvent("测量状态:$measureState")
 
     val dict = mapOf(
         "measurementState" to measureState,
@@ -125,7 +119,7 @@ fun PPLefuBleConnectManager.sendMeasureData(model: PPBodyBaseModel, advModel: PP
         "data" to dataDict
     )
 
-    this.measureStreamHandler?.eventSink?.success(dict)
+    this.measureStreamHandler?.sendEvent(dict)
 }
 
 fun PPLefuBleConnectManager.sendHistoryData(models: List<PPBodyBaseModel>) {
@@ -138,11 +132,11 @@ fun PPLefuBleConnectManager.sendHistoryData(models: List<PPBodyBaseModel>) {
 
     val dataList = array
 
-    this.loggerStreamHandler?.eventSink?.success("历史数据-数量:${dataList.size}")
+    this.loggerStreamHandler?.sendEvent("历史数据-数量:${dataList.size}")
     val dict = mapOf(
         "dataList" to dataList
     )
-    this.historyStreamHandler?.eventSink?.success(dict)
+    this.historyStreamHandler?.sendEvent(dict)
 }
 
 fun PPLefuBleConnectManager.sendBlePermissionState(state: PPBluetoothState) {
@@ -159,7 +153,7 @@ fun PPLefuBleConnectManager.sendBlePermissionState(state: PPBluetoothState) {
         "state" to stateValue
     )
 
-    this.blePermissionStreamHandler?.eventSink?.success(dict)
+    this.blePermissionStreamHandler?.sendEvent(dict)
 }
 
 fun PPLefuBleConnectManager.sendWIFIResult(isSuccess: Boolean, sn: String?, errorCode: Int?, callBack: Result) {
@@ -214,19 +208,19 @@ fun PPLefuBleConnectManager.sendDfuResult(progress: Float, isSuccess: Boolean) {
         "isSuccess" to isSuccess
     )
 
-    this.dfuStreamHandler?.eventSink?.success(dict)
+    this.dfuStreamHandler?.sendEvent(dict)
 }
 
 fun PPLefuBleConnectManager.sendScanState(scaning: Boolean) {
     val code = if (scaning) 1 else 0
-    this.scanStateStreamHandler?.eventSink?.success(mapOf("state" to code))
+    this.scanStateStreamHandler?.sendEvent(mapOf("state" to code))
 }
 
 fun PPLefuBleConnectManager.sendKitchenData(model: LFFoodScaleGeneral, deviceModel: PPDeviceModel, measureState: Int) {
     val deviceDict = this.convertDeviceDict(deviceModel)
     val dataDict = this.convertMeasurementDictFood(model)
 
-    this.loggerStreamHandler?.eventSink?.success("厨房秤-测量状态:$measureState")
+    this.loggerStreamHandler?.sendEvent("厨房秤-测量状态:$measureState")
 
     val dict = mapOf(
         "measurementState" to measureState,
@@ -234,5 +228,5 @@ fun PPLefuBleConnectManager.sendKitchenData(model: LFFoodScaleGeneral, deviceMod
         "data" to dataDict
     )
 
-    this.kitchenStreamHandler?.eventSink?.success(dict)
+    this.kitchenStreamHandler?.sendEvent(dict)
 }

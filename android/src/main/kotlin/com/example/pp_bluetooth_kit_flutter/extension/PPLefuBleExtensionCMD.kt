@@ -34,7 +34,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -113,7 +113,7 @@ fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Re
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             sendCommonState(false, callBack)
         }
     }
@@ -122,7 +122,7 @@ fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Re
 fun PPLefuBleConnectManager.syncTime(is24Hour: Boolean, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -189,7 +189,7 @@ fun PPLefuBleConnectManager.syncTime(is24Hour: Boolean, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             sendCommonState(false, callBack)
         }
     }
@@ -198,7 +198,7 @@ fun PPLefuBleConnectManager.syncTime(is24Hour: Boolean, callBack: Result) {
 fun PPLefuBleConnectManager.configWifi(domain: String, ssId: String, password: String, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf("success" to false, "errorCode" to -1))
         return
     }
@@ -281,7 +281,7 @@ fun PPLefuBleConnectManager.configWifi(domain: String, ssId: String, password: S
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf("success" to false, "errorCode" to -1))
         }
     }
@@ -290,7 +290,7 @@ fun PPLefuBleConnectManager.configWifi(domain: String, ssId: String, password: S
 fun PPLefuBleConnectManager.syncLast7Data(lastBodyData: PPUserModel, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -321,7 +321,7 @@ fun PPLefuBleConnectManager.syncLast7Data(lastBodyData: PPUserModel, callBack: R
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -330,7 +330,7 @@ fun PPLefuBleConnectManager.syncLast7Data(lastBodyData: PPUserModel, callBack: R
 fun PPLefuBleConnectManager.heartRateSwitchControl(open: Boolean, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -427,7 +427,7 @@ fun PPLefuBleConnectManager.heartRateSwitchControl(open: Boolean, callBack: Resu
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -436,7 +436,7 @@ fun PPLefuBleConnectManager.heartRateSwitchControl(open: Boolean, callBack: Resu
 fun PPLefuBleConnectManager.fetchWifiInfo(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -501,7 +501,7 @@ fun PPLefuBleConnectManager.fetchWifiInfo(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -510,7 +510,7 @@ fun PPLefuBleConnectManager.fetchWifiInfo(callBack: Result) {
 fun PPLefuBleConnectManager.fetchDeviceInfo(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -571,7 +571,7 @@ fun PPLefuBleConnectManager.fetchDeviceInfo(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -580,7 +580,7 @@ fun PPLefuBleConnectManager.fetchDeviceInfo(callBack: Result) {
 fun PPLefuBleConnectManager.fetchWifiMac(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -615,7 +615,7 @@ fun PPLefuBleConnectManager.fetchWifiMac(callBack: Result) {
 
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -624,7 +624,7 @@ fun PPLefuBleConnectManager.fetchWifiMac(callBack: Result) {
 fun PPLefuBleConnectManager.scanWifiNetworks(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -669,7 +669,7 @@ fun PPLefuBleConnectManager.scanWifiNetworks(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -678,7 +678,7 @@ fun PPLefuBleConnectManager.scanWifiNetworks(callBack: Result) {
 fun PPLefuBleConnectManager.wifiOTA(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -765,7 +765,7 @@ fun PPLefuBleConnectManager.wifiOTA(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -774,7 +774,7 @@ fun PPLefuBleConnectManager.wifiOTA(callBack: Result) {
 fun PPLefuBleConnectManager.fetchHeartRateSwitch(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -832,7 +832,7 @@ fun PPLefuBleConnectManager.fetchHeartRateSwitch(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -841,7 +841,7 @@ fun PPLefuBleConnectManager.fetchHeartRateSwitch(callBack: Result) {
 fun PPLefuBleConnectManager.impedanceSwitchControl(open: Boolean, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -904,7 +904,7 @@ fun PPLefuBleConnectManager.impedanceSwitchControl(open: Boolean, callBack: Resu
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -913,7 +913,7 @@ fun PPLefuBleConnectManager.impedanceSwitchControl(open: Boolean, callBack: Resu
 fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -970,7 +970,7 @@ fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -979,7 +979,7 @@ fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
 fun PPLefuBleConnectManager.setBindingState(binding: Boolean, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -1036,7 +1036,7 @@ fun PPLefuBleConnectManager.setBindingState(binding: Boolean, callBack: Result) 
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1045,7 +1045,7 @@ fun PPLefuBleConnectManager.setBindingState(binding: Boolean, callBack: Result) 
 fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -1093,7 +1093,7 @@ fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1102,7 +1102,7 @@ fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
 fun PPLefuBleConnectManager.setScreenBrightness(brightness: Int, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -1157,7 +1157,7 @@ fun PPLefuBleConnectManager.setScreenBrightness(brightness: Int, callBack: Resul
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1178,7 +1178,7 @@ private fun PPLefuBleConnectManager.sendWifiList(wifiList: List<PPWifiModel?>?, 
 fun PPLefuBleConnectManager.fetchUserIDList(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -1209,7 +1209,7 @@ fun PPLefuBleConnectManager.fetchUserIDList(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1218,7 +1218,7 @@ fun PPLefuBleConnectManager.fetchUserIDList(callBack: Result) {
 fun PPLefuBleConnectManager.selectUser(user: PPUserModel, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1261,7 +1261,7 @@ fun PPLefuBleConnectManager.selectUser(user: PPUserModel, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1270,7 +1270,7 @@ fun PPLefuBleConnectManager.selectUser(user: PPUserModel, callBack: Result) {
 fun PPLefuBleConnectManager.deleteUser(user: PPUserModel, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1313,7 +1313,7 @@ fun PPLefuBleConnectManager.deleteUser(user: PPUserModel, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1322,7 +1322,7 @@ fun PPLefuBleConnectManager.deleteUser(user: PPUserModel, callBack: Result) {
 fun PPLefuBleConnectManager.startMeasure(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1353,7 +1353,7 @@ fun PPLefuBleConnectManager.startMeasure(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1362,7 +1362,7 @@ fun PPLefuBleConnectManager.startMeasure(callBack: Result) {
 fun PPLefuBleConnectManager.stopMeasure(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1393,7 +1393,7 @@ fun PPLefuBleConnectManager.stopMeasure(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1402,7 +1402,7 @@ fun PPLefuBleConnectManager.stopMeasure(callBack: Result) {
 fun PPLefuBleConnectManager.startBabyModel(step: Int, weight: Double, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1445,7 +1445,7 @@ fun PPLefuBleConnectManager.startBabyModel(step: Int, weight: Double, callBack: 
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1454,7 +1454,7 @@ fun PPLefuBleConnectManager.startBabyModel(step: Int, weight: Double, callBack: 
 fun PPLefuBleConnectManager.exitBabyModel(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1490,7 +1490,7 @@ fun PPLefuBleConnectManager.exitBabyModel(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1499,7 +1499,7 @@ fun PPLefuBleConnectManager.exitBabyModel(callBack: Result) {
 fun PPLefuBleConnectManager.startDFU(filePath: String, deviceFirmwareVersion: String, isForceCompleteUpdate: Boolean, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1547,7 +1547,7 @@ fun PPLefuBleConnectManager.startDFU(filePath: String, deviceFirmwareVersion: St
 fun PPLefuBleConnectManager.syncDeviceLog(logFolder: String, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1574,7 +1574,7 @@ fun PPLefuBleConnectManager.syncDeviceLog(logFolder: String, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1583,7 +1583,7 @@ fun PPLefuBleConnectManager.syncDeviceLog(logFolder: String, callBack: Result) {
 fun PPLefuBleConnectManager.keepAlive() {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         return
     }
 
@@ -1609,7 +1609,7 @@ fun PPLefuBleConnectManager.keepAlive() {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
         }
     }
 }
@@ -1617,7 +1617,7 @@ fun PPLefuBleConnectManager.keepAlive() {
 fun PPLefuBleConnectManager.clearDeviceData(type: Int, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1676,7 +1676,7 @@ fun PPLefuBleConnectManager.clearDeviceData(type: Int, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1685,7 +1685,7 @@ fun PPLefuBleConnectManager.clearDeviceData(type: Int, callBack: Result) {
 fun PPLefuBleConnectManager.setDeviceLanguage(type: Int, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1740,7 +1740,7 @@ fun PPLefuBleConnectManager.setDeviceLanguage(type: Int, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1749,7 +1749,7 @@ fun PPLefuBleConnectManager.setDeviceLanguage(type: Int, callBack: Result) {
 fun PPLefuBleConnectManager.fetchDeviceLanguage(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -1804,7 +1804,7 @@ fun PPLefuBleConnectManager.fetchDeviceLanguage(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1813,7 +1813,7 @@ fun PPLefuBleConnectManager.fetchDeviceLanguage(callBack: Result) {
 fun PPLefuBleConnectManager.setDisplayBodyFat(bodyFat: Int, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1827,7 +1827,7 @@ fun PPLefuBleConnectManager.setDisplayBodyFat(bodyFat: Int, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1836,7 +1836,7 @@ fun PPLefuBleConnectManager.setDisplayBodyFat(bodyFat: Int, callBack: Result) {
 fun PPLefuBleConnectManager.exitScanWifiNetworks(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1849,7 +1849,7 @@ fun PPLefuBleConnectManager.exitScanWifiNetworks(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1858,7 +1858,7 @@ fun PPLefuBleConnectManager.exitScanWifiNetworks(callBack: Result) {
 fun PPLefuBleConnectManager.exitNetworkConfig(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         this.sendCommonState(false, callBack)
         return
     }
@@ -1885,7 +1885,7 @@ fun PPLefuBleConnectManager.exitNetworkConfig(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             this.sendCommonState(false, callBack)
         }
     }
@@ -1894,7 +1894,7 @@ fun PPLefuBleConnectManager.exitNetworkConfig(callBack: Result) {
 fun PPLefuBleConnectManager.getScreenBrightness(callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -1949,7 +1949,7 @@ fun PPLefuBleConnectManager.getScreenBrightness(callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -1958,7 +1958,7 @@ fun PPLefuBleConnectManager.getScreenBrightness(callBack: Result) {
 fun PPLefuBleConnectManager.syncUserInfo(model: PPUserModel, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -2001,7 +2001,7 @@ fun PPLefuBleConnectManager.syncUserInfo(model: PPUserModel, callBack: Result) {
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }
@@ -2010,7 +2010,7 @@ fun PPLefuBleConnectManager.syncUserInfo(model: PPUserModel, callBack: Result) {
 fun PPLefuBleConnectManager.syncUserList(userList: List<PPUserModel>, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
     if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.eventSink?.success("当前无连接设备")
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
         callBack.success(mapOf<String, Any>())
         return
     }
@@ -2053,7 +2053,7 @@ fun PPLefuBleConnectManager.syncUserList(userList: List<PPUserModel>, callBack: 
         }
 
         else -> {
-            this.loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
             callBack.success(mapOf<String, Any>())
         }
     }

@@ -1,6 +1,9 @@
 package com.example.pp_bluetooth_kit_flutter
 
 import io.flutter.plugin.common.EventChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PPLefuStreamHandler : EventChannel.StreamHandler {
     var eventSink: EventChannel.EventSink? = null
@@ -14,13 +17,18 @@ class PPLefuStreamHandler : EventChannel.StreamHandler {
     }
 
     fun sendEvent(event: Any) {
-        this.eventSink?.success(event)
+//        this.eventSink?.success(event)
+        CoroutineScope(Dispatchers.Main).launch {
+            eventSink?.success(event)
+        }
     }
 
     fun sendState(state: Any) {
-        val map = mutableMapOf<String, Any?>()
-        map.put("state", state)
-        this.eventSink?.success(map)
+        CoroutineScope(Dispatchers.Main).launch {
+            val map = mutableMapOf<String, Any?>()
+            map.put("state", state)
+            eventSink?.success(map)
+        }
     }
 
 }

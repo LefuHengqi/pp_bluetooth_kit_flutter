@@ -30,14 +30,14 @@ Future<void> main() async {
 
   try {
 
-    PPBluetoothKitLogger.addListener(isDebug: true, callBack: (text) {
+    PPBluetoothKitLogger.addListener(isDebug: false, callBack: (text) {
       print('SDK的日志:$text');
     });
 
     final path = 'config/Device.json';
     String jsonStr = await rootBundle.loadString(path);
     print("jsonStr len:${jsonStr.length}");
-    printLongJson(jsonStr);
+    // printLongJson(jsonStr);
     PPBluetoothKitManager.setDeviceSetting(jsonStr);
     PPBluetoothKitManager.addBlePermissionListener(callBack: (state) {
       print('蓝牙权限变化-$state');

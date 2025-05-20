@@ -84,7 +84,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     var scanStateStreamHandler: PPLefuStreamHandler? = null
     var kitchenStreamHandler: PPLefuStreamHandler? = null
 
-    var ppScale: PPSearchManager? = PPSearchManager.getInstance()
+    var ppScale: PPSearchManager? = null
 
 
     // 蓝牙状态相关
@@ -124,15 +124,13 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     // 临时设备字典
     private val tempDeviceDict = mutableMapOf<String, PPDeviceModel>()
 
-
-
-
     /**
      * 开始扫描设备
      */
     fun startScan(callBack: Result) {
-//        stopScan()
-//        disconnect()
+        ppScale = PPSearchManager.getInstance()
+        stopScan()
+        disconnect()
 
         tempDeviceDict.clear()
 
@@ -161,7 +159,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     fun connectDevice(deviceMac: String, deviceName: String) {
 
         if (deviceControl?.connectState() ?: false && deviceControl?.deviceModel?.deviceMac == deviceMac) {
-            loggerStreamHandler?.eventSink?.success("$deviceMac-该设备已连接，继续使用")
+            loggerStreamHandler?.sendEvent("$deviceMac-该设备已连接，继续使用")
             sendConnectState(1)
             return
         }
@@ -175,7 +173,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             if (device != null) {
                 currentDevice = device
 
-                loggerStreamHandler?.eventSink?.success("开始连接设备:${device.deviceName} mac:${device.deviceMac} ${device.getDevicePeripheralType()}")
+                loggerStreamHandler?.sendEvent("开始连接设备:${device.deviceName} mac:${device.deviceMac} ${device.getDevicePeripheralType()}")
 
                 when (device.getDevicePeripheralType()) {
                     PPDevicePeripheralType.PeripheralApple -> {
@@ -225,7 +223,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                     }
 
                     else -> {
-                        loggerStreamHandler?.eventSink?.success("不支持的设备类型-peripheralType:${device.getDevicePeripheralType()}-$deviceMac")
+                        loggerStreamHandler?.sendEvent("不支持的设备类型-peripheralType:${device.getDevicePeripheralType()}-$deviceMac")
                         sendConnectState(2)
                     }
                 }
@@ -236,7 +234,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
             }
         } else {
-            loggerStreamHandler?.eventSink?.success("找不到设备-$deviceMac")
+            loggerStreamHandler?.sendEvent("找不到设备-$deviceMac")
             sendConnectState(2)
         }
     }
@@ -286,7 +284,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      * 连接状态 0:断开连接 1:连接成功 2:连接错误
      */
     fun sendConnectState(state: Int) {
-        loggerStreamHandler?.eventSink?.success("连接状态:$state")
+        loggerStreamHandler?.sendEvent("连接状态:$state")
 
         connectState = state
 
@@ -296,7 +294,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             "state" to state
         )
 
-        connectStateStreamHandler?.eventSink?.success(params)
+        connectStateStreamHandler?.sendEvent(params)
     }
 
     /**
@@ -304,7 +302,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun fetchHistory(model: PPUserModel, callBack: Result? = null) {
         if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.eventSink?.success("当前无连接设备")
+            loggerStreamHandler?.sendEvent("当前无连接设备")
             callBack?.let { sendCommonState(false, it) }
             return
         }
@@ -312,7 +310,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         when (deviceControl?.deviceModel?.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralApple -> {
                 tempScaleHistoryList = mutableListOf()
-                appleControl?.getHistoryData(historyDataInterface)
+                appleControl?.getHistoryData(historyDataInterface, {
+
+                })
             }
 
             PPDevicePeripheralType.PeripheralCoconut -> {
@@ -350,7 +350,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             }
 
             else -> {
-                loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
+                loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
                 callBack?.let { sendCommonState(false, it) }
             }
         }
@@ -361,7 +361,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun deleteHistory(callBack: Result? = null) {
         if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.eventSink?.success("当前无连接设备")
+            loggerStreamHandler?.sendEvent("当前无连接设备")
             callBack?.let { sendCommonState(false, it) }
             return
         }
@@ -398,7 +398,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             }
 
             else -> {
-                loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
+                loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
                 callBack?.let { sendCommonState(false, it) }
             }
         }
@@ -409,8 +409,8 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun fetchBatteryInfo(callBack: Result? = null) {
         if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.eventSink?.success("当前无连接设备")
-            batteryStreamHandler?.eventSink?.success(mapOf("power" to 0, "type" to -1))
+            loggerStreamHandler?.sendEvent("当前无连接设备")
+            batteryStreamHandler?.sendEvent(mapOf("power" to 0, "type" to -1))
             callBack?.let { sendCommonState(false, it) }
             return
         }
@@ -447,8 +447,8 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             }
 
             else -> {
-                loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
-                batteryStreamHandler?.eventSink?.success(mapOf("power" to 0, "type" to -1))
+                loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
+                batteryStreamHandler?.sendEvent(mapOf("power" to 0, "type" to -1))
                 callBack?.let { sendCommonState(false, it) }
             }
         }
@@ -459,7 +459,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun resetDevice(callBack: Result? = null) {
         if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.eventSink?.success("当前无连接设备")
+            loggerStreamHandler?.sendEvent("当前无连接设备")
             callBack?.let { sendCommonState(false, it) }
             return
         }
@@ -502,7 +502,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             }
 
             else -> {
-                loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
+                loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
                 callBack?.let { sendCommonState(false, it) }
             }
         }
@@ -515,20 +515,20 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         val device = tempDeviceDict[deviceMac]
 
         if (device == null) {
-            loggerStreamHandler?.eventSink?.success("找不到当前设备")
+            loggerStreamHandler?.sendEvent("找不到当前设备")
             sendCommonState(false, callBack)
             return
         }
 
 
         if (device.deviceConnectType != PPDeviceConnectType.PPDeviceConnectTypeBroadcast) {
-            loggerStreamHandler?.eventSink?.success("${device.deviceName}-${device.deviceMac}不是广播秤")
+            loggerStreamHandler?.sendEvent("${device.deviceName}-${device.deviceMac}不是广播秤")
             sendCommonState(false, callBack)
             return
         }
 
         if (PPBleHelper.isOpenBluetooth()) {
-            loggerStreamHandler?.eventSink?.success("接收广播失败-蓝牙开关未打开")
+            loggerStreamHandler?.sendEvent("接收广播失败-蓝牙开关未打开")
             sendCommonState(false, callBack)
             return
         }
@@ -571,7 +571,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun sendBroadcastData(cmd: String, unitType: Int, callBack: Result) {
         if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.eventSink?.success("当前设备为空")
+            loggerStreamHandler?.sendEvent("当前设备为空")
             sendCommonState(false, callBack)
             return
         }
@@ -583,7 +583,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             jambulControl?.startBroadCast(UnitUtil.getUnitType(unitType), mode, jambulControl?.deviceModel?.deviceMac ?: "")
             sendCommonState(true, callBack)
         } else {
-            loggerStreamHandler?.eventSink?.success("不支持的功能-jambul:${jambulControl}-peripheralType:${currentDevice?.getDevicePeripheralType()}")
+            loggerStreamHandler?.sendEvent("不支持的功能-jambul:${jambulControl}-peripheralType:${currentDevice?.getDevicePeripheralType()}")
             sendCommonState(false, callBack)
         }
     }
@@ -620,7 +620,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun toZero(callBack: Result) {
         if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.eventSink?.success("当前无连接设备")
+            loggerStreamHandler?.sendEvent("当前无连接设备")
             sendCommonState(false, callBack)
             return
         }
@@ -647,7 +647,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             }
 
             else -> {
-                loggerStreamHandler?.eventSink?.success("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
+                loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
                 sendCommonState(false, callBack)
             }
         }
