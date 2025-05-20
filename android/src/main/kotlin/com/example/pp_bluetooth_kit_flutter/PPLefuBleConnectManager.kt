@@ -124,11 +124,15 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     // 临时设备字典
     private val tempDeviceDict = mutableMapOf<String, PPDeviceModel>()
 
+    fun initSDK() {
+        Logger.e("PPLefuBleConnectManager initSDK")
+        ppScale = PPSearchManager.getInstance()
+    }
+
     /**
      * 开始扫描设备
      */
     fun startScan(callBack: Result) {
-        ppScale = PPSearchManager.getInstance()
         stopScan()
         disconnect()
 
@@ -141,6 +145,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      * 扫描设备
      */
     fun scanDevice(type: PPLefuScanType, callBack: Result) {
+
         scanType = type
         needScan = true
 

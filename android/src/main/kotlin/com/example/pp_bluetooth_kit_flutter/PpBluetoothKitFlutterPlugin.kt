@@ -167,6 +167,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
 
         // 初始化SDK
         initSDK(context, appKey, appSecret,  deviceContent)
+        bleManager.initSDK()
       }
       "setDeviceSetting" -> {
         val deviceContent = params?.get("deviceContent") as? String
@@ -182,6 +183,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
           bleManager.loggerStreamHandler?.sendEvent("设备列表-转JSON异常: ${e.message}")
           bleManager.sendCommonState(false, result)
         }
+        bleManager.initSDK()
       }
       "startScan" -> {
         bleManager.startScan(result)
