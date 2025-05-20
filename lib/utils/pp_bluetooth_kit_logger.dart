@@ -8,7 +8,7 @@ import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platfo
 
 class PPBluetoothKitLogger {
 
-  static bool _enabled = false;
+  static bool _enabled = true;
   static Function(String logStr)? _logListener;
 
   /// 添加日志监听回调

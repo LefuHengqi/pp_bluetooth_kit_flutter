@@ -36,8 +36,9 @@ Future<void> main() async {
 
     final path = 'config/Device.json';
     String jsonStr = await rootBundle.loadString(path);
+    print("jsonStr len:${jsonStr.length}");
+    printLongJson(jsonStr);
     PPBluetoothKitManager.setDeviceSetting(jsonStr);
-
     PPBluetoothKitManager.addBlePermissionListener(callBack: (state) {
       print('蓝牙权限变化-$state');
     });
@@ -47,6 +48,16 @@ Future<void> main() async {
   }
 
   runApp(const MyApp());
+
+}
+
+void printLongJson(String jsonStr) {
+  const chunkSize = 500; // 每段长度
+  for (var i = 0; i < jsonStr.length; i += chunkSize) {
+    final end = (i + chunkSize).clamp(0, jsonStr.length); // 防止越界
+    final chunk = jsonStr.substring(i, end);
+    print("[${i ~/ chunkSize + 1}] $chunk"); // 带序号输出
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -169,9 +180,6 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
-
-
     PPBluetoothKitManager.addScanStateListener(callBack: (isScanning) {
       print('扫描状态:$isScanning');
     });
@@ -257,6 +265,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
                           // final device  = PPDeviceModel("LFSmart Scale", "CA:E6:08:24:04:A7");
                           // final device = PPDeviceModel("LEFU-CF577","CF:E7:0B:14:00:B3");
+
 
                           // 人体秤
                           PPBluetoothKitManager.addMeasurementListener(callBack: (state, model, device){

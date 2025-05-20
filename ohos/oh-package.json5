@@ -6,6 +6,8 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@ohos/flutter_ohos": "file:./har/flutter.har"
+    "@ohos/flutter_ohos": "file:./har/flutter.har",
+//    "ppsdkkit": "file:./testhar",
+    "ppsdkkit": "file:./har/ppsdkkit.har"
   }
 }
