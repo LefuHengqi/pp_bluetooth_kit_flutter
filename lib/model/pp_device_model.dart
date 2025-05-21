@@ -41,54 +41,13 @@ class PPDeviceModel {
   int? standardType = 0; //标准类型，0 亚洲标准, 1 WHO标准
   int? brandId = 0;
   int? avatarType = 0;
+  int? peripheralType = 0;
 
   PPDeviceModel(this.deviceName, this.deviceMac);
 
   PPDevicePeripheralType getDevicePeripheralType() {
-    if (deviceConnectType == PPDeviceConnectType.Lte) {
-      return PPDevicePeripheralType.kiwifruit;
-    } else if (deviceConnectType == PPDeviceConnectType.direct) {
-      if (deviceProtocolType == PPDeviceProtocolType.v2) {
-        if (deviceType == PPDeviceType.ca) {
-          return PPDevicePeripheralType.egg;
-        } else if (deviceCalculateType == PPDeviceCalculateType.inScale) {
-          return PPDevicePeripheralType.durian;
-        } else {
-          return PPDevicePeripheralType.apple;
-        }
-      } else if (deviceProtocolType == PPDeviceProtocolType.v3) {
-        if (deviceType == PPDeviceType.ca) {
-          return PPDevicePeripheralType.fish;
-        } else {
-          return PPDevicePeripheralType.coconut;
-        }
-      } else if (deviceProtocolType == PPDeviceProtocolType.v4) {
-        return PPDevicePeripheralType.ice;
-      } else if (deviceProtocolType == PPDeviceProtocolType.torre) {
-        return PPDevicePeripheralType.torre;
-      } else if (deviceProtocolType == PPDeviceProtocolType.borre) {
-        return PPDevicePeripheralType.borre;
-      } else if (deviceProtocolType == PPDeviceProtocolType.dorre) {
-        return PPDevicePeripheralType.dorre;
-      } else if (deviceProtocolType == PPDeviceProtocolType.forre) {
-        return PPDevicePeripheralType.forre;
-      }
-    } else {
-      if (deviceProtocolType == PPDeviceProtocolType.v2) {
-        if (deviceType == PPDeviceType.ca) {
-          return PPDevicePeripheralType.grapes;
-        } else {
-          return PPDevicePeripheralType.banana;
-        }
-      } else if (deviceProtocolType == PPDeviceProtocolType.v3) {
-        if (deviceType == PPDeviceType.ca) {
-          return PPDevicePeripheralType.hamburger;
-        } else {
-          return PPDevicePeripheralType.jambul;
-        }
-      }
-    }
-    return PPDevicePeripheralType.apple;
+    final type = peripheralType ?? 0;
+    return PPDevicePeripheralType.fromValue(type) ?? PPDevicePeripheralType.apple;
   }
 
   @override
@@ -129,6 +88,7 @@ class PPDeviceModel {
       'standardType': standardType,
       'brandId': brandId,
       'avatarType': avatarType,
+      'peripheralType': peripheralType,
     };
   }
 
@@ -165,6 +125,7 @@ class PPDeviceModel {
     model.standardType = json['standardType'] as int?;
     model.brandId = json['brandId'] as int?;
     model.avatarType = json['avatarType'] as int?;
+    model.peripheralType = json['peripheralType'] as int?;
     return model;
   }
 }

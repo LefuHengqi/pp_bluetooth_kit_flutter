@@ -247,7 +247,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                       onTap: () async {
                         if (index == 0) {
                           PPBluetoothKitManager.startScan((device) {
-                            print('业务扫描回调:${device.toString()}');
+                            print('业务扫描回调:${device.toString()} PeripheralType:${device.getDevicePeripheralType()}');
                             _updateText('扫到设备:${device.toJson()} ');
                           });
                         } else if (index == 1) {
