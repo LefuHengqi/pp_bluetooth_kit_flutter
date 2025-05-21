@@ -1,8 +1,11 @@
 package com.example.pp_bluetooth_kit_flutter
 
 import android.content.Context
+import android.content.Intent
+import android.view.View
 import com.example.pp_bluetooth_kit_flutter.extension.convertDeviceDict
 import com.example.pp_bluetooth_kit_flutter.extension.convertMeasurementDict
+import com.example.pp_bluetooth_kit_flutter.extension.convertMeasurementDictFood
 import com.example.pp_bluetooth_kit_flutter.extension.sendBlePermissionState
 import com.example.pp_bluetooth_kit_flutter.extension.sendCommonState
 import com.example.pp_bluetooth_kit_flutter.extension.sendHistoryData
@@ -13,11 +16,20 @@ import com.example.pp_bluetooth_kit_flutter.util.PPBluetoothState
 import com.lefu.ppbase.*
 import com.lefu.ppbase.PPScaleDefine.*
 import com.lefu.ppbase.util.Logger
+import com.lefu.ppbase.util.PPUtil
+import com.lefu.ppbase.vo.PPScaleState
+import com.lefu.ppbase.vo.PPScaleStateHeartRateType
+import com.lefu.ppbase.vo.PPScaleStateImpedanceType
+import com.lefu.ppbase.vo.PPScaleStateMeasureModeType
+import com.lefu.ppbase.vo.PPScaleStateMeasureResultType
 import com.lefu.ppbase.vo.PPUserModel
+import com.lefu.ppcalculate.PPBodyFatModel
 import com.peng.ppscale.*
 import com.peng.ppscale.business.ble.PPScaleHelper
+import com.peng.ppscale.business.ble.listener.FoodScaleDataChangeListener
 import com.peng.ppscale.business.ble.listener.PPBleSendResultCallBack
 import com.peng.ppscale.business.ble.listener.PPBleStateInterface
+import com.peng.ppscale.business.ble.listener.PPDataChangeListener
 import com.peng.ppscale.business.ble.listener.PPDeviceInfoInterface
 import com.peng.ppscale.business.ble.listener.PPDeviceLogInterface
 import com.peng.ppscale.business.ble.listener.PPDeviceSetInfoInterface
@@ -44,6 +56,7 @@ import com.peng.ppscale.device.PeripheralJambul.PPBlutoothPeripheralJambulContro
 import com.peng.ppscale.device.PeripheralTorre.PPBlutoothPeripheralTorreController
 import com.peng.ppscale.search.PPSearchManager
 import com.peng.ppscale.util.UnitUtil
+import com.peng.ppscale.vo.LFFoodScaleGeneral
 import com.peng.ppscale.vo.PPScaleSendState
 import io.flutter.plugin.common.MethodChannel.Result
 
@@ -178,7 +191,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             if (device != null) {
                 currentDevice = device
 
-                loggerStreamHandler?.sendEvent("开始连接设备:${device.deviceName} mac:${device.deviceMac} ${device.getDevicePeripheralType()}")
+                loggerStreamHandler?.sendEvent("开始连接设备:${device.deviceName} ${device.deviceName} ${device.getDevicePeripheralType()}")
 
                 when (device.getDevicePeripheralType()) {
                     PPDevicePeripheralType.PeripheralApple -> {
@@ -187,53 +200,54 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                     }
 
                     PPDevicePeripheralType.PeripheralCoconut -> {
-
                         coconutControl = PPBlutoothPeripheralCoconutController()
                         deviceControl = coconutControl
                     }
 
-                    PPDevicePeripheralType.PeripheralBorre -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                    PPDevicePeripheralType.PeripheralTorre -> {
+                        torreControl = PPBlutoothPeripheralTorreController()
+                        deviceControl = torreControl
                     }
 
                     PPDevicePeripheralType.PeripheralIce -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                        iceControl = PPBlutoothPeripheralIceController()
+                        deviceControl = iceControl
                     }
 
                     PPDevicePeripheralType.PeripheralBorre -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                        borreControl = PPBlutoothPeripheralBorreController()
+                        deviceControl = borreControl
+                    }
+
+                    PPDevicePeripheralType.PeripheralDorre -> {
+                        dorreControl = PPBlutoothPeripheralDorreController()
+                        deviceControl = dorreControl
                     }
 
                     PPDevicePeripheralType.PeripheralForre -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                        forreControl = PPBlutoothPeripheralForreController()
+                        deviceControl = forreControl
                     }
 
                     PPDevicePeripheralType.PeripheralFish -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                        fishControl = PPBlutoothPeripheralFishController()
+                        deviceControl = fishControl
                     }
 
                     PPDevicePeripheralType.PeripheralEgg -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                        eggControl = PPBlutoothPeripheralEggController()
+                        deviceControl = eggControl
                     }
 
                     PPDevicePeripheralType.PeripheralDurian -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
+                        durianControl = PPBlutoothPeripheralDurianController()
+                        deviceControl = durianControl
                     }
 
                     else -> {
                         loggerStreamHandler?.sendEvent("不支持的设备类型-peripheralType:${device.getDevicePeripheralType()}-$deviceMac")
                         sendConnectState(2)
                     }
-                }
-                if (deviceControl != null && deviceControl?.deviceModel?.deviceConnectType == PPDeviceConnectType.PPDeviceConnectTypeDirect) {
-
                 }
                 deviceControl?.startConnect(device, bleStateInterface)
 
@@ -424,11 +438,6 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             PPDevicePeripheralType.PeripheralApple -> {
                 appleControl?.readDeviceBattery(deviceInfoInterface)
                 callBack?.let { sendCommonState(true, it) }
-            }
-
-            PPDevicePeripheralType.PeripheralCoconut -> {
-//                coconutControl?.readDeviceBattery()
-//                callBack?.let { sendCommonState(true, it) }
             }
 
             PPDevicePeripheralType.PeripheralTorre -> {
@@ -661,6 +670,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
     val bleStateInterface = object : PPBleStateInterface() {
         override fun monitorBluetoothWorkState(ppBleWorkState: PPBleWorkState?, deviceModel: PPDeviceModel?) {
+            Logger.e("monitorBluetoothWorkState:${ppBleWorkState}")
             if (ppBleWorkState == PPBleWorkState.PPBleWorkStateConnected) {
 
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateConnecting) {
@@ -681,6 +691,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 map.put("deviceMac", deviceModel?.deviceMac)
                 map.put("state", 1)
                 connectStateStreamHandler?.sendEvent(map)
+                registerDataChangeListener()
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateConnectFailed) {
                 val map = mutableMapOf<String, Any?>()
                 map.put("deviceMac", deviceModel?.deviceMac)
@@ -700,8 +711,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         override fun monitorMtuChange(deviceModel: PPDeviceModel?) {
             val map = mutableMapOf<String, Any?>()
             map.put("deviceMac", deviceModel?.deviceMac)
-            map.put("state", 0)
+            map.put("state", 1)
             connectStateStreamHandler?.sendEvent(map)
+            registerDataChangeListener()
         }
 
     }
@@ -712,13 +724,87 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         }
     }
 
+    fun registerDataChangeListener() {
 
-    var searchDeviceInfoInterface = PPSearchDeviceInfoInterface { ppDeviceModel, data ->
-        {
-            tempDeviceDict.put(ppDeviceModel.deviceMac, ppDeviceModel)
-            val deviceDict = convertDeviceDict(ppDeviceModel)
+        val currentDevice = deviceControl?.deviceModel
+
+        when (currentDevice?.getDevicePeripheralType()) {
+            PPDevicePeripheralType.PeripheralFish -> {
+                fishControl?.registDataChangeListener(foodScaleDataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralEgg -> {
+                eggControl?.registDataChangeListener(foodScaleDataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralJambul -> {
+                jambulControl?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralGrapes  -> {
+                grapesControl?.registDataChangeListener(foodScaleDataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralHamburger  -> {
+                hamburgerControl?.registDataChangeListener(foodScaleDataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralBanana -> {
+                bananaControl?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralDurian -> {
+                durianControl?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralCoconut -> {
+                coconutControl?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralApple -> {
+                appleControl?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralIce -> {
+                iceControl?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralTorre -> {
+                torreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralBorre -> {
+                borreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralDorre -> {
+                dorreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
+            }
+
+            PPDevicePeripheralType.PeripheralForre -> {
+                forreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
+            }
+
+            else -> {
+
+            }
+        }
+
+
+    }
+
+
+    val searchDeviceInfoInterface = object : PPSearchDeviceInfoInterface {
+        override fun onSearchDevice(deviceModel: PPDeviceModel?, data: String?) {
+            if (deviceModel == null) {
+                return
+            }
+            Logger.d("桥接层扫描到设备:${deviceModel?.deviceName} mac:${deviceModel?.deviceMac} ${deviceModel?.getDevicePeripheralType()}")
+            tempDeviceDict.put(deviceModel.deviceMac, deviceModel)
+            val deviceDict = convertDeviceDict(deviceModel)
             scanResultStreamHandler?.sendEvent(deviceDict)
         }
+
     }
 
 
@@ -747,7 +833,6 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
     var torreDeviceModeChangeInterface = object : PPTorreDeviceModeChangeInterface {
 
-
         override fun readDevicePower(power: Int) {
             batteryStreamHandler?.sendEvent(mapOf("power" to power, "type" to 0))
         }
@@ -768,44 +853,165 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
 
     var onDFUStateListener: OnDFUStateListener = object : OnDFUStateListener {
-            override fun onDfuProgress(progress: Int) {
-                dfuStreamHandler?.sendEvent(mapOf("progress" to progress, "isSuccess" to false, "code" to 0))
-            }
+        override fun onDfuProgress(progress: Int) {
+            dfuStreamHandler?.sendEvent(mapOf("progress" to progress, "isSuccess" to false, "code" to 0))
+        }
 
-            override fun onDfuFail(errorType: String?) {
-                dfuStreamHandler?.sendEvent(mapOf("progress" to -1, "isSuccess" to false, "code" to 2))
-            }
+        override fun onDfuFail(errorType: String?) {
+            dfuStreamHandler?.sendEvent(mapOf("progress" to -1, "isSuccess" to false, "code" to 2))
+        }
 
-            override fun onDfuStart() {
-                dfuStreamHandler?.sendEvent(mapOf("progress" to 0, "isSuccess" to false, "code" to 0))
-            }
+        override fun onDfuStart() {
+            dfuStreamHandler?.sendEvent(mapOf("progress" to 0, "isSuccess" to false, "code" to 0))
+        }
 
-            override fun onDfuSucess() {
-                dfuStreamHandler?.sendEvent(mapOf("progress" to 100, "isSuccess" to true, "code" to 1))
-            }
+        override fun onDfuSucess() {
+            dfuStreamHandler?.sendEvent(mapOf("progress" to 100, "isSuccess" to true, "code" to 1))
+        }
 
-            override fun onStartSendDfuData() {
-
-            }
+        override fun onStartSendDfuData() {
 
         }
+
+    }
 
 
     var deviceLogInterface = object : PPDeviceLogInterface {
 
         override fun syncLogStart() {
-            deviceLogStreamHandler?.sendEvent(mapOf("progress" to 0, "isFailed" to false))
+            deviceLogStreamHandler?.sendEvent(mapOf("progress" to 0.0, "isFailed" to false))
         }
 
         override fun syncLoging(progress: Int) {
-            deviceLogStreamHandler?.sendEvent(mapOf("progress" to progress, "isFailed" to false))
+            deviceLogStreamHandler?.sendEvent(mapOf("progress" to progress/100.0, "isFailed" to false))
         }
 
         override fun syncLogEnd(filePath: String?) {
-            deviceLogStreamHandler?.sendEvent(mapOf("progress" to 1, "filePath" to filePath, "isFailed" to false))
+            deviceLogStreamHandler?.sendEvent(mapOf("progress" to 1.0, "filePath" to filePath, "isFailed" to false))
         }
 
     }
 
+    var foodScaleDataChangeListener = object : FoodScaleDataChangeListener() {
+
+        override fun processData(foodScaleGeneral: LFFoodScaleGeneral?, deviceModel: PPDeviceModel?) {
+            if (foodScaleGeneral == null) {
+                return
+            }
+            if (deviceModel == null) {
+                return
+            }
+            val measureMentDataDict = convertMeasurementDictFood(foodScaleGeneral)
+            //0:过程数据，10:测量完成（获取阻抗、心率等数据进行身体数据计算）
+            var measurementState = 0
+            kitchenStreamHandler?.sendEvent(
+                mapOf(
+                    "measurementState" to measurementState,
+                    "device" to convertDeviceDict(deviceModel),
+                    "data" to measureMentDataDict
+                )
+            )
+        }
+
+        override fun lockedData(foodScaleGeneral: LFFoodScaleGeneral?, deviceModel: PPDeviceModel?) {
+            if (foodScaleGeneral == null) {
+                return
+            }
+            if (deviceModel == null) {
+                return
+            }
+            val measureMentDataDict = convertMeasurementDictFood(foodScaleGeneral)
+            var measurementState = 10
+            kitchenStreamHandler?.sendEvent(
+                mapOf(
+                    "measurementState" to measurementState,
+                    "device" to convertDeviceDict(deviceModel),
+                    "data" to measureMentDataDict
+                )
+            )
+        }
+
+    }
+    var dataChangeListener = object : PPDataChangeListener {
+        override fun monitorDataFail(bodyBaseModel: PPBodyBaseModel?, deviceModel: PPDeviceModel?) {
+
+        }
+
+        /**
+         * 设备状态监听/Device status monitoring
+         */
+        override fun monitorScaleState(scaleState: PPScaleState?) {
+            //中文：https://xinzhiyun.feishu.cn/docx/MyOldJy8woXBKZxpvw8c3huLnjf?from=from_copylink
+            //English:https://xinzhiyun.feishu.cn/docx/Llu6dwLe6oghduxfsGZco8bInEe?from=from_copylink
+
+        }
+
+        /**
+         * 监听过程数据
+         *
+         * @param bodyBaseModel
+         * @param deviceModel
+         */
+        override fun monitorProcessData(bodyBaseModel: PPBodyBaseModel?, deviceModel: PPDeviceModel?) {
+            if (bodyBaseModel == null) {
+                return
+            }
+            if (deviceModel == null) {
+                return
+            }
+            val measureMentDataDict = convertMeasurementDict(bodyBaseModel)
+            //0:过程数据，1:体脂测量中（部分设备无此状态），2:心率测量中，10:测量完成（获取阻抗、心率等数据进行身体数据计算）
+            var measurementState = 0
+            if (bodyBaseModel.scaleState.impedanceType == PPScaleStateImpedanceType.PP_SCALE_STATE_IMPEDANCE_MEASURING) {
+                measurementState = 1
+            } else if (bodyBaseModel.scaleState.heartRateType == PPScaleStateHeartRateType.PP_SCALE_STATE_HEARTRATE_MEASURING) {
+                measurementState = 2
+            } else {
+                measurementState = 0
+            }
+            measureStreamHandler?.sendEvent(
+                mapOf(
+                    "measurementState" to measurementState,
+                    "device" to convertDeviceDict(deviceModel),
+                    "data" to measureMentDataDict
+                )
+            )
+        }
+
+        /**
+         * 0:过程数据，1:体脂测量中（部分设备无此状态），2:心率测量中，10:测量完成（获取阻抗、心率等数据进行身体数据计算）
+         *
+         * @param bodyBaseModel
+         */
+        override fun monitorLockData(bodyBaseModel: PPBodyBaseModel?, deviceModel: PPDeviceModel?) {
+            if (bodyBaseModel == null) {
+                return
+            }
+            if (deviceModel == null) {
+                return
+            }
+            val measureMentDataDict = convertMeasurementDict(bodyBaseModel)
+            if (bodyBaseModel.isHeartRating ?: false) {
+                //isHeartRating： 心率是否测量中  true心率测量中/重量测量完成/阻抗测量完成  false心率测量结束/测量完成
+                measureStreamHandler?.sendEvent(
+                    mapOf(
+                        "measurementState" to 2,
+                        "device" to convertDeviceDict(deviceModel),
+                        "data" to measureMentDataDict
+                    )
+                )
+            } else {
+                measureStreamHandler?.sendEvent(
+                    mapOf(
+                        "measurementState" to 10,
+                        "device" to convertDeviceDict(deviceModel),
+                        "data" to measureMentDataDict
+                    )
+                )
+            }
+
+
+        }
+    }
 
 }

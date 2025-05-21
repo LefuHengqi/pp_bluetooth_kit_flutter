@@ -34,25 +34,25 @@ fun PPLefuBleConnectManager.convertDeviceDict(device: PPDeviceModel): Map<String
     map["deviceName"] = device.deviceName
     map["devicePower"] = device.devicePower
     map["rssi"] = device.rssi
-    map["deviceType"] = device.deviceType
-    map["deviceProtocolType"] = device.deviceProtocolType
-    map["deviceCalculateType"] = device.deviceCalcuteType
-    map["deviceAccuracyType"] = device.deviceAccuracyType
-    map["devicePowerType"] = device.devicePowerType
-    map["deviceConnectType"] = device.deviceConnectType
+    map["deviceType"] = device.deviceType.ordinal
+    map["deviceProtocolType"] = device.deviceProtocolType.getType()
+    map["deviceCalculateType"] = device.deviceCalcuteType.getType()
+    map["deviceAccuracyType"] = device.deviceAccuracyType.getType()
+    map["devicePowerType"] = device.devicePowerType.getType()
+    map["deviceConnectType"] = device.deviceConnectType.getType()
     map["deviceFuncType"] = device.deviceFuncType
     map["deviceUnitType"] = device.deviceUnitType
-    map["peripheralType"] = device.getDevicePeripheralType()
+    map["peripheralType"] = device.getDevicePeripheralType().ordinal
     map["sign"] = device.sign
     map["advLength"] = device.advLength
     map["macAddressStart"] = device.macAddressStart
     map["standardType"] = device.standardType
     map["productModel"] = device.productModel
     val deviceConfig = PPBluetoothKit.getDeviceConfigVo(device.deviceSettingId);
-    map["brandId"] = deviceConfig?.brandId
+    map["brandId"] = (deviceConfig?.brandId ?: "0").toInt()
     map["imgUrl"] = device.imgUrl
-    map["avatarType"] = deviceConfig?.avatarType
-    map["customDeviceName"] = deviceConfig?.customDeviceName
+    map["avatarType"] = deviceConfig?.avatarType ?: 0
+    map["customDeviceName"] = deviceConfig?.customDeviceName ?: ""
 
     return map.filterValues { it != null } as Map<String, Any>
 }
@@ -75,7 +75,7 @@ fun PPLefuBleConnectManager.convertMeasurementDict(model: PPBodyBaseModel): Map<
     map["isOverload"] = model.isOverload
     map["memberId"] = memberId
     map["footLen"] = model.footLen
-    map["unit"] = model.unit
+    map["unit"] = model.unit?.type
     map["z100KhzLeftArmEnCode"] = model.z100KhzLeftArmEnCode
     map["z100KhzLeftLegEnCode"] = model.z100KhzLeftLegEnCode
     map["z100KhzRightArmEnCode"] = model.z100KhzRightArmEnCode

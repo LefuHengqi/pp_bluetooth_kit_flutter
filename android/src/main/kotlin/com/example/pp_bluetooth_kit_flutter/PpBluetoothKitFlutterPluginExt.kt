@@ -96,8 +96,7 @@ fun PpBluetoothKitFlutterPlugin.setDeviceSetting(context: Context, encryptStr: S
      * @param appSecret Appp的密钥
      * @param configPath 在开放平台下载相应的配置文件以.config结尾，并放到assets目录下，将config文件全名传给SDK
      */
-    PPBluetoothKit.initSdk(context, "", "", "")
-    PPBluetoothKit.setDeviceConfigJsonStr(encryptStr)
+    PPBluetoothKit.setDeviceConfigJsonStr(context, encryptStr)
     /**
      * PPCalculateKit 计算库初始化
      */

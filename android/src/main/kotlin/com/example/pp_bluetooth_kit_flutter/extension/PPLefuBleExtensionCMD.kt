@@ -26,6 +26,7 @@ import com.peng.ppscale.util.UnitUtil
 import com.peng.ppscale.vo.PPScaleSendState
 import com.peng.ppscale.vo.PPWifiModel
 import io.flutter.plugin.common.MethodChannel.Result
+import java.util.logging.Logger
 
 /**
  * PPLefuBleConnectManager的命令处理扩展
@@ -1551,7 +1552,7 @@ fun PPLefuBleConnectManager.syncDeviceLog(logFolder: String, callBack: Result) {
         this.sendCommonState(false, callBack)
         return
     }
-
+    com.lefu.ppbase.util.Logger.e("syncDeviceLog logFolder:${logFolder}")
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
             this.torreControl?.getTorreDeviceManager()?.syncLog(logFolder, deviceLogInterface)
@@ -1589,23 +1590,23 @@ fun PPLefuBleConnectManager.keepAlive() {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
-            this.torreControl?.getTorreDeviceManager()?.startKeepAlive()
+            this.torreControl?.getTorreDeviceManager()?.keepAlive()
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
-            this.iceControl?.startKeepAlive()
+            this.iceControl?.keepAlive()
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.borreControl?.getTorreDeviceManager()?.startKeepAlive()
+            this.borreControl?.getTorreDeviceManager()?.keepAlive()
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.startKeepAlive()
+            this.dorreControl?.getTorreDeviceManager()?.keepAlive()
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.forreControl?.getTorreDeviceManager()?.startKeepAlive()
+            this.forreControl?.getTorreDeviceManager()?.keepAlive()
         }
 
         else -> {
