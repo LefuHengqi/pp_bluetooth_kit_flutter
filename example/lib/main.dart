@@ -142,7 +142,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('同步设备日志'),    // 12
     GridItem('开始测量'),       // 13
     GridItem('停止测量'),       // 14
-    GridItem('同步用户列表'),    // 15
+    GridItem('同步用户信息'),    // 15
     GridItem('删除用户'),    // 16
     GridItem('获取用户列表'),    // 17
     GridItem('抱婴模式-step1'),    // 18
@@ -247,7 +247,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                       onTap: () async {
                         if (index == 0) {
                           PPBluetoothKitManager.startScan((device) {
-                            print('业务扫描回调:${device.toString()}');
+                            print('业务扫描回调:${device.toString()} PeripheralType:${device.getDevicePeripheralType()}');
                             _updateText('扫到设备:${device.toJson()} ');
                           });
                         } else if (index == 1) {
@@ -377,8 +377,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                               pIndex: 2,
                               currentWeight: 45);
 
-                          final ret = await PPPeripheralTorre.syncUserList([user]);
-                          _updateText('同步用户列表结果-$ret');
+                          final ret = await PPPeripheralTorre.syncUserInfo(user);
+                          _updateText('同步用户信息结果-$ret');
 
                         } else if (index == 16) {
 

@@ -144,11 +144,7 @@ class PPPeripheralBorre {
     return PPBluetoothKitFlutterPlatform.instance.syncUserInfo(_peripheralType, userModel);
   }
 
-  /// 同步用户列表到设备
-  /// userList:用户列表
-  static Future<bool> syncUserList(List<PPTorreUserModel> userList) async {
-    return PPBluetoothKitFlutterPlatform.instance.syncUserList(_peripheralType, userList);
-  }
+
 
   /// 获取设备中用户ID列表
   /// 返回：设备中用户 userID 列表
