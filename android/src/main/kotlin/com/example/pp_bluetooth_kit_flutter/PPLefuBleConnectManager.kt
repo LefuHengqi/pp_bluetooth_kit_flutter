@@ -13,6 +13,7 @@ import com.example.pp_bluetooth_kit_flutter.extension.sendScanState
 import com.example.pp_bluetooth_kit_flutter.model.PPDfuPackageModel
 import com.example.pp_bluetooth_kit_flutter.util.PPBleHelper
 import com.example.pp_bluetooth_kit_flutter.util.PPBluetoothState
+import com.example.pp_bluetooth_kit_flutter.util.PermissionUtil
 import com.lefu.ppbase.*
 import com.lefu.ppbase.PPScaleDefine.*
 import com.lefu.ppbase.util.Logger
@@ -619,10 +620,14 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      */
     fun addBlePermissionListener() {
         try {
-            if (PPBleHelper.isOpenBluetooth()) {
-                sendBlePermissionState(PPBluetoothState.POWERED_ON)
+            if (PermissionUtil.isHasBluetoothPermissions(context)) {
+                if (PPBleHelper.isOpenBluetooth()) {
+                    sendBlePermissionState(PPBluetoothState.POWERED_ON)
+                } else {
+                    sendBlePermissionState(PPBluetoothState.POWERED_OFF)
+                }
             } else {
-                sendBlePermissionState(PPBluetoothState.POWERED_OFF)
+                sendBlePermissionState(PPBluetoothState.UNAUTHORIZED)
             }
         } catch (e: Exception) {
             sendBlePermissionState(PPBluetoothState.UNAUTHORIZED)
@@ -702,8 +707,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         override fun monitorBluetoothSwitchState(ppBleSwitchState: PPBleSwitchState?) {
             if (ppBleSwitchState == PPBleSwitchState.PPBleSwitchStateOff) {
-
+                sendBlePermissionState(PPBluetoothState.POWERED_OFF)
             } else if (ppBleSwitchState == PPBleSwitchState.PPBleSwitchStateOn) {
+                sendBlePermissionState(PPBluetoothState.POWERED_ON)
 
             }
         }
@@ -741,11 +747,11 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 jambulControl?.registDataChangeListener(dataChangeListener)
             }
 
-            PPDevicePeripheralType.PeripheralGrapes  -> {
+            PPDevicePeripheralType.PeripheralGrapes -> {
                 grapesControl?.registDataChangeListener(foodScaleDataChangeListener)
             }
 
-            PPDevicePeripheralType.PeripheralHamburger  -> {
+            PPDevicePeripheralType.PeripheralHamburger -> {
                 hamburgerControl?.registDataChangeListener(foodScaleDataChangeListener)
             }
 
@@ -883,7 +889,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         }
 
         override fun syncLoging(progress: Int) {
-            deviceLogStreamHandler?.sendEvent(mapOf("progress" to progress/100.0, "isFailed" to false))
+            deviceLogStreamHandler?.sendEvent(mapOf("progress" to progress / 100.0, "isFailed" to false))
         }
 
         override fun syncLogEnd(filePath: String?) {
