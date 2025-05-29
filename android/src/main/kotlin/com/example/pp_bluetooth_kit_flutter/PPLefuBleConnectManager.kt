@@ -542,7 +542,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             return
         }
 
-        if (PPBleHelper.isOpenBluetooth()) {
+        if (!PPBleHelper.isOpenBluetooth()) {
             loggerStreamHandler?.sendEvent("接收广播失败-蓝牙开关未打开")
             sendCommonState(false, callBack)
             return
