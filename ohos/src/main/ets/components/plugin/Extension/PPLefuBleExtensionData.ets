@@ -6,9 +6,15 @@ import { PPLefuBleConnectManager } from '../PPLefuBleConnectManager';
 import { PPLefuStreamHandler } from '../PPLefuStreamHandler';
 import { PPUnitType } from 'ppsdkkit/src/main/ets/enums/PPUnitType';
 import { PPScaleStatePowerType } from 'ppsdkkit/src/main/ets/enums/PPScaleState';
+import { PPBluetoothKit } from 'ppsdkkit';
+import { DeviceConfigVo } from 'ppsdkkit/src/main/ets/vo/DeviceConfigVo';
 
 export class PPLefuBleExtensionData {
   static convertDeviceDict(device: PPDeviceModel | null): DeviceDict {
+
+    const deviceConfig = PPLefuBleExtensionData.getDeviceConfigVo(device?.deviceSettingId);
+
+
     return {
       deviceSettingId: device?.deviceSettingId ?? 0,
       deviceMac: device?.deviceMac ?? "",
@@ -23,11 +29,15 @@ export class PPLefuBleExtensionData {
       deviceConnectType: device?.deviceConnectType ?? 0,
       deviceFuncType: device?.deviceFuncType ?? 0,
       deviceUnitType: device?.deviceUnitType ?? "",
-      peripheralType: device?.getDevicePeripheralType() ?? 0,
+      peripheralType: device?.getDevicePeripheralType().valueOf() ?? 0,
       sign: device?.sign ?? "",
       advLength: device?.advLength ?? 0,
       macAddressStart: device?.macAddressStart ?? 0,
       standardType: device?.standardType ?? 0,
+      productModel: device?.productModel ?? "",
+      imgUrl: deviceConfig?.imgUrl ?? "",
+      avatarType: deviceConfig?.avatarType ?? 0,
+      brandId:deviceConfig?.brandId ?? 0,
       modelNumber: device?.modelNumber ?? "",
       firmwareRevision: device?.firmwareVersion ?? "",
       softwareRevision: device?.softwareVersion ?? "",
@@ -35,6 +45,11 @@ export class PPLefuBleExtensionData {
       serialNumber: device?.serialNumber ?? "",
       manufacturerName: device?.manufacturerName ?? "",
     };
+  }
+
+
+  static getDeviceConfigVo(settingId?: number): DeviceConfigVo | null {
+    return PPBluetoothKit.deviceConfigVos?.find(deviceConfig => deviceConfig.id === settingId) ?? null;
   }
 
 
@@ -153,6 +168,10 @@ export interface DeviceDict {
   advLength: number;
   macAddressStart: number;
   standardType: number;
+  productModel: string;
+  imgUrl: string;
+  avatarType: number;
+  brandId: number;
   modelNumber: string;
   firmwareRevision: string;
   softwareRevision: string;

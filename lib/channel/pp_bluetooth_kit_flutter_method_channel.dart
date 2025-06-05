@@ -59,6 +59,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final content = '$event';
       PPBluetoothKitLogger.i(content);
 
+    }, onError: (error) {
+      PPBluetoothKitLogger.i('loggerListener-返回结果异常:$error');
     });
 
   }
@@ -87,7 +89,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
           callBack(model);
 
         } catch(e) {
-          PPBluetoothKitLogger.i('设备返回结果异常:$e');
+          PPBluetoothKitLogger.i('$e');
         }
       } else {
         PPBluetoothKitLogger.i('设备返回数据格式不正确');

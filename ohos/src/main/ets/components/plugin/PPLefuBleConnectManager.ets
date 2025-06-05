@@ -95,25 +95,28 @@ export class PPLefuBleConnectManager {
   }
 
   async checkPermission(): Promise<void> {
+    this.addLog('checkPermission')
     let checkPermission: Permissions = "ohos.permission.ACCESS_BLUETOOTH";
     let isPermission: boolean = await this.checkSelfPermission(checkPermission);
+    this.addLog(`checkPermission isPermission:${isPermission}`)
     if (isPermission) {
+      if (this.isAdapterOn()) {
+        this.addLog(`checkPermission 蓝牙可以使用`)
+      } else {
+        this.addLog(`checkPermission 蓝牙开关未打开`)
+      }
+    } else {
       let permissions = new Array<Permissions>();
       permissions.push("ohos.permission.ACCESS_BLUETOOTH");
       await this.ensurePermissions(permissions);
-    } else {
-      if (!this.isAdapterOn()) {
-        PPLoggerPluginOhos.i(`checkPermission 蓝牙可以使用`)
-        return;
-      }
     }
-
   }
 
   isAdapterOn(): boolean {
     try {
       return access.getState() == access.BluetoothState.STATE_ON;
     } catch (e) {
+      this.addLog(`蓝牙开关检测异常 ${e}`);
       return false;
     }
   }
@@ -128,20 +131,21 @@ export class PPLefuBleConnectManager {
     let appInfo: bundleManager.ApplicationInfo = bundleInfo.appInfo;
     tokenId = appInfo.accessTokenId;
     grantStatus = await atManager.checkAccessToken(tokenId, permission);
-    PPLoggerPluginOhos.i(`checkSelfPermission grantStatus${grantStatus}`);
-    return grantStatus == -1;
+    PPLoggerPluginOhos.i(`checkSelfPermission grantStatus：${grantStatus}`);
+    return grantStatus != -1;
   }
 
   async ensurePermissions(permissions: Permissions[]) {
     let permissionsNeeded = new Array<Permissions>();
     for (const permission of permissions) {
       let flag = await this.checkSelfPermission(permission);
-      if (permission != null && flag) {
+      if (permission != null && !flag) {
         permissionsNeeded.push(permission);
       }
     }
     if (permissionsNeeded.length == 0 || permissionsNeeded == null) {
       // result.success(true);
+      this.addLog(`ensurePermissions permissions is null`)
       return;
     }
 
@@ -151,23 +155,39 @@ export class PPLefuBleConnectManager {
     let atManager: abilityAccessCtrl.AtManager = abilityAccessCtrl.createAtManager();
 
     // requestPermissionsFromUser会判断权限的授权状态来决定是否唤起弹窗
-    atManager.requestPermissionsFromUser(context, permissionsNeeded).then((data) => {
+    atManager.requestPermissionsFromUser(context, permissionsNeeded).then(async (data) => {
       let grantStatus: Array<number> = data.authResults;
       let length: number = grantStatus.length;
-      for (let i = 0; i < length; i++) {
-        if (grantStatus[i] === 0) {
-          PPLoggerPluginOhos.i("拿到蓝牙权限");
+      // for (let i = 0; i < length; i++) {
+      //   if (grantStatus[i] === 0) {
+      //     this.addLog(`拿到蓝牙权限`);
+      //   } else {
+      //     // 用户拒绝授权，提示用户必须授权才能访问当前页面的功能，并引导用户到系统设置中打开相应的权限
+      //     this.addLog(`用户拒绝授权，提示用户必须授权才能访问当前页面的功能，并引导用户到系统设置中打开相应的权限`);
+      //   }
+      // }
+
+      let checkPermission: Permissions = "ohos.permission.ACCESS_BLUETOOTH";
+      let isPermission: boolean = await this.checkSelfPermission(checkPermission);
+      this.addLog(`addBlePermissionListener isPermission:${isPermission}`)
+      if (isPermission) {
+        this.addLog(`拿到蓝牙权限`);
+        // 授权成功
+        if (this.isAdapterOn()) {
+          this.addLog('addBlePermissionListener 蓝牙可以使用');
+          this.sendBlePermissionState(2);
         } else {
-          // 用户拒绝授权，提示用户必须授权才能访问当前页面的功能，并引导用户到系统设置中打开相应的权限
-          PPLoggerPluginOhos.e("用户拒绝授权，提示用户必须授权才能访问当前页面的功能，并引导用户到系统设置中打开相应的权限");
+          this.addLog('addBlePermissionListener 蓝牙开关未打开');
+          this.sendBlePermissionState(3);
         }
+      } else {
+        this.addLog(`用户拒绝授权，提示用户必须授权才能访问当前页面的功能，并引导用户到系统设置中打开相应的权限`);
+        this.sendBlePermissionState(1);
       }
-      // 授权成功
     }).catch((err: BusinessError) => {
-      PPLoggerPluginOhos.e(`蓝牙权限获取失败 Code is ${err.code}, message is ${err.message}`);
+      this.addLog(`蓝牙权限获取失败 Code is ${err.code}, message is ${err.message}`);
     })
   }
-
 
   startScan(result: MethodResult): void {
     this.stopScan();
@@ -176,9 +196,9 @@ export class PPLefuBleConnectManager {
     this.scanType = PPLefuScanType.SCAN;
 
     this.sendScanState(true);
-
+    this.addLog('startScan --------------------')
     PPBleSearch.getInstance().startScan((deviceModel: PPDeviceModel) => {
-      PPLoggerPluginOhos.d(`startScan deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`)
+      this.addLog(`startScan deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`)
       if (!deviceModel.deviceMac) {
         return;
       }
@@ -188,7 +208,7 @@ export class PPLefuBleConnectManager {
         if (this.scanType === PPLefuScanType.SCAN) {
           PPLoggerPluginOhos.d(`startScan findDevice deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`);
           let deviceDict: DeviceDict = PPLefuBleExtensionData.convertDeviceDict(deviceModel);
-          PPLoggerPluginOhos.d(`startScan findDevice deviceDict deviceName:${deviceDict.deviceName} deviceMac:${deviceDict.deviceMac}`);
+          PPLoggerPluginOhos.d(`startScan findDevice deviceDict:${deviceDict} deviceName:${deviceDict.deviceName} deviceMac:${deviceDict.deviceMac}`);
           // 转换设备信息为统一格式
           this.scanResultStreamHandler?.success(deviceDict);
         }
@@ -343,8 +363,7 @@ export class PPLefuBleConnectManager {
         this.addLog('设备断开');
         this.sendConnectState(0);
       } else if (this.connectState === constant.ProfileConnectionState.STATE_CONNECTED) {
-        this.addLog('连接成功');
-        this.sendConnectState(1);
+        this.addLog('连接成功，需等待服务发现成功');
       } else if (this.connectState === constant.ProfileConnectionState.STATE_CONNECTING) {
         this.addLog('正在连接');
       } else if (this.connectState === constant.ProfileConnectionState.STATE_DISCONNECTING) {
@@ -404,6 +423,7 @@ export class PPLefuBleConnectManager {
   }
 
   sendScanState(scaning: boolean): void {
+    this.addLog(`sendScanState ${scaning}`);
     let code = scaning ? 1 : 0;
     this.scanStateStreamHandler?.success({ state: code });
   }
@@ -415,28 +435,29 @@ export class PPLefuBleConnectManager {
 
   fetchHistory(userID: string, memberID: string, result: MethodResult) {
     this.historyModels = [];
-    this.addLog(`获取历史记录 userID:${userID},memberID:${memberID}`)
+    this.addLog(`获取历史记录 userID:${userID}`)
     if (this.deviceControl instanceof PPAppleDeviceControl) {
-      this.deviceControl.syncHistory(this.historyDataInterface);
+      this.deviceControl.syncHistory(this.touristHistoryDataInterface);
 
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       if (userID === "30") {
-        this.deviceControl.syncTouristHistory(this.historyDataInterface)
+        this.deviceControl.syncTouristHistory(this.touristHistoryDataInterface)
       } else {
         let userModel = new PPUserModel();
         userModel.userID = userID;
         userModel.memberID = memberID;
-        this.deviceControl.syncUserHistory(userModel, this.historyDataInterface);
+        this.deviceControl.syncUserHistory(userModel, this.userHistoryDataInterface);
       }
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
-      this.deviceControl.syncHistory(this.historyDataInterface)
+      this.deviceControl.syncHistory(this.touristHistoryDataInterface)
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
     }
   }
 
-  historyDataInterface: PPHistoryDataInterface = {
+  //游客
+  touristHistoryDataInterface: PPHistoryDataInterface = {
     // 监控历史数据
     monitorHistoryData: (bodyBaseModel: PPBodyBaseModel | null) => {
       if (bodyBaseModel != null) {
@@ -448,12 +469,41 @@ export class PPLefuBleConnectManager {
     // 监控历史结束
     monitorHistoryEnd: () => {
       this.addLog(`游客历史数据结束`)
-      this.historyStreamHandler?.success(this.historyModels)
+      const dataDict = PPLefuBleExtensionData.sendHistoryData(this.historyModels)
+      this.historyStreamHandler?.success({dataList : dataDict})
     },
 
     // 监控历史失败
     monitorHistoryFail: () => {
       this.addLog(`游客历史数据失败`)
+      const dataDict = PPLefuBleExtensionData.sendHistoryData(this.historyModels)
+      this.historyStreamHandler?.success({dataList : dataDict})
+    },
+
+  }
+
+  //用户
+  userHistoryDataInterface: PPHistoryDataInterface = {
+    // 监控历史数据
+    monitorHistoryData: (bodyBaseModel: PPBodyBaseModel | null) => {
+      if (bodyBaseModel != null) {
+        this.addLog(`用户历史数据:${bodyBaseModel.getPpWeightKg()}`)
+        this.historyModels.push(bodyBaseModel);
+      }
+    },
+
+    // 监控历史结束
+    monitorHistoryEnd: () => {
+      this.addLog(`用户历史数据结束`)
+      const dataDict = PPLefuBleExtensionData.sendHistoryData(this.historyModels)
+      this.historyStreamHandler?.success({dataList : dataDict})
+    },
+
+    // 监控历史失败
+    monitorHistoryFail: () => {
+      this.addLog(`用户历史数据失败`);
+      const dataDict = PPLefuBleExtensionData.sendHistoryData(this.historyModels)
+      this.historyStreamHandler?.success({dataList : dataDict})
     },
 
   }
@@ -497,17 +547,17 @@ export class PPLefuBleConnectManager {
     }
   }
 
-  syncTime(is24Hour: boolean, result: MethodResult) {
+  async syncTime(is24Hour: boolean, result: MethodResult): Promise<void> {
     this.addLog(`syncTime is24Hour:${is24Hour}`)
     if (this.deviceControl instanceof PPAppleDeviceControl) {
-      const syncResult = this.deviceControl.syncTime(systemDateTime.getTime())
-      result.success({ state: syncResult })
+      const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime())
+      this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
-      const syncResult = this.deviceControl.syncTime(systemDateTime.getTime(), is24Hour ? TimeFormat.HOUR_24 : TimeFormat.HOUR_12)
-      result.success({ state: syncResult })
+      const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime(), is24Hour ? TimeFormat.HOUR_24 : TimeFormat.HOUR_12)
+      this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
-      const syncResult = this.deviceControl.syncTime(systemDateTime.getTime())
-      result.success({ state: syncResult })
+      const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime())
+      this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPBananaDeviceControl) {
       // this.deviceControl.syncTime(systemDateTime.getTime())
     } else if (this.deviceControl instanceof PPJambulDeviceControl) {
@@ -518,19 +568,21 @@ export class PPLefuBleConnectManager {
     }
   }
 
-  syncUnit(unit: number, sex: number, age: number, height: number, isPregnantMode: boolean, isAthleteMode: boolean) {
-    this.addLog(`同步单位 unit:${unit},sex:${sex},age:${age},height:${height},isPregnantMode:${isPregnantMode},isAthleteMode:${isAthleteMode}`)
+  async syncUnit(unit: number, sex: number, age: number, height: number, isPregnantMode: boolean, isAthleteMode: boolean, result: MethodResult) : Promise<void>{
+    this.addLog(`同步单位 unit:${unit},sex:${sex},age:${age},height:${height},isPregnantMode:${isPregnantMode},isAthleteMode:${isAthleteMode} 222`)
     if (this.deviceControl instanceof PPAppleDeviceControl) {
       let userModel = new PPUserModel();
       userModel.sex = sex;
       userModel.age = age;
       userModel.userHeight = height;
-      this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""),
-        userModel)
+      const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""), userModel)
+      this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
-      this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+      const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+      this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
-      this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+      const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+      this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPBananaDeviceControl) {
       // this.deviceControl.syncUnit(systemDateTime.getTime())
     } else if (this.deviceControl instanceof PPJambulDeviceControl) {
@@ -538,12 +590,13 @@ export class PPLefuBleConnectManager {
       userModel.sex = sex;
       userModel.age = age;
       userModel.userHeight = height;
-      this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""),
+      const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""),
         userModel)
+      this.sendCommonState(syncResult, result)
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
-
+      this.sendCommonState(false, result)
     }
   }
 
@@ -587,7 +640,6 @@ export class PPLefuBleConnectManager {
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-fetchConnectedDevice-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
-
     }
   }
 
@@ -595,13 +647,13 @@ export class PPLefuBleConnectManager {
     this.addLog('获取电池信息')
     if (this.deviceControl instanceof PPAppleDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
-      result.success({ power: battery });
+      this.batteryStreamHandler?.success({ power: battery })
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
-      result.success({ power: battery });
+      this.batteryStreamHandler?.success({ power: battery })
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
-      result.success({ power: battery });
+      this.batteryStreamHandler?.success({ power: battery })
     } else if (this.deviceControl instanceof PPBananaDeviceControl) {
     } else if (this.deviceControl instanceof PPJambulDeviceControl) {
     } else {
@@ -653,8 +705,25 @@ export class PPLefuBleConnectManager {
   }
 
   ///蓝牙权限变化监听，0:未知，1：未授权，2:蓝牙-开，3：蓝牙-关
-  addBlePermissionListener(): void {
-    this.addLog('添加蓝牙权限监听')
+  async addBlePermissionListener(): Promise<void> {
+    this.addLog('addBlePermissionListener 蓝牙权限监听')
+    let checkPermission: Permissions = "ohos.permission.ACCESS_BLUETOOTH";
+    let isPermission: boolean = await this.checkSelfPermission(checkPermission);
+    this.addLog(`addBlePermissionListener isPermission:${isPermission}`)
+    if (isPermission) {
+      if (this.isAdapterOn()) {
+        this.addLog('addBlePermissionListener 蓝牙可以使用');
+        this.sendBlePermissionState(2);
+      } else {
+        this.addLog('addBlePermissionListener 蓝牙开关未打开');
+        this.sendBlePermissionState(3);
+      }
+    } else {
+      let permissions = new Array<Permissions>();
+      permissions.push("ohos.permission.ACCESS_BLUETOOTH");
+      await this.ensurePermissions(permissions);
+      this.sendBlePermissionState(1);
+    }
   }
 
   fetchWifiMac(result: MethodResult): void {
@@ -760,11 +829,11 @@ export class PPLefuBleConnectManager {
     this.addLog('获取心率开关状态')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
-        result.success({ open: isOn });
+        this.sendCommonState(isOn, result);
       });
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
-        result.success({ state: isOn });
+        this.sendCommonState(isOn, result);
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -777,12 +846,12 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       // 阻抗0打开 1关闭
       this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+        this.sendCommonState(isSuccess, result);
       });
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       // 阻抗0打开 1关闭
       this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+        this.sendCommonState(isSuccess, result);
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -794,11 +863,11 @@ export class PPLefuBleConnectManager {
     this.addLog('获取阻抗开关状态')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
-        result.success({ state: isOn });
+        this.sendCommonState(isOn, result);
       });
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
-        result.success({ state: isOn });
+        this.sendCommonState(isOn, result);
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -811,7 +880,7 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       // 绑定0解绑 1绑定
       this.deviceControl.deviceBindStatus(binding, (isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+        this.sendCommonState(isSuccess, result);
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -835,7 +904,7 @@ export class PPLefuBleConnectManager {
     this.addLog(`设置屏幕亮度 brightness:${brightness}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.setLight(brightness, (isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+        this.sendCommonState(isSuccess, result);
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -886,18 +955,18 @@ export class PPLefuBleConnectManager {
     this.addLog(`选择用户 user:${JSON.stringify(user)}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       const selectResult = await this.deviceControl.sendCurrentUserInfo(user);
-      result.success({ state: selectResult });
+      this.sendCommonState(selectResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-selectUser-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
     }
   }
 
-  deleteUser(user: PPUserModel, result: MethodResult): void {
+  async deleteUser(user: PPUserModel, result: MethodResult): Promise<void> {
     this.addLog(`删除用户 user:${JSON.stringify(user)}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
-      const deleteResult = this.deviceControl.deleteUserInfo(user);
-      result.success({ state: deleteResult });
+      const deleteResult = await this.deviceControl.deleteUserInfo(user);
+      this.sendCommonState(deleteResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-deleteUser-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
@@ -915,44 +984,45 @@ export class PPLefuBleConnectManager {
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
-      this.loggerStreamHandler?.success(`不支持该功能-startMeasure-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+      this.loggerStreamHandler?.success(`不支持该功能-startMeasure-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
     }
   }
 
-  stopMeasure(result: MethodResult): void {
+  async stopMeasure(result: MethodResult): Promise<void> {
     this.addLog('停止测量')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
-      const stopResult = this.deviceControl.stopMeasure();
-      result.success({ state: stopResult });
+      const stopResult = await this.deviceControl.stopMeasure();
+      this.addLog(`停止测量 stopResult：${stopResult}`);
+      this.sendCommonState(stopResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
-      this.loggerStreamHandler?.success(`不支持该功能-stopMeasure-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+      this.loggerStreamHandler?.success(`不支持该功能-stopMeasure-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
     }
   }
 
-  startBabyModel(step: number, weight: number, result: MethodResult): void {
+  async startBabyModel(step: number, weight: number, result: MethodResult): Promise<void> {
     this.addLog(`开始婴儿模式 step:${step},weight:${weight}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
-      const startResult = this.deviceControl.startBabyModel(step, weight, (isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+      const startResult = await this.deviceControl.startBabyModel(step, weight, (isSuccess: boolean) => {
+        this.sendCommonState(isSuccess, result);
       });
       if (!startResult) {
-        result.success({ state: false });
+        this.sendCommonState(false, result);
       }
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
-      this.loggerStreamHandler?.success(`不支持该功能-startBabyModel-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+      this.loggerStreamHandler?.success(`不支持该功能-startBabyModel-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
     }
   }
 
-  exitBabyModel(result: MethodResult): void {
+  async exitBabyModel(result: MethodResult): Promise<void> {
     this.addLog('退出婴儿模式')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
-      const exitResult = this.deviceControl.exitBabyModel((isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+      const exitResult = await this.deviceControl.exitBabyModel((isSuccess: boolean) => {
+        this.sendCommonState(isSuccess, result);
       });
       if (!exitResult) {
-        result.success({ state: false });
+        this.sendCommonState(false, result);
       }
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -1016,29 +1086,29 @@ export class PPLefuBleConnectManager {
    * @param type
    * @param result
    */
-  clearDeviceData(type: number, result: MethodResult): void {
+  async clearDeviceData(type: number, result: MethodResult): Promise<void> {
     this.addLog(`清除设备数据 type:${type}`)
 
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       if (type == 0) {
-        const clearResult = this.deviceControl.clearAllDeviceInfo((isSuccess: boolean) => {
-          result.success({ state: isSuccess });
+        const clearResult = await this.deviceControl.clearAllDeviceInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
         });
       } else if (type == 1) {
-        const clearResult = this.deviceControl.clearDeviceUserInfo((isSuccess: boolean) => {
-          result.success({ state: isSuccess });
+        const clearResult = await this.deviceControl.clearDeviceUserInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
         });
       } else if (type == 2) {
-        const clearResult = this.deviceControl.clearHistoryData((isSuccess: boolean) => {
-          result.success({ state: isSuccess });
+        const clearResult = await this.deviceControl.clearHistoryData((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
         });
       } else if (type == 3) {
-        const clearResult = this.deviceControl.clearConfigWifiInfo((isSuccess: boolean) => {
-          result.success({ state: isSuccess });
+        const clearResult = await this.deviceControl.clearConfigWifiInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
         });
       } else if (type == 4) {
-        const clearResult = this.deviceControl.clearSettingInfo((isSuccess: boolean) => {
-          result.success({ state: isSuccess });
+        const clearResult = await this.deviceControl.clearSettingInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
         });
       }
     } else {
@@ -1063,7 +1133,7 @@ export class PPLefuBleConnectManager {
     this.addLog(`设置设备语言 language:${language}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.setLanguage(language, (isSuccess: boolean) => {
-        result.success({ state: isSuccess });
+        this.sendCommonState(isSuccess, result);
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -1083,36 +1153,36 @@ export class PPLefuBleConnectManager {
     }
   }
 
-  setDisplayBodyFat(bodyFat: number, result: MethodResult): void {
+  async setDisplayBodyFat(bodyFat: number, result: MethodResult): Promise<void> {
     this.addLog(`设置显示体脂 bodyFat:${bodyFat}`)
     if (this.deviceControl instanceof PPIceDeviceControl) {
-      const syncResult = this.deviceControl.syncFat(bodyFat);
-      result.success({ state: syncResult });
+      const syncResult = await this.deviceControl.syncFat(bodyFat);
+      this.sendCommonState(syncResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-setDisplayBodyFat-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
     }
   }
 
-  exitScanWifiNetworks(result: MethodResult): void {
+  async exitScanWifiNetworks(result: MethodResult): Promise<void> {
     this.addLog('退出WiFi扫描')
     if (this.deviceControl instanceof PPIceDeviceControl) {
-      const exitResult = this.deviceControl.exitWifiList();
-      result.success({ state: exitResult });
+      const exitResult = await this.deviceControl.exitWifiList();
+      this.sendCommonState(exitResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-exitScanWifiNetworks-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
     }
   }
 
-  exitNetworkConfig(result: MethodResult): void {
+  async exitNetworkConfig(result: MethodResult): Promise<void> {
     this.addLog('退出网络配置')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
-      const exitResult = this.deviceControl.exitConfigWifi();
-      result.success({ state: exitResult });
+      const exitResult = await this.deviceControl.exitConfigWifi();
+      this.sendCommonState(exitResult, result);
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
-      const exitResult = this.deviceControl.exitConfigWifi();
-      result.success({ state: exitResult });
+      const exitResult = await this.deviceControl.exitConfigWifi();
+      this.sendCommonState(exitResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-exitScanWifiNetworks-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
@@ -1126,7 +1196,7 @@ export class PPLefuBleConnectManager {
   }
 
   addLog(message: string) {
-    this.loggerStreamHandler?.success(message);
-    PPLoggerPluginOhos.d(`${message}`)
+    this.loggerStreamHandler?.success(`OHOS_SDK ${message}`);
+    PPLoggerPluginOhos.d(`OHOS_SDK ${message}`)
   }
 }

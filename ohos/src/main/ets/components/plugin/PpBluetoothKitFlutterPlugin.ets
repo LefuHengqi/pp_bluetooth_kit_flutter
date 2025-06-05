@@ -185,6 +185,7 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       // this.bleManager.loadDevice(appKey, appSecret, deviceContent);
       ///SDK初始化Appkey和AppSecret在你自己的App中请替换为为你自己的Appkey和AppSecret,Appkey获取方式:https://xinzhiyun.feishu.cn/docx/VxXUdI86sorr96xSdn1cakkZndd?from=from_copylink
       //configPath内部配置文件路径，请替换为真实路径, SDK内部暂时未实现,下个版本会支持.后续更新时请更换为你自己的Appkey和AppSecret和configPath
+      // this.bleManager.checkPermission();
       PPBluetoothKit.initSdk(this.context, appKey, appSecret, 'Device.json');
       result.success(true);
     } else if (method == "setDeviceSetting") {
@@ -215,7 +216,7 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       });
       PPBluetoothKit.setDebug(true)
       PPBluetoothKit.setDeviceSetting(deviceContent);
-      this.bleManager.checkPermission();
+      // this.bleManager.checkPermission();
     } else if (method == "startScan") {
       this.bleManager.startScan(result);
     } else if (method == "stopScan") {
@@ -249,7 +250,7 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       let isPregnantMode = params.get("isPregnantMode") as boolean ?? false;
       let isAthleteMode = params.get("isAthleteMode") as boolean ?? false;
 
-      this.bleManager.syncUnit(unit, sex, age, height, isPregnantMode, isAthleteMode)
+      this.bleManager.syncUnit(unit, sex, age, height, isPregnantMode, isAthleteMode, result)
     } else if (method == "syncTime") {
       let is24Hour = params.get("is24Hour") as boolean ?? true;
       this.bleManager.syncTime(is24Hour, result)
