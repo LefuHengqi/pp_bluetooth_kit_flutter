@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@ohos/flutter_ohos": "file:./har/flutter.har",
-    "ppsdkkit": "file:./ppsdkkit",
-//    "ppsdkkit": "file:./har/ppsdkkit.har"
+//    "ppsdkkit": "file:./ppsdkkit",
+    "ppsdkkit": "file:./har/ppsdkkit.har"
   }
 }
