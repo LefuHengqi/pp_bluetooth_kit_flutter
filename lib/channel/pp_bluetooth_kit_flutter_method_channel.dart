@@ -861,7 +861,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<List<String>> fetchUserIDList(int peripheralType) async {
-    PPBluetoothKitLogger.i('获取用户列表-peripheralType:$peripheralType');
+    PPBluetoothKitLogger.i('获取用户ID列表-peripheralType:$peripheralType');
     try {
 
       final ret = await _bleChannel.invokeMethod<Map>('fetchUserIDList',<String, dynamic>{
@@ -871,7 +871,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       final retJson = ret?.cast<String, dynamic>();
       final userIDList = retJson?["userIDList"]?.cast<String>().toList() ?? [];
 
-      PPBluetoothKitLogger.i('获取用户列表 结果-数量${userIDList.length}');
+      PPBluetoothKitLogger.i('获取用户ID列表 结果-数量${userIDList.length}');
 
       return userIDList;
     } catch(e) {
@@ -880,6 +880,40 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       return [];
     }
   }
+
+
+  @override
+  Future<List<PPTorreUserModel>> fetchUserList(int peripheralType) async {
+    PPBluetoothKitLogger.i('获取用户列表-peripheralType:$peripheralType');
+    try {
+
+      final ret = await _bleChannel.invokeMethod<Map>('fetchUserInfoList',<String, dynamic>{
+        'peripheralType':peripheralType
+      });
+
+      final retList = <PPTorreUserModel>[];
+
+      final retJson = ret?.cast<String, dynamic>();
+      final array = retJson?["userList"] as List;
+      if (array.isNotEmpty) {
+
+        for(int i = 0; i < array.length; ++i) {
+          final map = array[i].cast<String, dynamic>();
+          final model = PPTorreUserModel.fromJson(map);
+          retList.add(model);
+        }
+      }
+
+      PPBluetoothKitLogger.i('获取用户列表 结果-数量${array.length}');
+
+      return retList;
+    } catch(e) {
+
+      PPBluetoothKitLogger.i('获取设备用户列表-异常:$e');
+      return [];
+    }
+  }
+
 
   @override
   Future<bool> selectUser(int peripheralType, String userID, String memberID) async {

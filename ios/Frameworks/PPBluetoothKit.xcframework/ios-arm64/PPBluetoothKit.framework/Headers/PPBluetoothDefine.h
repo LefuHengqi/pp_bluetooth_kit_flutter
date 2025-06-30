@@ -56,6 +56,8 @@ typedef NS_ENUM(NSUInteger, PPDeviceProtocolType) {
     PPDeviceProtocolTypeDorre, // Dorre版本
     PPDeviceProtocolTypeForre, // Forre版本
     PPDeviceProtocolTypeBorre_A, // Borre-A，属于Borre子集，CF625_PRO专用
+    PPDeviceProtocolTypeKorre, // korre
+    PPDeviceProtocolTypeLorre, // lorre
 };
 
 
@@ -78,7 +80,7 @@ typedef NS_OPTIONS(NSUInteger, PPDeviceFuncType) {
     PPDeviceFuncTypeSafe = 1 << 4, // 孕妇
     PPDeviceFuncTypeBMDJ = 1 << 5, // 闭目单脚
     PPDeviceFuncTypeBaby = 1 << 6, // 抱婴模式
-    PPDeviceFuncTypeWifi = 1 << 7, // wifi配网
+    PPDeviceFuncTypeWifi = 1 << 7, // wifi配网(支持2.4G)
     PPDeviceFuncTypeTime = 1 << 8, // 时钟
     PPDeviceFuncTypeKeyVoice = 1 << 9, // 按键音量
     PPDeviceFuncTypeBidirectional = 1 << 10, // 双向广播
@@ -91,7 +93,7 @@ typedef NS_OPTIONS(NSUInteger, PPDeviceFuncType) {
     PPDeviceFuncTypeVoiceBroadcastCF610 = 1 << 17, // 语音播报-CF610
     PPDeviceFuncTypeWeightInformationType = 1 << 18, // 选中按条下发体重信息给秤,未选中按天下发体重信息给秤
     PPDeviceFuncTypeFootLengthTest = 1 << 19, // 脚长测试
-
+    PPDeviceFuncTypeWifi5G = 1 << 20, // wifi配网(支持5G)
 };
 
 // 设备精度
@@ -166,6 +168,10 @@ typedef NS_ENUM(NSUInteger, PPDevicePeripheralType) {
     
     //Forre /连接 /人体秤
     PPDevicePeripheralTypePeripheralForre,
+    //Korre /连接 /营养秤
+    PPDevicePeripheralTypePeripheralKorre,
+    //Lorre /连接 /营养秤
+    PPDevicePeripheralTypePeripheralLorre,
 };
 
 /// 抓零状态
@@ -258,6 +264,17 @@ typedef NS_ENUM(NSUInteger, PPAuthState) {
     PPAuthStateStart, // 开始鉴权
     PPAuthStateSuccess, // 鉴权成功
     PPAuthStateFail, // 鉴权失败
+};
+
+typedef NS_ENUM(NSUInteger, PPDeviceButtonType) {
+    PPDeviceButtonTypeZero = 0, //去皮/清零按钮
+};
+
+typedef NS_ENUM(NSUInteger, PPDeviceButtonState) {
+    PPDeviceButtonStateUnknown = 0,
+    PPDeviceButtonStateExecuting = 1, // 执行中
+    PPDeviceButtonStateSuccess = 2, // 执行成功
+    PPDeviceButtonStateFail = 3, // 执行失败
 };
 
 

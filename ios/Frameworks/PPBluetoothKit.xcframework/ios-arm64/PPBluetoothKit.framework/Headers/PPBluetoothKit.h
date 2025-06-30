@@ -27,14 +27,15 @@
 #import "PPBatteryInfoModel.h"
 #import "PPBluetooth180ADeviceModel.h"
 #import "PPBluetoothScaleBaseModel.h"
-//#import "PPBodyFatModel.h"
 #import "PPUnitTool.h"
 #import "PPBluetoothPeripheralDorre.h"
 #import "PPBluetoothPeripheralBorre.h"
 #import "PPBluetoothPeripheralForre.h"
-
+#import "PPBluetoothPeripheralKorre.h"
+#import "PPBluetoothPeripheralLorre.h"
 #import "PPTorreSettingModel.h"
-
+#import "PPKorreUserModel.h"
+#import "PPKorreFoodInfo.h"
 
 #import "PPScaleState.h"
 #import "PPBluetoothDefine.h"

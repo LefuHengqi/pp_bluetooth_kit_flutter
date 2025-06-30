@@ -259,4 +259,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('last7Data has not been implemented.');
   }
 
+  Future<List<PPTorreUserModel>> fetchUserList(int peripheralType) {
+    throw UnimplementedError('fetchUserList has not been implemented.');
+  }
 }

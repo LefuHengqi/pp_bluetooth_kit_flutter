@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "PPBluetoothDefine.h"
-#import "PPDorreSettingModel.h"
+#import "PPTorreSettingModel.h"
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "PPBluetoothAdvDeviceModel.h"
 #import "PPBluetooth180ADeviceModel.h"
@@ -199,7 +199,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - infos: 用户列表 - 对象中的每个属性都要赋值
 ///   - handler:  0设置成功 1设置失败
-- (void)dataSyncUserList:(NSArray <PPDorreSettingModel *>*)infos withHandler:(void(^)(NSInteger status))handler;
+- (void)dataSyncUserList:(NSArray <PPTorreSettingModel *>*)infos withHandler:(void(^)(NSInteger status))handler;
 
 
 
@@ -207,26 +207,26 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - infos: 单个用户信息 - 对象中的每个属性都要赋值
 ///   - handler:  0设置成功 1设置失败
-- (void)dataSyncUserInfo:(PPDorreSettingModel *)infos withHandler:(void(^)(NSInteger status))handler;
+- (void)dataSyncUserInfo:(PPTorreSettingModel *)infos withHandler:(void(^)(NSInteger status))handler;
 
 
 /// 选中测量用户 -  用于测量过程中指定测量用户，指定后不需要在设备端进行选择
 /// - Parameters:
 ///   - userModel: 单个用户信息 - userId、memberId为必传项
 ///   - handler:  0设置成功 1设置失败
-- (void)dataSelectUser:(PPDorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
+- (void)dataSelectUser:(PPTorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
 
 
 /// 删除用户
 /// - Parameters:
 ///   - userModel: 单个用户信息 - userId、memberId为必传项
 ///   - handler:  0设置成功 1设置失败
-- (void)dataDeleteUser:(PPDorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
+- (void)dataDeleteUser:(PPTorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
 
 
 /// 获取设备端用户列表
 /// - Parameter handler: 返回设备端所有用户的userId
-- (void)dataFetchUserID:(void(^)(NSArray <PPDorreSettingModel *>* infos))handler;
+- (void)dataFetchUserID:(void(^)(NSArray <PPTorreSettingModel *>* infos))handler;
 
 #pragma mark - 配网相关
 
@@ -260,7 +260,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - userMode: 用户对象 userId 为必传项
 ///   - handler: 历史数据结果
-- (void)dataFetchHistoryData:(PPDorreSettingModel *)userMode withHandler:(void(^)(NSArray <PPBluetoothScaleBaseModel *>* history))handler;
+- (void)dataFetchHistoryData:(PPTorreSettingModel *)userMode withHandler:(void(^)(NSArray <PPBluetoothScaleBaseModel *>* history))handler;
 
 #pragma mark - 日志
 

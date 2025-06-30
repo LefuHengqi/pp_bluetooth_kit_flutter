@@ -105,6 +105,10 @@
 
 - (void)monitorData:(PPBluetoothScaleBaseModel *)model advModel:(PPBluetoothAdvDeviceModel*)advModel;
 
+@optional
+
+- (void)monitorScaleState:(PPScaleState *)scaleState;
+
 @end
 
 #endif /* PPBluetoothInterface_h */

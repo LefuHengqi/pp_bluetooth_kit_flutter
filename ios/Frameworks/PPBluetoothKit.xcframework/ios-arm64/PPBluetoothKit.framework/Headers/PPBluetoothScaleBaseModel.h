@@ -8,10 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import "PPBluetoothDefine.h"
+#import "PPKorreFoodInfo.h"
 
 
 
-NS_ASSUME_NONNULL_BEGIN
 
 @interface PPBluetoothScaleBaseModel : NSObject
 
@@ -38,8 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) double dateTimeInterval; // dataStr since1970的时间戳
 
 @property (nonatomic, copy) NSString *memberId; //数据归属 torre协议用
-
 @property (nonatomic, assign) NSInteger footLen; // 脚长，CM放大100倍
+@property (nonatomic, strong) PPKorreFoodInfo *foodInfo; // 食物信息，营养秤才支持
 
 
 
@@ -56,4 +56,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+
