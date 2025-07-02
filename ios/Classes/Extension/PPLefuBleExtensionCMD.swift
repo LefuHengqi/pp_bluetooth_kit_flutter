@@ -2147,4 +2147,30 @@ extension PPLefuBleConnectManager {
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
         }
     }
+    
+    
+    func foodScaleUnit(weightG:CGFloat, accuracyType:Int, unitType:Int, deviceName:String, callBack: @escaping FlutterResult) {
+        
+        let accuracy = PPDeviceAccuracyType(rawValue: UInt(accuracyType)) ?? .pointG
+        let unitType = PPDeviceUnit(rawValue: UInt(unitType)) ?? .unitG
+        
+        var weight = weightG
+        if accuracy == .point01G {
+            weight = weightG * 10
+        }
+        
+        let dic = PPUnitTool.weightStr(with: weight, accuracyType: accuracy, andUnit: unitType, deviceName: deviceName)
+        var weightStr = ""
+        if unitType == PPDeviceUnit.unitLBOZ {
+            weightStr = "\(dic["lboz_lb"] ?? ""):\(dic["lboz_oz"] ?? "")"
+        } else {
+            weightStr = "\(dic["weight"] ?? "")"
+            if dic["weight"] as? Float == 0{
+                weightStr = "0"
+            }
+        }
+        
+        callBack(["weightStr":weightStr])
+
+    }
 }

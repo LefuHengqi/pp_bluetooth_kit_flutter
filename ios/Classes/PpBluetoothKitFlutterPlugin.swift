@@ -432,6 +432,15 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "fetchUserInfoList" {
           
           self.bleManager.fetchUserInfoList(callBack: result)
+      } else if method == "foodScaleUnit" {
+          
+          let weightG = params?["weightG"] as? CGFloat ?? 0
+          let accuracyType = params?["accuracyType"] as? Int ?? 0
+          let unitType = params?["unitType"] as? Int ?? 4
+          let deviceName = params?["deviceName"] as? String ?? ""
+          
+          self.bleManager.foodScaleUnit(weightG: weightG, accuracyType: accuracyType, unitType: unitType, deviceName:deviceName, callBack: result)
+          
       }
       
   }

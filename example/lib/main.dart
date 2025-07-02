@@ -25,6 +25,7 @@ import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
+import 'package:pp_bluetooth_kit_flutter/utils/pp_unit_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -168,6 +169,7 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('同步最近7天/7次数据'),    // 37
     GridItem('厨房秤-去皮/清零'),    // 38
     GridItem('获取设备用户-Dorre'),    // 39
+    GridItem('食物秤-单位转换'),    // 40
   ];
 
   void _updateText(String newText) {
@@ -551,6 +553,10 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 39) {
                           final ret = await PPPeripheralDorre.fetchUserList();
                           _updateText('Dorre设备用户-$ret');
+                        } else if (index == 40) {
+                          final ret = await PPUnitHelper.foodScaleUnit(90, PPDeviceAccuracyType.pointG, PPUnitType.UnitLBOZ, "");
+                          // final ret = await PPUnitHelper.foodScaleUnitWithSuffix(90, PPDeviceAccuracyType.pointG, PPUnitType.UnitLBOZ, "");
+                          _updateText('食物秤单位转换-$ret');
                         }
                       },
                     );
