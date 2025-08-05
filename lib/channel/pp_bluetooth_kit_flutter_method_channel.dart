@@ -201,7 +201,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   @override
   Future<void> fetchHistoryData({String? userID = "", required int peripheralType, required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) async {
 
-    if (peripheralType == PPDevicePeripheralType.torre.value) {
+    if (peripheralType == PPDevicePeripheralType.torre.value || peripheralType == PPDevicePeripheralType.borre.value) {
       if (userID == null || userID.isEmpty) {
         PPBluetoothKitLogger.i('历史数据-userID 为空');
         callBack([], false);

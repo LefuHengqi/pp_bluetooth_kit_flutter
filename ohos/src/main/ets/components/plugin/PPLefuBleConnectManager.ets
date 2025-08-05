@@ -16,6 +16,8 @@ import { PPBananaDeviceControl } from 'ppsdkkit/src/main/ets/device/banana/PPBan
 import { PPCoconutDeviceControl } from 'ppsdkkit/src/main/ets/device/coconut/PPCoconutDeviceControl';
 import { PPJambulDeviceControl } from 'ppsdkkit/src/main/ets/device/jambul/PPJambulDeviceControl';
 import { PPTorreDeviceControl } from 'ppsdkkit/src/main/ets/device/torre/PPTorreDeviceControl';
+import { PPBorreDeviceControl } from 'ppsdkkit/src/main/ets/device/borre/PPBorreDeviceControl';
+
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
 
 import { abilityAccessCtrl, bundleManager, Permissions, common, Context, featureAbility, UIAbility } from '@kit.AbilityKit';
@@ -198,7 +200,7 @@ export class PPLefuBleConnectManager {
     this.sendScanState(true);
     this.addLog('startScan --------------------')
     PPBleSearch.getInstance().startScan((deviceModel: PPDeviceModel) => {
-      this.addLog(`startScan deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`)
+      this.addLog(`wwz startScan deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`)
       if (!deviceModel.deviceMac) {
         return;
       }
@@ -206,9 +208,9 @@ export class PPLefuBleConnectManager {
       if (deviceModel) {
         this.deviceModels[deviceModel.deviceMac] = deviceModel;
         if (this.scanType === PPLefuScanType.SCAN) {
-          PPLoggerPluginOhos.d(`startScan findDevice deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`);
+          PPLoggerPluginOhos.d(`wwz startScan findDevice deviceName:${deviceModel.deviceName} deviceMac:${deviceModel.deviceMac}`);
           let deviceDict: DeviceDict = PPLefuBleExtensionData.convertDeviceDict(deviceModel);
-          PPLoggerPluginOhos.d(`startScan findDevice deviceDict:${deviceDict} deviceName:${deviceDict.deviceName} deviceMac:${deviceDict.deviceMac}`);
+          PPLoggerPluginOhos.d(`wwz startScan findDevice deviceDict:${deviceDict} deviceName:${deviceDict.deviceName} deviceMac:${deviceDict.deviceMac}`);
           // 转换设备信息为统一格式
           this.scanResultStreamHandler?.success(deviceDict);
         }
@@ -237,7 +239,7 @@ export class PPLefuBleConnectManager {
         if (this.deviceControl.deviceModel?.deviceMac === deviceMac) {
           if (this.deviceControl.isConnect()) {
             this.addLog('设备已连接,无需重复连接')
-            this.sendConnectState(1);
+            // this.sendConnectState(1);
           } else {
             this.startConnectDevice();
           }
@@ -266,7 +268,7 @@ export class PPLefuBleConnectManager {
         if (this.deviceControl.deviceModel?.deviceMac === deviceMac) {
           if (this.deviceControl.isConnect()) {
             this.addLog('设备已连接,无需重复连接')
-            this.sendConnectState(1);
+            // this.sendConnectState(1);
           } else {
             this.startConnectDevice();
           }
@@ -304,6 +306,9 @@ export class PPLefuBleConnectManager {
       case PPDevicePeripheralType.PeripheralTorre:
         this.deviceControl = new PPTorreDeviceControl(deviceModel);
         break;
+      case PPDevicePeripheralType.PeripheralBorre:
+        this.deviceControl = new PPBorreDeviceControl(deviceModel);
+        break;
       default:
         this.addLog(`不支持的设备类型:${deviceModel.getDevicePeripheralType()}`);
         break;
@@ -315,6 +320,8 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPAppleDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
@@ -439,7 +446,7 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPAppleDeviceControl) {
       this.deviceControl.syncHistory(this.touristHistoryDataInterface);
 
-    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+    } else if (this.deviceControl instanceof PPTorreDeviceControl || this.deviceControl instanceof PPBorreDeviceControl) {
       if (userID === "30") {
         this.deviceControl.syncTouristHistory(this.touristHistoryDataInterface)
       } else {
@@ -544,6 +551,10 @@ export class PPLefuBleConnectManager {
       this.deviceControl.configWifi(domain, ssId, password, (configState: PPConfigWifiStateMenu, resultCode: string) => {
 
       });
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.configWifi(domain, ssId, password, (configState: PPConfigWifiStateMenu, resultCode: string) => {
+
+      });
     }
   }
 
@@ -553,6 +564,9 @@ export class PPLefuBleConnectManager {
       const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime())
       this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime(), is24Hour ? TimeFormat.HOUR_24 : TimeFormat.HOUR_12)
+      this.sendCommonState(syncResult, result)
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
       const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime(), is24Hour ? TimeFormat.HOUR_24 : TimeFormat.HOUR_12)
       this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
@@ -578,6 +592,8 @@ export class PPLefuBleConnectManager {
       const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""), userModel)
       this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
       const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
       this.sendCommonState(syncResult, result)
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
@@ -613,6 +629,10 @@ export class PPLefuBleConnectManager {
       this.deviceControl.getWifiSSID((ssid: string | null) => {
         result.success({ ssId: ssid ?? "", isConnectWIFI: (!ssid) ? false : true });
       })
+    }else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.getWifiSSID((ssid: string | null) => {
+        result.success({ ssId: ssid ?? "", isConnectWIFI: (!ssid) ? false : true });
+      })
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getWifiSSID((ssid: string | null) => {
         result.success({ ssId: ssid ?? "", isConnectWIFI: (!ssid) ? false : true });
@@ -630,6 +650,9 @@ export class PPLefuBleConnectManager {
       const deviceModel = await this.deviceControl.readDeviceInfo()
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const deviceModel = await this.deviceControl.readDeviceInfo()
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
       const deviceModel = await this.deviceControl.readDeviceInfo()
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
@@ -651,6 +674,9 @@ export class PPLefuBleConnectManager {
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
       this.batteryStreamHandler?.success({ power: battery })
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const battery = await this.deviceControl.readBatteryLevel();
+      this.batteryStreamHandler?.success({ power: battery })
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
       this.batteryStreamHandler?.success({ power: battery })
@@ -669,6 +695,8 @@ export class PPLefuBleConnectManager {
       this.deviceControl.resetDevice();
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.resetDevice();
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.resetDevice();
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.resetDevice();
     } else if (this.deviceControl instanceof PPBananaDeviceControl) {
@@ -686,6 +714,9 @@ export class PPLefuBleConnectManager {
       const deviceModel = await this.deviceControl.deviceModel
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
       const deviceModel = await this.deviceControl.deviceModel
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
@@ -732,6 +763,10 @@ export class PPLefuBleConnectManager {
       this.deviceControl.getWifiMac((mac: string | null) => {
         result.success({ wifiMac: mac });
       })
+    } else   if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.getWifiMac((mac: string | null) => {
+        result.success({ wifiMac: mac });
+      })
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-fetchWifiMac-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
@@ -741,6 +776,18 @@ export class PPLefuBleConnectManager {
   scanWifiNetworks(result: MethodResult): void {
     this.addLog('扫描WiFi网络')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getWifiList((wifiModels: PPWifiModel[] | null) => {
+        const networks: string[] = [];
+        if (wifiModels) {
+          wifiModels.forEach((wifiModel: PPWifiModel) => {
+            if (wifiModel?.ssid) {
+              networks.push(wifiModel?.ssid);
+            }
+          });
+        }
+        result.success({ wifiList: networks });
+      })
+    } else  if (this.deviceControl instanceof PPBorreDeviceControl) {
       this.deviceControl.getWifiList((wifiModels: PPWifiModel[] | null) => {
         const networks: string[] = [];
         if (wifiModels) {
@@ -787,6 +834,21 @@ export class PPLefuBleConnectManager {
       if (!callResult) {
         result.success({ isSuccess: callResult, errorCode: 3 });
       }
+    } else  if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const callResult = await this.deviceControl.startUserOTA({
+        onUpdateFail: (errorCode: number) => {
+          this.loggerStreamHandler?.success(`onUpdateFail errorCode:${errorCode}`)
+          result.success({ isSuccess: false, errorCode: errorCode });
+        },
+        onUpdateSuccess: () => {
+          this.loggerStreamHandler?.success(`onUpdateSuccess`)
+          result.success({ isSuccess: result, errorCode: 0 });
+        },
+
+      });
+      if (!callResult) {
+        result.success({ isSuccess: callResult, errorCode: 3 });
+      }
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       const callResult = await this.deviceControl.startUserOTA({
         onUpdateFail: (errorCode: number) => {
@@ -814,6 +876,12 @@ export class PPLefuBleConnectManager {
       this.deviceControl.controlHeartRate(open, (isSuccess: boolean) => {
         result.success({ state: isSuccess });
       });
+
+    }if (this.deviceControl instanceof PPBorreDeviceControl) {
+        // 心率0打开 1关闭
+        this.deviceControl.controlHeartRate(open, (isSuccess: boolean) => {
+          result.success({ state: isSuccess });
+        });
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       // 心率0打开 1关闭
       this.deviceControl.controlHeartRate(open, (isSuccess: boolean) => {
@@ -831,7 +899,12 @@ export class PPLefuBleConnectManager {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
         this.sendCommonState(isOn, result);
       });
-    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+    }
+   else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.getHeartRateState((isOn: boolean) => {
+        this.sendCommonState(isOn, result);
+      });
+    }else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
         this.sendCommonState(isOn, result);
       });
@@ -848,7 +921,12 @@ export class PPLefuBleConnectManager {
       this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
         this.sendCommonState(isSuccess, result);
       });
-    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      // 阻抗0打开 1关闭
+      this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
+        this.sendCommonState(isSuccess, result);
+      });
+    }else if (this.deviceControl instanceof PPIceDeviceControl) {
       // 阻抗0打开 1关闭
       this.deviceControl.controlImpedance(open, (isSuccess: boolean) => {
         this.sendCommonState(isSuccess, result);
@@ -865,7 +943,12 @@ export class PPLefuBleConnectManager {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
         this.sendCommonState(isOn, result);
       });
-    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+    }
+    else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.getImpedanceState((isOn: boolean) => {
+        this.sendCommonState(isOn, result);
+      });
+    }else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
         this.sendCommonState(isOn, result);
       });
@@ -882,7 +965,12 @@ export class PPLefuBleConnectManager {
       this.deviceControl.deviceBindStatus(binding, (isSuccess: boolean) => {
         this.sendCommonState(isSuccess, result);
       });
-    } else {
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      // 绑定0解绑 1绑定
+      this.deviceControl.deviceBindStatus(binding, (isSuccess: boolean) => {
+        this.sendCommonState(isSuccess, result);
+      });
+    }else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-setBindingState-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
     }
@@ -891,6 +979,11 @@ export class PPLefuBleConnectManager {
   fetchBindingState(result: MethodResult): void {
     this.addLog('获取绑定状态')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.getDeviceBindStatus((isBind: boolean) => {
+        result.success({ binding: isBind });
+      });
+    }
+    else if (this.deviceControl instanceof PPBorreDeviceControl) {
       this.deviceControl.getDeviceBindStatus((isBind: boolean) => {
         result.success({ binding: isBind });
       });
@@ -926,7 +1019,10 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       const syncResult = await this.deviceControl.syncUserInfo(model);
       result.success({ state: syncResult });
-    } else {
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const syncResult = await this.deviceControl.syncUserInfo(model);
+      result.success({ state: syncResult });
+    }  else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-syncUserInfo-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
     }
@@ -956,6 +1052,9 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       const selectResult = await this.deviceControl.sendCurrentUserInfo(user);
       this.sendCommonState(selectResult, result);
+    } else  if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const selectResult = await this.deviceControl.sendCurrentUserInfo(user);
+      this.sendCommonState(selectResult, result);
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-selectUser-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
@@ -965,6 +1064,9 @@ export class PPLefuBleConnectManager {
   async deleteUser(user: PPUserModel, result: MethodResult): Promise<void> {
     this.addLog(`删除用户 user:${JSON.stringify(user)}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const deleteResult = await this.deviceControl.deleteUserInfo(user);
+      this.sendCommonState(deleteResult, result);
+    }  else if (this.deviceControl instanceof PPBorreDeviceControl) {
       const deleteResult = await this.deviceControl.deleteUserInfo(user);
       this.sendCommonState(deleteResult, result);
     } else {
@@ -1009,6 +1111,13 @@ export class PPLefuBleConnectManager {
       if (!startResult) {
         this.sendCommonState(false, result);
       }
+    } else  if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const startResult = await this.deviceControl.startBabyModel(step, weight, (isSuccess: boolean) => {
+        this.sendCommonState(isSuccess, result);
+      });
+      if (!startResult) {
+        this.sendCommonState(false, result);
+      }
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-startBabyModel-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}`)
@@ -1024,7 +1133,14 @@ export class PPLefuBleConnectManager {
       if (!exitResult) {
         this.sendCommonState(false, result);
       }
-    } else {
+    }else  if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const exitResult = await this.deviceControl.exitBabyModel((isSuccess: boolean) => {
+        this.sendCommonState(isSuccess, result);
+      });
+      if (!exitResult) {
+        this.sendCommonState(false, result);
+      }
+    }  else {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-exitBabyModel-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
     }
@@ -1038,6 +1154,17 @@ export class PPLefuBleConnectManager {
   async syncDeviceLog(logFolder: string): Promise<void> {
     this.addLog(`同步设备日志 logFolder:${logFolder}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
+      const syncLogReslut = await this.deviceControl.syncLog(logFolder, (progress: number, logFilePath: string, isEnd: boolean) => {
+        if (isEnd) {
+          this.deviceLogStreamHandler?.success({ progress: 100, isFailed: false, filePath: logFilePath })
+        } else {
+          this.deviceLogStreamHandler?.success({ progress: progress, isFailed: false, filePath: "" })
+        }
+      });
+      if (!syncLogReslut) {
+        this.deviceLogStreamHandler?.success({ progress: -1, isFailed: true, filePath: logFolder })
+      }
+    } else  if (this.deviceControl instanceof PPBorreDeviceControl) {
       const syncLogReslut = await this.deviceControl.syncLog(logFolder, (progress: number, logFilePath: string, isEnd: boolean) => {
         if (isEnd) {
           this.deviceLogStreamHandler?.success({ progress: 100, isFailed: false, filePath: logFilePath })
@@ -1069,6 +1196,8 @@ export class PPLefuBleConnectManager {
     this.addLog('保活')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.keepAlive();
+    } else  if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.keepAlive();
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.keepAlive();
     } else {
@@ -1090,6 +1219,28 @@ export class PPLefuBleConnectManager {
     this.addLog(`清除设备数据 type:${type}`)
 
     if (this.deviceControl instanceof PPTorreDeviceControl) {
+      if (type == 0) {
+        const clearResult = await this.deviceControl.clearAllDeviceInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
+        });
+      } else if (type == 1) {
+        const clearResult = await this.deviceControl.clearDeviceUserInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
+        });
+      } else if (type == 2) {
+        const clearResult = await this.deviceControl.clearHistoryData((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
+        });
+      } else if (type == 3) {
+        const clearResult = await this.deviceControl.clearConfigWifiInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
+        });
+      } else if (type == 4) {
+        const clearResult = await this.deviceControl.clearSettingInfo((isSuccess: boolean) => {
+          this.sendCommonState(isSuccess, result);
+        });
+      }
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       if (type == 0) {
         const clearResult = await this.deviceControl.clearAllDeviceInfo((isSuccess: boolean) => {
           this.sendCommonState(isSuccess, result);
@@ -1180,6 +1331,9 @@ export class PPLefuBleConnectManager {
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       const exitResult = await this.deviceControl.exitConfigWifi();
       this.sendCommonState(exitResult, result);
+    }else if (this.deviceControl instanceof PPBorreDeviceControl) {
+        const exitResult = await this.deviceControl.exitConfigWifi();
+        this.sendCommonState(exitResult, result);
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       const exitResult = await this.deviceControl.exitConfigWifi();
       this.sendCommonState(exitResult, result);
