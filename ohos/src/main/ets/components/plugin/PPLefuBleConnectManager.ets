@@ -17,6 +17,7 @@ import { PPCoconutDeviceControl } from 'ppsdkkit/src/main/ets/device/coconut/PPC
 import { PPJambulDeviceControl } from 'ppsdkkit/src/main/ets/device/jambul/PPJambulDeviceControl';
 import { PPTorreDeviceControl } from 'ppsdkkit/src/main/ets/device/torre/PPTorreDeviceControl';
 import { PPBorreDeviceControl } from 'ppsdkkit/src/main/ets/device/borre/PPBorreDeviceControl';
+import { PPUserRecentBodyData } from 'ppsdkkit/src/main/ets/vo/PPUserRecentBodyData';
 
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
 
@@ -379,12 +380,20 @@ export class PPLefuBleConnectManager {
     }, (isSuccess: boolean) => {
       if (isSuccess) {
         this.addLog('服务发现成功,可以调用指令');
-        this.sendConnectState(1);
+        setTimeout(() => {
+          console.log('1秒后执行的操作');
+          this.sendConnectState(1);
+        }, 1000);
+
       } else {
         this.addLog('服务发现失败');
         this.sendConnectState(2);
       }
     });
+  }
+
+  delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   disconnect(): void {
@@ -897,16 +906,16 @@ export class PPLefuBleConnectManager {
     this.addLog('获取心率开关状态')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
-        this.sendCommonState(isOn, result);
+                result.success({ open: isOn });
       });
     }
    else if (this.deviceControl instanceof PPBorreDeviceControl) {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
-        this.sendCommonState(isOn, result);
+                result.success({ open: isOn });
       });
     }else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getHeartRateState((isOn: boolean) => {
-        this.sendCommonState(isOn, result);
+                result.success({ open: isOn });
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -941,16 +950,18 @@ export class PPLefuBleConnectManager {
     this.addLog('获取阻抗开关状态')
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
-        this.sendCommonState(isOn, result);
+                
+                result.success({ open: isOn });
+
       });
     }
     else if (this.deviceControl instanceof PPBorreDeviceControl) {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
-        this.sendCommonState(isOn, result);
+                result.success({ open: isOn });
       });
     }else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.getImpedanceState((isOn: boolean) => {
-        this.sendCommonState(isOn, result);
+                result.success({ open: isOn });
       });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;
@@ -1028,12 +1039,32 @@ export class PPLefuBleConnectManager {
     }
   }
 
+  async syncLast7DaysDataUserInfo(userModel: PPUserModel,recentList: Array<PPUserRecentBodyData>,result: MethodResult) {
+    this.addLog(`同步用户7天数据信息 model:${JSON.stringify(userModel)}`)
+    if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const syncResult = await this.deviceControl.syncLast7DaysDataUserInfo(userModel, recentList);
+      result.success({ state: syncResult });
+    }  else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-syncUserInfo-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
+  }
+
   syncUserList(userArray: PPUserModel[], result: MethodResult): void {
     this.addLog(`同步用户列表 userArray:${JSON.stringify(userArray)}`)
     const deviceModel = this.deviceControl?.deviceModel;
     this.loggerStreamHandler?.success(`不支持该功能-syncUserList-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
 
   }
+
+  // syncLast7Data(model: PPUserRecentBodyData, result: MethodResult): void {
+  //   this.addLog(`同步最近7天数据 model:${JSON.stringify(model)}`)
+
+  //   if (this.deviceControl instanceof PPBorreDeviceControl) {
+  //     const syncResult = await this.deviceControl.syncUserInfo(model);
+  //     result.success({ state: syncResult });
+  //   }
+  // }
 
   fetchUserIDList(result: MethodResult): void {
     this.addLog('获取用户ID列表')

@@ -6,6 +6,8 @@ import { PPUserGender } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
 
 import { PPBluetoothKit } from 'ppsdkkit/src/main/ets/PPBluetoothKit';
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
+import { PPUserRecentBodyData } from 'ppsdkkit/src/main/ets/vo/PPUserRecentBodyData';
+
 import { PPLefuBleConnectManager } from './PPLefuBleConnectManager';
 import { PPLefuStreamHandler } from './PPLefuStreamHandler';
 import { PPLoggerPluginOhos } from './util/PPLoggerPluginOhos';
@@ -309,6 +311,39 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     } else if (method == "syncUserInfo") {
       const model = this.getUserInfo(params)
       this.bleManager.syncUserInfo(model, result)
+
+    } else if (method == "syncLast7Data") {
+
+      const array = params.get("weightList") as Array<Record<string, Any>> ?? []
+      const last7DaysArray: PPUserRecentBodyData[] = []
+
+      for (const item of array) {
+        const model = this.getUserRecentBodyData(item);
+        last7DaysArray.push(model)
+      }
+
+      let userID = params.get("userID") as string ?? ""
+      let memberID = params.get("memberID") as string ?? ""
+      let targetWeight = params.get("targetWeight") as number ?? 0
+      let idealWeight = params.get("idealWeight") as number ?? 0
+
+      let user = new PPUserModel()
+      user.userID = userID
+      user.memberID = memberID
+      user.targetWeight = targetWeight
+      user.ideaWeight = idealWeight
+
+
+      this.bleManager.syncLast7DaysDataUserInfo(user, last7DaysArray,result)
+
+
+
+
+
+      this.bleManager.loggerStreamHandler?.success(`syncLast7Data params:${last7DaysArray} user:${user} params ${params.get("userID")}}`)
+
+
+
     } else if (method == "syncUserList") {
       const userArray: PPUserModel[] = []
       const array = params.get("userList") as Array<Record<string, Any>> ?? []
@@ -441,5 +476,22 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     model.ideaWeight = idealWeight
 
     return model
+  }
+
+  private getUserRecentBodyData(record: Record<string, Any>): PPUserRecentBodyData {
+    const data = new PPUserRecentBodyData();
+    // 逐项解析record中的字段并赋值
+    data.value = record.get("value") as number ?? 0;
+    data.timeStamp = record.get("timeStamp") as number ?? 0;
+    data.bmi = record.get("bmi") as number ?? 0;
+    data.bodyfat = record.get("bodyfat") as number ?? 0;
+    data.heartRate = record.get("heartRate") as number ?? 0;
+    data.muscleRate = record.get("muscleRate") as number ?? 0;
+    data.muscle = record.get("muscle") as number ?? 0;
+    data.bone = record.get("bone") as number ?? 0;
+    data.boneRate = record.get("boneRate") as number ?? 0;
+    data.waterRate = record.get("waterRate") as number ?? 0;
+
+    return data;
   }
 }
