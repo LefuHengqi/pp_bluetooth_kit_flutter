@@ -438,6 +438,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
 
   private getUserInfo(params: Record<string, Any>): PPUserModel {
     const userID = params.get("userID") as string ?? ""
+        const pIndex = params.get("pIndex") as number ?? 0
+
     const memberID = params.get("memberID") as string ?? ""
     const isPregnantMode = params.get("isPregnantMode") as boolean ?? false
     const isAthleteMode = params.get("isAthleteMode") as boolean ?? false
@@ -474,8 +476,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     model.weightKg = currentWeight
     model.targetWeight = targetWeight
     model.ideaWeight = idealWeight
-
-    return model
+    model.PIndex = pIndex
+    return model  
   }
 
   private getUserRecentBodyData(record: Record<string, Any>): PPUserRecentBodyData {
