@@ -9,6 +9,7 @@ import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_banana.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_borre.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
+import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_dorre.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_fish.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_hamburger.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_ice.dart';
@@ -24,6 +25,7 @@ import 'package:pp_bluetooth_kit_flutter/pp_bluetooth_kit_flutter.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
+import 'package:pp_bluetooth_kit_flutter/utils/pp_unit_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -166,6 +168,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
     GridItem('获取配网信息'),    // 36
     GridItem('同步最近7天/7次数据'),    // 37
     GridItem('厨房秤-去皮/清零'),    // 38
+    GridItem('获取设备用户-Dorre'),    // 39
+    GridItem('食物秤-单位转换'),    // 40
   ];
 
   void _updateText(String newText) {
@@ -262,9 +266,11 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           // final device  = PPDeviceModel("CF568_BG", "CF:E7:55:27:B0:04"); //可用于DFU
                           // final device = PPDeviceModel("CF597_GNLine","08:A6:F7:C1:A5:62");
                           // final device = PPDeviceModel("CF632","CF:E9:02:11:C0:12");
-                          final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
+                          // final device = PPDeviceModel("LEFU-CF621-X06","CF:E9:02:27:00:03");
                           // final device  = PPDeviceModel("LFSmart Scale", "CA:E6:08:24:04:A7");
                           // final device = PPDeviceModel("LEFU-CF577","CF:E7:0B:14:00:B3");
+
+                          final device = PPDeviceModel("BS 340 connect","CF:E8:F8:04:00:90");
 
 
                           // 人体秤
@@ -544,6 +550,13 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                         } else if (index == 38) {
                           final ret = await PPPeripheralFish.toZero();
                           _updateText('去皮/清零-$ret');
+                        } else if (index == 39) {
+                          final ret = await PPPeripheralDorre.fetchUserList();
+                          _updateText('Dorre设备用户-$ret');
+                        } else if (index == 40) {
+                          final ret = await PPUnitHelper.foodScaleUnit(90, PPDeviceAccuracyType.pointG, PPUnitType.UnitLBOZ, "");
+                          // final ret = await PPUnitHelper.foodScaleUnitWithSuffix(90, PPDeviceAccuracyType.pointG, PPUnitType.UnitLBOZ, "");
+                          _updateText('食物秤单位转换-$ret');
                         }
                       },
                     );

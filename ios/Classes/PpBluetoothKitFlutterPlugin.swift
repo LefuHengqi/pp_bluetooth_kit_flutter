@@ -283,16 +283,20 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           self.bleManager.syncUserInfo(model, callBack: result)
       } else if method == "syncUserList" {
           
-          var userArray = [PPTorreSettingModel]()
+          self.bleManager.loggerStreamHandler?.event?("不支持 syncUserList 方法")
+          result(["state":false])
           
-          let array = params?["userList"] as? [[String:Any?]] ?? []
-          for item in array {
-              let model = getUserInfo(params: item)
-              userArray.append(model)
-          }
           
-          self.bleManager.loggerStreamHandler?.event?("下发用户数量:\(userArray.count)")
-          self.bleManager.syncUserList(userArray, callBack: result)
+//          var userArray = [PPTorreSettingModel]()
+//          
+//          let array = params?["userList"] as? [[String:Any?]] ?? []
+//          for item in array {
+//              let model = getUserInfo(params: item)
+//              userArray.append(model)
+//          }
+//          
+//          self.bleManager.loggerStreamHandler?.event?("下发用户数量:\(userArray.count)")
+//          self.bleManager.syncUserList(userArray, callBack: result)
       } else if method == "fetchUserIDList" {
           
           self.bleManager.fetchUserIDList(result)
@@ -425,6 +429,18 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           user.idealWeight = params?["idealWeight"] as? CGFloat ?? 0
 
           self.bleManager.syncLast7Data(recentList: recentList, lastBodyData: last, type: type, user: user, callBack: result)
+      } else if method == "fetchUserInfoList" {
+          
+          self.bleManager.fetchUserInfoList(callBack: result)
+      } else if method == "foodScaleUnit" {
+          
+          let weightG = params?["weightG"] as? CGFloat ?? 0
+          let accuracyType = params?["accuracyType"] as? Int ?? 0
+          let unitType = params?["unitType"] as? Int ?? 4
+          let deviceName = params?["deviceName"] as? String ?? ""
+          
+          self.bleManager.foodScaleUnit(weightG: weightG, accuracyType: accuracyType, unitType: unitType, deviceName:deviceName, callBack: result)
+          
       }
       
   }

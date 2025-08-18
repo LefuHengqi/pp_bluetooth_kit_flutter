@@ -4938,6 +4938,36 @@
     "customDeviceName" : "LEFU-CF621-X06",
     "macAddressStart" : 6,
     "deviceProtocolType" : 5
+  },
+  {
+    "imgUrl" : "https:\/\/unique.lefuenergy.com\/prod\/scale_img\/default_no_border_black.png",
+    "devicePowerType" : 1,
+    "sdkCode" : 0,
+    "sign" : "FF",
+    "nutrients" : [
+
+    ],
+    "deviceFuncType" : 91,
+    "avatarType" : 0,
+    "standardType" : 0,
+    "deviceCalcuteType" : 5,
+    "productModel" : null,
+    "macAddressStart" : 6,
+    "deviceUnitType" : "0,1,2",
+    "deviceType" : 1,
+    "manual" : null,
+    "customDeviceName" : "BS 340 connect",
+    "brand" : {
+      "brandLogo" : "https:\/\/unique.lefuenergy.com\/test\/2023\/11\/23\/Property%201%3Dunique%403x_20231123113859A016.png",
+      "brandName" : "Unique Health"
+    },
+    "advLength" : 999,
+    "deviceProtocolType" : 6,
+    "deviceConnectType" : 2,
+    "deviceAccuracyType" : 2,
+    "brandId" : 2,
+    "deviceName" : "BS 340 connect",
+    "id" : 172
   }
 ]
 

@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "PPDorreSettingModel.h"
+#import "PPTorreSettingModel.h"
 #import "PPBluetoothDefine.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 #pragma mark - fff2
-- (NSArray *)userInfo:(PPDorreSettingModel *)userModel;
+- (NSArray *)userInfo:(PPTorreSettingModel *)userModel;
 
 - (NSArray *)memberByUserId:(NSString *)userId memberId:(NSString *)memberId;
 

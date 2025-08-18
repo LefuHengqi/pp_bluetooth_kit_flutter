@@ -38,6 +38,8 @@ static NSInteger TORRE_ABNORMAL_HISTORY_INTERVAL_TIME = 1643731200; //2022-2-3ï¼
 
 + (UIImage *)text2Image:(NSString *)text;
 
++ (UIImage *)text2Image_lorre:(NSString *)text;
+
 + (UIImage*)covertToGrayImageFromImage:(UIImage*)sourceImage;
 
 + (NSData *)image2Bitmap:(UIImage *)image;
@@ -59,6 +61,10 @@ static NSInteger TORRE_ABNORMAL_HISTORY_INTERVAL_TIME = 1643731200; //2022-2-3ï¼
 + (NSString *)getBinaryByHex:(NSString *)hex;
 
 + (NSInteger)getFinalWeight100:(CGFloat)weightKG;
+
++ (NSString *)formatHexStringWithPrefix:(NSString *)hexString;
+
++ (NSInteger)calculateFoodWithValue:(CGFloat)value total:(CGFloat)total;
 
 @end
 

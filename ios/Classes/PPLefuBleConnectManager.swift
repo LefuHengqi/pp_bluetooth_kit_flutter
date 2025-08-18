@@ -59,6 +59,7 @@ public class PPLefuBleConnectManager:NSObject {
     var hamburgerControl : PPBluetoothPeripheralHamburger?
     var grapesControl : PPBluetoothPeripheralGrapes?
     var durianControl : PPBluetoothPeripheralDurian?
+    var dorreControl : PPBluetoothPeripheralDorre?
     
     var unzipFilePath : String?
     var dfuConfig : PPDfuPackageModel?
@@ -174,6 +175,11 @@ public class PPLefuBleConnectManager:NSObject {
                 self.durianControl = PPBluetoothPeripheralDurian(peripheral: peripheral, andDevice: device)
                 self.durianControl?.serviceDelegate = self
                 self.durianControl?.cmdDelegate = self
+            case .peripheralDorre:
+                self.scaleManager.connect(peripheral, withDevice: device)
+                
+                self.dorreControl = PPBluetoothPeripheralDorre(peripheral: peripheral, andDevice: device)
+                self.dorreControl?.serviceDelegate = self
 
             default:
                 self.loggerStreamHandler?.event?("不支持的设备类型-peripheralType:\(device.peripheralType)-\(deviceMac)")
@@ -225,6 +231,9 @@ public class PPLefuBleConnectManager:NSObject {
         if let durianControl = self.durianControl?.peripheral {
             self.scaleManager.disconnect(durianControl)
         }
+        if let dorreControl = self.dorreControl?.peripheral {
+            self.scaleManager.disconnect(dorreControl)
+        }
         
         self.clearData()
     }
@@ -240,6 +249,7 @@ public class PPLefuBleConnectManager:NSObject {
         self.fishControl = nil
         self.eggControl = nil
         self.durianControl = nil
+        self.dorreControl = nil
         
         self.bananaControl?.scaleDataDelegate = nil
         self.bananaControl?.updateStateDelegate = nil
@@ -316,6 +326,14 @@ public class PPLefuBleConnectManager:NSObject {
                 
                 self.sendHistoryData(models)
             })
+        case .peripheralDorre:
+            self.dorreControl?.dataFetchHistoryData(model, withHandler: {[weak self] models in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.sendHistoryData(models)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
         }
@@ -377,6 +395,10 @@ public class PPLefuBleConnectManager:NSObject {
             // 在代理方法中统一持续回调
             self.forreControl?.fetchDeviceBatteryInfo(completion: { power in
                 
+            })
+        case .peripheralDorre:
+            // 在代理方法中统一持续回调
+            self.dorreControl?.fetchDeviceBatteryInfo(completion: { power in
             })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
@@ -651,6 +673,8 @@ extension PPLefuBleConnectManager:PPBluetoothConnectDelegate{
             })
         case .peripheralDurian:
             self.durianControl?.discoverFFF0Service()
+        case .peripheralDorre:
+            self.dorreControl?.discoverFFF0Service()
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(String(describing: peripheralType))")
         }
@@ -753,6 +777,15 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
             
             self.durianControl?.scaleDataDelegate = self.durianMeasurementHandler
             self.sendConnectState(1)
+        case .peripheralDorre:
+            self.dorreControl?.codeUpdateMTU({[weak self] mtu in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.dorreControl?.scaleDataDelegate = self
+                self.sendConnectState(1)
+            })
         default:
             self.loggerStreamHandler?.event?("未知类型:\(String(describing: peripheralType))")
         }

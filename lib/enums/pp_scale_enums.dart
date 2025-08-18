@@ -78,12 +78,23 @@ enum PPDeviceCalculateType {
 }
 
 enum PPDeviceAccuracyType {
-  unknown,
-  point01,
-  point005,
-  pointG,
-  point01G,
-  point001,
+  unknown(0),
+  point01(1),
+  point005(2),
+  pointG(3),
+  point01G(4),
+  point001(5);
+
+  final int value;
+  const PPDeviceAccuracyType(this.value);
+
+  static PPDeviceAccuracyType fromValue(int value) {
+    try {
+      return values.firstWhere((e) => e.value == value);
+    } catch (_) {
+      return unknown;
+    }
+  }
 }
 
 enum PPDevicePowerType {

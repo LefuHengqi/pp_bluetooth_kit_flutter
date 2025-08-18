@@ -25,7 +25,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)hasBabyFunc:(PPDeviceFuncType)funcType;
 
+// 判断是否支持wifi功能, 2.4G 和 5G
 + (BOOL)hasWifiFunc:(PPDeviceFuncType)funcType;
+
+// 判断是否支持 2.4G wifi
++ (BOOL)has24GWifiFunc:(PPDeviceFuncType)funcType;
+
+// 判断是否支持 5G wifi
++ (BOOL)has5GWifiFunc:(PPDeviceFuncType)funcType;
 
 + (BOOL)hasHeartRateFunc:(PPDeviceFuncType)funcType;
 

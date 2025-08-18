@@ -85,6 +85,16 @@ extension PPLefuBleConnectManager {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 self.sendCommonState(true, callBack: callBack)
             }
+        case .peripheralDorre:
+            let unit = model.unit
+            self.dorreControl?.codeChange(unit, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
             
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
@@ -164,6 +174,17 @@ extension PPLefuBleConnectManager {
             let date = Date()
             self.fishControl?.syncTime(date)
             self.sendCommonState(true, callBack: callBack)
+        case .peripheralDorre:
+            let code:Int = is24Hour ? 0 : 1;
+            let format = PPTimeFormat(rawValue: code) ?? .format24HourClock
+            self.dorreControl?.codeSyncTime(with: format, handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = state == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             sendCommonState(false, callBack: callBack)
@@ -261,6 +282,20 @@ extension PPLefuBleConnectManager {
                 self.sendWIFIResult(isSuccess: isSuccess, sn: nil, errorCode: Int(errorCode), callBack: callBack);
                 
             })
+        case .peripheralDorre:
+            let wifi = PPWifiInfoModel()
+            wifi.ssid = ssId
+            wifi.password = password
+            self.dorreControl?.dataConfigNetWork(wifi, domain: domain, withHandler: {[weak self] state, data in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let isSuccess = state == .registSuccess
+                let errorCode = state.rawValue
+                self.sendWIFIResult(isSuccess: isSuccess, sn: nil, errorCode: Int(errorCode), callBack: callBack);
+                
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack(["success":false,"errorCode":-1])
@@ -331,6 +366,16 @@ extension PPLefuBleConnectManager {
                 
                 self.sendWIFISSID("", isConnectWIFI: connected, callBack: callBack)
             })
+        case .peripheralDorre:
+            self.dorreControl?.dataFetchConfigNetworkSSID({ ssID in
+                if ssID == nil || ssID.isEmpty {
+                    self.sendWIFISSID(nil, isConnectWIFI: false, callBack: callBack)
+                    return
+                }
+                
+                self.sendWIFISSID(ssID, isConnectWIFI: true, callBack: callBack)
+                
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -359,6 +404,15 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeFetchWifiMac({ wifiMac in
+                
+                let dict:[String:Any?] = ["wifiMac":wifiMac]
+                let filtedDict:[String:Any] = dict.compactMapValues { $0 }
+                
+                callBack(filtedDict);
+                
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeFetchWifiMac({ wifiMac in
                 
                 let dict:[String:Any?] = ["wifiMac":wifiMac]
                 let filtedDict:[String:Any] = dict.compactMapValues { $0 }
@@ -409,6 +463,15 @@ extension PPLefuBleConnectManager {
                 self.sendWifiList(wifiList, callBack: callBack)
                 
             })
+        case .peripheralDorre:
+            self.dorreControl?.dataFindSurroundDevice({[weak self] wifiList in
+                guard let `self` = self else {
+                    return
+                }
+                
+                self.sendWifiList(wifiList, callBack: callBack)
+                
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -447,6 +510,16 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeOtaUpdate(handler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = state == 0
+                self.sendWifiOTA(isSuccess: success, errorCode: state, callBack: callBack)
+                
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeOtaUpdate(handler: {[weak self] state in
                 guard let `self` = self else {
                     return
                 }
@@ -549,6 +622,26 @@ extension PPLefuBleConnectManager {
                     self.sendCommonState(success, callBack: callBack)
                 })
             }
+        case .peripheralDorre:
+            if open {
+                
+                self.dorreControl?.codeOpenHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.dorreControl?.codeCloseHeartRateSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -586,6 +679,12 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralForre:
             self.forreControl?.codeFetchHeartRateSwitch({ state in
+                
+                let success = state == 0
+                callBack(["open":success])
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeFetchHeartRateSwitch({ state in
                 
                 let success = state == 0
                 callBack(["open":success])
@@ -685,6 +784,26 @@ extension PPLefuBleConnectManager {
                     self.sendCommonState(success, callBack: callBack)
                 })
             }
+        case .peripheralDorre:
+            if open {
+                
+                self.dorreControl?.codeOpenImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else  {
+                
+                self.dorreControl?.codeCloseImpedanceSwitch({[weak self] state in
+                    guard let `self` = self else {
+                        return
+                    }
+                    let success = state == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -716,6 +835,12 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeFetchImpedanceSwitch({ open in
+                
+                let open = open == 0
+                callBack(["open":open])
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeFetchImpedanceSwitch({ open in
                 
                 let open = open == 0
                 callBack(["open":open])
@@ -778,6 +903,28 @@ extension PPLefuBleConnectManager {
                     self.sendCommonState(success, callBack: callBack)
                 })
             }
+        case .peripheralDorre:
+            if binding {
+                
+                self.dorreControl?.codeSetBindingState({[weak self] status in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    let success = status == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            } else {
+                
+                self.dorreControl?.codeSetUnbindingState({[weak self] status in
+                    guard let `self` = self else {
+                        return
+                    }
+                    
+                    let success = status == 0
+                    self.sendCommonState(success, callBack: callBack)
+                })
+            }
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -800,6 +947,12 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeFetchBindingState({ status in
+                
+                let binding = status == 1
+                callBack(["binding":binding])
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeFetchBindingState({ status in
                 
                 let binding = status == 1
                 callBack(["binding":binding])
@@ -837,6 +990,15 @@ extension PPLefuBleConnectManager {
                 let success = status == 0
                 self.sendCommonState(success, callBack: callBack)
             })
+        case .peripheralDorre:
+            self.dorreControl?.codeSetScreenLuminance(brightness, handler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -860,6 +1022,13 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeFetchScreenLuminance({ brightness in
+                let dict = [
+                    "brightness":brightness
+                ]
+                callBack(dict)
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeFetchScreenLuminance({ brightness in
                 let dict = [
                     "brightness":brightness
                 ]
@@ -898,11 +1067,21 @@ extension PPLefuBleConnectManager {
                 let successs = state == 0
                 self.sendCommonState(successs, callBack: callBack)
             })
+        case .peripheralDorre:
+            self.dorreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let successs = state == 0
+                self.sendCommonState(successs, callBack: callBack)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
         }
     }
+    
 
     func syncUserList(_ userList:[PPTorreSettingModel], callBack: @escaping FlutterResult) {
         guard let currentDevice = self.currentDevice else {
@@ -935,7 +1114,8 @@ extension PPLefuBleConnectManager {
             callBack([:])
         }
     }
-
+    
+    
     func fetchUserIDList(_ callBack: @escaping FlutterResult) {
         guard let currentDevice = self.currentDevice else {
             self.loggerStreamHandler?.event?("当前无连接设备")
@@ -959,6 +1139,18 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.dataFetchUserID({[weak self] IDS in
+                guard self != nil else {
+                    return
+                }
+                
+                let retDict = [
+                    "userIDList":IDS
+                ]
+                
+                callBack(retDict)
+            })
+        case .peripheralDorre:
+            self.dorreControl?.dataFetchUserID({[weak self] IDS in
                 guard self != nil else {
                     return
                 }
@@ -1004,6 +1196,16 @@ extension PPLefuBleConnectManager {
                 self.sendCommonState(success, callBack: callBack)
                 
             })
+        case .peripheralDorre:
+            self.dorreControl?.dataSelectUser(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -1031,6 +1233,16 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.dataDeleteUser(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        case .peripheralDorre:
+            self.dorreControl?.dataDeleteUser(user, withHandler: {[weak self] status in
                 guard let `self` = self else {
                     return
                 }
@@ -1073,6 +1285,16 @@ extension PPLefuBleConnectManager {
                 self.sendCommonState(success, callBack: callBack)
                 
             })
+        case .peripheralDorre:
+            self.dorreControl?.codeStartMeasure({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -1100,6 +1322,16 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeStopMeasure({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeStopMeasure({ [weak self] status in
                 guard let `self` = self else {
                     return
                 }
@@ -1155,6 +1387,16 @@ extension PPLefuBleConnectManager {
                 self.sendCommonState(success, callBack: callBack)
                 
             })
+        case .peripheralDorre:
+            self.dorreControl?.codeEnableBabyModel(step, weight: weight, withHandler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -1192,6 +1434,16 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeExitBabyModel({ [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeExitBabyModel({ [weak self] status in
                 guard let `self` = self else {
                     return
                 }
@@ -1274,6 +1526,8 @@ extension PPLefuBleConnectManager {
                     self.startDFUForre(package: package, deviceVersion: deviceVersion, callBack)
                 case .peripheralBorre:
                     self.startDFUBorre(package: package, deviceVersion: deviceVersion, callBack)
+                case .peripheralDorre:
+                    self.startDFUDorre(package: package, deviceVersion: deviceVersion, callBack)
                 default:
                     self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
                     callBack([:])
@@ -1351,6 +1605,21 @@ extension PPLefuBleConnectManager {
                 let filtedDict = dict.compactMapValues { $0 }
                 self.deviceLogStreamHandler?.event?(filtedDict)
             })
+        case .peripheralDorre:
+            self.dorreControl?.dataSyncLog(withLogFolder: logFolder, handler: {[weak self] progress, filePath, isFailed in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict:[String:Any?] = [
+                    "isFailed":isFailed,
+                    "progress":progress,
+                    "filePath":filePath
+                ]
+                
+                let filtedDict = dict.compactMapValues { $0 }
+                self.deviceLogStreamHandler?.event?(filtedDict)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             self.deviceLogStreamHandler?.event?(["isSuccess":false])
@@ -1374,6 +1643,8 @@ extension PPLefuBleConnectManager {
             self.borreControl?.sendKeepAliveCode()
         case .peripheralForre:
             self.forreControl?.sendKeepAliveCode()
+        case .peripheralDorre:
+            self.dorreControl?.sendKeepAliveCode()
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
         }
@@ -1397,6 +1668,14 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralBorre:
             self.borreControl?.codeClearDeviceData(type, withHandler: {[weak self] state in
+                guard let `self` = self else {
+                    return
+                }
+                let success = state == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
+        case .peripheralDorre:
+            self.dorreControl?.codeClearDeviceData(type, withHandler: {[weak self] state in
                 guard let `self` = self else {
                     return
                 }
@@ -1530,6 +1809,15 @@ extension PPLefuBleConnectManager {
         case .peripheralIce:
             self.iceControl?.exitWifiConfig();
             self.sendCommonState(true, callBack: callBack)
+        case .peripheralDorre:
+            self.dorreControl?.dataExitWifiConfig({[weak self] stauts in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = stauts == 0
+                self.sendCommonState(success, callBack: callBack)
+            })
         default:
             self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
             callBack([:])
@@ -1652,6 +1940,16 @@ extension PPLefuBleConnectManager {
             })
         case .peripheralEgg:
             self.eggControl?.discoverDeviceInfoService({[weak self] model180A in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let dict = self.convert180A(model: model180A)
+                
+                callBack(dict);
+            })
+        case .peripheralDorre:
+            self.dorreControl?.discoverDeviceInfoService({[weak self] model180A in
                 guard let `self` = self else {
                     return
                 }
@@ -1788,4 +2086,91 @@ extension PPLefuBleConnectManager {
         }
     }
     
+    private func startDFUDorre(package:PPTorreDFUPackageModel, deviceVersion:String, _ callBack: @escaping FlutterResult) {
+        
+        self.dorreControl?.dataDFUStart { [weak self]  size in
+            
+            guard let `self` = self else {return}
+            let tSize = size
+            
+            self.dorreControl?.dataDFUCheck({[weak self] status, fileType, version, offset in
+                guard let `self` = self else { return }
+                
+                let status = 1
+                
+                self.dorreControl?.dataDFUSend(package, maxPacketSize: tSize, transferContinueStatus: status, deviceVersion: deviceVersion,handler: {[weak self] (progress, isSuccess) in
+                    
+                    guard let `self` = self else { return }
+                    
+                    self.sendDfuResult(progress: Float(progress), isSuccess: isSuccess)
+                    
+                })
+                
+            })
+        }
+    }
+    
+    
+    
+    func fetchUserInfoList(callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralDorre:
+            self.dorreControl?.dataFetchUserID({ list in
+                
+                var retList = [[String:Any]]()
+                for user in list {
+                    
+                    var userDict:[String:Any] = [:]
+                    userDict["userID"] = user.userID
+                    userDict["memberID"] = user.memberID
+                    userDict["age"] = user.age
+                    userDict["sex"] = user.gender.rawValue
+                    userDict["userHeight"] = user.height
+                    userDict["pIndex"] = user.pIndex
+                    userDict["isAthleteMode"] = user.isAthleteMode
+                    
+                    retList.append(userDict)
+                    
+                }
+                
+                callBack(["userList":retList])
+
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+        }
+    }
+    
+    
+    func foodScaleUnit(weightG:CGFloat, accuracyType:Int, unitType:Int, deviceName:String, callBack: @escaping FlutterResult) {
+        
+        let accuracy = PPDeviceAccuracyType(rawValue: UInt(accuracyType)) ?? .pointG
+        let unitType = PPDeviceUnit(rawValue: UInt(unitType)) ?? .unitG
+        
+        var weight = weightG
+        if accuracy == .point01G {
+            weight = weightG * 10
+        }
+        
+        let dic = PPUnitTool.weightStr(with: weight, accuracyType: accuracy, andUnit: unitType, deviceName: deviceName)
+        var weightStr = ""
+        if unitType == PPDeviceUnit.unitLBOZ {
+            weightStr = "\(dic["lboz_lb"] ?? ""):\(dic["lboz_oz"] ?? "")"
+        } else {
+            weightStr = "\(dic["weight"] ?? "")"
+            if dic["weight"] as? Float == 0{
+                weightStr = "0"
+            }
+        }
+        
+        callBack(["weightStr":weightStr])
+
+    }
 }
