@@ -2,17 +2,15 @@ import 'dart:convert';
 
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 
-
 ///@author liyp
 ///@email liyp520@foxmail.com
 ///@date 2025/1/9 17:00
 //@description
 
-
 class PPDeviceModel {
   String? deviceMac = ""; //设备mac设备唯一标识
   String? deviceName = ""; //设备蓝牙名称，设备名称标识
-  String? customDeviceName = "";//自定义设备名称
+  String? customDeviceName = ""; //自定义设备名称
   int? devicePower = -1; //电量 -1标识不支持 >0为有效值
   int? rssi = 0; //蓝牙信号强度
   String? firmwareVersion = ""; //固件版本号
@@ -23,8 +21,10 @@ class PPDeviceModel {
   String? modelNumber = ""; //时区编号
   String? calculateVersion = ""; //计算版本
   PPDeviceType? deviceType = PPDeviceType.unknown; //设备类型
-  PPDeviceProtocolType? deviceProtocolType = PPDeviceProtocolType.unknown; //协议模式
-  PPDeviceCalculateType? deviceCalculateType = PPDeviceCalculateType.alternate; //计算方式
+  PPDeviceProtocolType? deviceProtocolType =
+      PPDeviceProtocolType.unknown; //协议模式
+  PPDeviceCalculateType? deviceCalculateType =
+      PPDeviceCalculateType.alternate; //计算方式
   PPDeviceAccuracyType? deviceAccuracyType = PPDeviceAccuracyType.point01; //精度
   PPDevicePowerType? devicePowerType = PPDevicePowerType.battery; //供电模式
   PPDeviceConnectType? deviceConnectType = PPDeviceConnectType.direct; //设备连接类型
@@ -47,7 +47,8 @@ class PPDeviceModel {
 
   PPDevicePeripheralType getDevicePeripheralType() {
     final type = peripheralType ?? 0;
-    return PPDevicePeripheralType.fromValue(type) ?? PPDevicePeripheralType.apple;
+    return PPDevicePeripheralType.fromValue(type) ??
+        PPDevicePeripheralType.apple;
   }
 
   @override
@@ -106,12 +107,24 @@ class PPDeviceModel {
     model.serialNumber = json['serialNumber'];
     model.modelNumber = json['modelNumber'];
     model.calculateVersion = json['calculateVersion'];
-    model.deviceType = json['deviceType'] != null ? PPDeviceType.values[json['deviceType']] : null;
-    model.deviceProtocolType = json['deviceProtocolType'] != null ? PPDeviceProtocolType.values[json['deviceProtocolType']] : null;
-    model.deviceCalculateType = json['deviceCalculateType'] != null ? PPDeviceCalculateType.values[json['deviceCalculateType']] : null;
-    model.deviceAccuracyType = json['deviceAccuracyType'] != null ? PPDeviceAccuracyType.values[json['deviceAccuracyType']] : null;
-    model.devicePowerType = json['devicePowerType'] != null ? PPDevicePowerType.values[json['devicePowerType']] : null;
-    model.deviceConnectType = json['deviceConnectType'] != null ? PPDeviceConnectType.values[json['deviceConnectType']] : null;
+    model.deviceType = json['deviceType'] != null
+        ? PPDeviceType.fromValue(json['deviceType'])
+        : null;
+    model.deviceProtocolType = json['deviceProtocolType'] != null
+        ? PPDeviceProtocolType.fromValue(json['deviceProtocolType'])
+        : null;
+    model.deviceCalculateType = json['deviceCalculateType'] != null
+        ? PPDeviceCalculateType.fromValue(json['deviceCalculateType'])
+        : null;
+    model.deviceAccuracyType = json['deviceAccuracyType'] != null
+        ? PPDeviceAccuracyType.fromValue(json['deviceAccuracyType'])
+        : null;
+    model.devicePowerType = json['devicePowerType'] != null
+        ? PPDevicePowerType.fromValue(json['devicePowerType'])
+        : null;
+    model.deviceConnectType = json['deviceConnectType'] != null
+        ? PPDeviceConnectType.fromValue(json['deviceConnectType'])
+        : null;
     model.deviceFuncType = json['deviceFuncType'];
     model.deviceUnitType = json['deviceUnitType'];
     model.mtu = json['mtu'];
