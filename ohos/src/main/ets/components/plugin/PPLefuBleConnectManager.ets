@@ -354,7 +354,27 @@ export class PPLefuBleConnectManager {
         this.addLog(`心率测量中 monitorLockData`)
         this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 2));
       } else {
-        this.addLog(`稳定数据:${bodyBaseModel?.getPpWeightKg()} impedance:${bodyBaseModel?.impedance}`)
+        if (PPScaleHelper.isCalculate8(deviceModel?.deviceCalculateType)) {
+          this.addLog(`稳定数据:${bodyBaseModel?.getPpWeightKg()}
+              z100KhzLeftLegEnCode:${bodyBaseModel?.z100KhzLeftLegEnCode}
+              z100KhzRightArmEnCode:${bodyBaseModel?.z100KhzRightArmEnCode}
+              z100KhzRightLegEnCode:${bodyBaseModel?.z100KhzRightLegEnCode}
+              z100KhzTrunkEnCode:${bodyBaseModel?.z100KhzTrunkEnCode}
+              z20KhzLeftArmEnCode:${bodyBaseModel?.z20KhzLeftArmEnCode}
+              z20KhzLeftLegEnCode:${bodyBaseModel?.z20KhzLeftLegEnCode}
+              z20KhzRightArmEnCode:${bodyBaseModel?.z20KhzRightArmEnCode}
+              z20KhzRightLegEnCode:${bodyBaseModel?.z20KhzRightLegEnCode}
+              z20KhzTrunkEnCode:${bodyBaseModel?.z20KhzTrunkEnCode}
+              heartRate:${bodyBaseModel?.heartRate}
+             `)
+        } else if(PPScaleHelper.isCalculate4DualFrequency(deviceModel?.deviceCalculateType)) {
+          this.addLog(`稳定数据:${bodyBaseModel?.getPpWeightKg()}
+              impedance:${bodyBaseModel?.impedance}
+              impedance100EnCode:${bodyBaseModel?.ppImpedance100EnCode}
+              heartRate:${bodyBaseModel?.heartRate}`)
+        } else {
+          this.addLog(`稳定数据:${bodyBaseModel?.getPpWeightKg()} impedance:${bodyBaseModel?.impedance}`)
+        }
         this.addLog(`测量结束`)
         this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 10));
       }
