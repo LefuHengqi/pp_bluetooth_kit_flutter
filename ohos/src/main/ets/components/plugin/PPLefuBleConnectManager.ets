@@ -18,6 +18,7 @@ import { PPJambulDeviceControl } from 'ppsdkkit/src/main/ets/device/jambul/PPJam
 import { PPTorreDeviceControl } from 'ppsdkkit/src/main/ets/device/torre/PPTorreDeviceControl';
 import { PPBorreDeviceControl } from 'ppsdkkit/src/main/ets/device/borre/PPBorreDeviceControl';
 import { PPUserRecentBodyData } from 'ppsdkkit/src/main/ets/vo/PPUserRecentBodyData';
+import {PPScaleHelper} from 'ppsdkkit/src/main/ets/utils/PPScaleHelper'
 
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
 
@@ -88,6 +89,9 @@ export class PPLefuBleConnectManager {
       this.needScan = false;
       this.sendBlePermissionState(3)
       if (this.isScaning) {
+
+        this.addLog(`onBluetoothStateChange stopScan`)
+
         this.stopScan();
       }
     }
@@ -193,6 +197,9 @@ export class PPLefuBleConnectManager {
   }
 
   startScan(result: MethodResult): void {
+
+    this.addLog('设备startScane')
+
     this.stopScan();
     this.disconnect();
     this.isScaning = true;
@@ -230,11 +237,17 @@ export class PPLefuBleConnectManager {
   }
 
   connectDevice(deviceMac: string) {
+
+    this.addLog('设备connectDevice')
+
     let deviceModel: PPDeviceModel = this.deviceModels[deviceMac];
     if (!deviceModel) {
       this.addLog(`设备${deviceMac}未找到，请先搜索设备`)
       this.sendConnectState(2);
     } else {
+
+      this.addLog(`connectDevice stopScan`)
+
       this.stopScan();
       if (this.deviceControl) {
         if (this.deviceControl.deviceModel?.deviceMac === deviceMac) {
@@ -258,30 +271,47 @@ export class PPLefuBleConnectManager {
   }
 
   receiveBroadcastData(deviceMac: string, result: MethodResult): void {
+
+    this.addLog('设备receiveBroadcastData')
+
     this.addLog(`启动广播秤数据监听 deviceMac:${deviceMac}`)
     let deviceModel: PPDeviceModel = this.deviceModels[deviceMac];
     if (!deviceModel) {
       this.addLog(`设备${deviceMac}未找到，请先搜索设备`)
       this.sendConnectState(2);
     } else {
-      this.stopScan();
+      this.createDeviceControl(deviceModel);
+
       if (this.deviceControl) {
+
+        this.addLog(`设备0${deviceMac}`)
+
         if (this.deviceControl.deviceModel?.deviceMac === deviceMac) {
-          if (this.deviceControl.isConnect()) {
-            this.addLog('设备已连接,无需重复连接')
-            // this.sendConnectState(1);
-          } else {
-            this.startConnectDevice();
+          this.addLog(`设备1${deviceMac}`)
+
+
+          if (this.deviceControl instanceof PPBananaDeviceControl) {
+            const deviceControlBanan = this.deviceControl as PPBananaDeviceControl;
+            this.addLog(`设备2${deviceMac}`)
+
+            deviceControlBanan.startSearch()
+
+
           }
-        } else {
-          this.addLog('其他设备连接，先断开,再连接')
-          this.disconnect();
-          this.createDeviceControl(deviceModel);
-          this.startConnectDevice();
+
+          if (this.deviceControl instanceof PPJambulDeviceControl) {
+            const deviceControlJambul = this.deviceControl as PPJambulDeviceControl;
+            this.addLog(`设备2${deviceMac}`)
+
+            deviceControlJambul.startSearch()
+
+
+          }
+
+
+
         }
-      } else {
-        this.createDeviceControl(deviceModel);
-        this.startConnectDevice();
+
       }
     }
   }
@@ -327,6 +357,8 @@ export class PPLefuBleConnectManager {
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
     } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
     } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)

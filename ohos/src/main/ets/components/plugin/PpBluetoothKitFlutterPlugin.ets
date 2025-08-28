@@ -222,8 +222,10 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     } else if (method == "startScan") {
       this.bleManager.startScan(result);
     } else if (method == "stopScan") {
+
       this.bleManager.stopScan();
       this.bleManager.sendCommonState(true, result)
+
     } else if (method == "connectDevice") {
       const deviceMac = params.get("deviceMac") as string;
       const deviceName = params.get("deviceName") as string;
@@ -373,6 +375,9 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       const user = new PPUserModel()
       user.userID = userID
       user.memberID = memberID
+
+      this.bleManager.loggerStreamHandler?.success(`删除用户:${user.userID}  memberid ${user.memberID}`)
+
 
       this.bleManager.deleteUser(user, result)
     } else if (method == "startMeasure") {
