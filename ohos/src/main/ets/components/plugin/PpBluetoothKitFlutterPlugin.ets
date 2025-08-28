@@ -335,16 +335,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       user.targetWeight = targetWeight
       user.ideaWeight = idealWeight
 
-
       this.bleManager.syncLast7DaysDataUserInfo(user, last7DaysArray,result)
-
-
-
-
-
       this.bleManager.loggerStreamHandler?.success(`syncLast7Data params:${last7DaysArray} user:${user} params ${params.get("userID")}}`)
-
-
 
     } else if (method == "syncUserList") {
       const userArray: PPUserModel[] = []
@@ -427,6 +419,16 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       }
 
       this.bleManager.receiveBroadcastData(deviceMac, result)
+    } else if (method == "unReceiveBroadcastData") {
+      const deviceMac = params.get("deviceMac") as string
+
+      if (!deviceMac) {
+        this.bleManager.loggerStreamHandler?.success("deviceMac为空")
+        this.bleManager.sendCommonState(false, result)
+        return
+      }
+
+      this.bleManager.unReceiveBroadcastData(deviceMac, result)
     } else if (method == "sendBroadcastData") {
       const cmd = params.get("cmd") as string
       const unit = params.get("unit") as number ?? 0
