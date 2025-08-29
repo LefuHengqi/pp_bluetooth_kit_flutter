@@ -18,7 +18,7 @@ import { PPJambulDeviceControl } from 'ppsdkkit/src/main/ets/device/jambul/PPJam
 import { PPTorreDeviceControl } from 'ppsdkkit/src/main/ets/device/torre/PPTorreDeviceControl';
 import { PPBorreDeviceControl } from 'ppsdkkit/src/main/ets/device/borre/PPBorreDeviceControl';
 import { PPUserRecentBodyData } from 'ppsdkkit/src/main/ets/vo/PPUserRecentBodyData';
-import {PPScaleHelper} from 'ppsdkkit/src/main/ets/utils/PPScaleHelper'
+import { PPScaleHelper } from 'ppsdkkit/src/main/ets/utils/PPScaleHelper'
 
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
 
@@ -271,10 +271,7 @@ export class PPLefuBleConnectManager {
   }
 
   receiveBroadcastData(deviceMac: string, result: MethodResult): void {
-
-    this.addLog('设备receiveBroadcastData')
-
-    this.addLog(`启动广播秤数据监听 deviceMac:${deviceMac}`)
+    this.addLog(`设备receiveBroadcastData 启动数据监听 deviceMac:${deviceMac}`)
     let deviceModel: PPDeviceModel = this.deviceModels[deviceMac];
     if (!deviceModel) {
       this.addLog(`设备${deviceMac}未找到，请先搜索设备`)
@@ -302,20 +299,36 @@ export class PPLefuBleConnectManager {
           if (this.deviceControl instanceof PPJambulDeviceControl) {
             const deviceControlJambul = this.deviceControl as PPJambulDeviceControl;
             this.addLog(`设备2${deviceMac}`)
-
             deviceControlJambul.startSearch()
-
-
           }
-
-
-
         }
 
       }
     }
   }
 
+  unReceiveBroadcastData(deviceMac: string, result: MethodResult): void {
+
+    this.addLog(`设备unReceiveBroadcastData 取消广播秤数据监听 deviceMac:${deviceMac}`)
+    let deviceModel: PPDeviceModel = this.deviceModels[deviceMac];
+    if (deviceModel) {
+      if (this.deviceControl) {
+        this.unRegisterDataChangeListener();
+        if (this.deviceControl.deviceModel?.deviceMac === deviceMac) {
+          if (this.deviceControl instanceof PPBananaDeviceControl) {
+            this.addLog(`设备 banana${deviceMac}`)
+            const deviceControlBanan = this.deviceControl as PPBananaDeviceControl;
+            deviceControlBanan.stopSearch()
+          } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+            this.addLog(`设备 jambul${deviceMac}`)
+            const deviceControlJambul = this.deviceControl as PPJambulDeviceControl;
+            deviceControlBanan.stopSearch()
+          }
+        }
+      }
+    }
+
+  }
 
   private createDeviceControl(deviceModel: PPDeviceModel) {
     switch (deviceModel.getDevicePeripheralType()) {
@@ -366,6 +379,28 @@ export class PPLefuBleConnectManager {
 
   }
 
+  private unRegisterDataChangeListener() {
+    if (!this.deviceControl) {
+      return
+    }
+    if (this.deviceControl instanceof PPAppleDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPIceDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPBananaDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    }
+
+  }
+
   dataChangeListener: PPDataChangeListener = {
 
     monitorProcessData: (bodyBaseModel: PPBodyBaseModel | null, deviceModel: PPDeviceModel | null) => {
@@ -399,7 +434,7 @@ export class PPLefuBleConnectManager {
               z20KhzTrunkEnCode:${bodyBaseModel?.z20KhzTrunkEnCode}
               heartRate:${bodyBaseModel?.heartRate}
              `)
-        } else if(PPScaleHelper.isCalculate4DualFrequency(deviceModel?.deviceCalculateType)) {
+        } else if (PPScaleHelper.isCalculate4DualFrequency(deviceModel?.deviceCalculateType)) {
           this.addLog(`稳定数据:${bodyBaseModel?.getPpWeightKg()}
               impedance:${bodyBaseModel?.impedance}
               impedance100EnCode:${bodyBaseModel?.ppImpedance100EnCode}

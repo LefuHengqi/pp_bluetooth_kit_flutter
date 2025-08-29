@@ -82,12 +82,16 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> startScan(Function(PPDeviceModel device) callBack) async {
+    PPBluetoothKitLogger.i('扫描到设备123456');
+
     _scanSubscription?.cancel();
     _scanSubscription =
         _scanResultEvent.receiveBroadcastStream().listen((event) {
       if (event is Map) {
         try {
           final retJson = event.cast<String, dynamic>();
+          PPBluetoothKitLogger.i('扫描到设备123456:$retJson');
+
           PPDeviceModel model = PPDeviceModel.fromJson(retJson);
           callBack(model);
         } catch (e) {
