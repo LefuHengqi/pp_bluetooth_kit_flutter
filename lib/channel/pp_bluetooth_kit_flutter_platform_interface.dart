@@ -241,6 +241,10 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('receiveBroadcastData has not been implemented.');
   }
 
+  Future<bool> unReceiveBroadcastData(PPDeviceModel device, int peripheralType) {
+    throw UnimplementedError('unReceiveBroadcastData has not been implemented.');
+  }
+
   Future<bool> sendBroadcastData(PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) {
     throw UnimplementedError('sendBroadcastData has not been implemented.');
   }

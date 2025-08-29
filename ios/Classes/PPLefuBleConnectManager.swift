@@ -488,6 +488,13 @@ public class PPLefuBleConnectManager:NSObject {
         
     }
     
+    func unReceiveBroadcastData(deviceMac:String, callBack: @escaping FlutterResult) {
+
+        
+        self.disconnect()
+        
+    }
+    
     func sendBroadcastData(cmd:String, unitType:PPDeviceUnit, callBack: @escaping FlutterResult) {
         
         guard let device = self.currentDevice else {

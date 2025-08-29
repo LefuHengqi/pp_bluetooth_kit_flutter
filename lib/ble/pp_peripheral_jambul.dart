@@ -13,6 +13,12 @@ class PPPeripheralJambul {
     return PPBluetoothKitFlutterPlatform.instance.receiveBroadcastData(device, _peripheralType);
   }
 
+  /// 取消设备的广播数据，不再接收设备的广播数据
+  /// 注:跟 receiveDeviceData 成对调用
+  static Future<bool> unReceiveDeviceData(PPDeviceModel device) async {
+    return PPBluetoothKitFlutterPlatform.instance.unReceiveBroadcastData(device, _peripheralType);
+  }
+
 
   /// 发送广播到设备
   /// [unit] 单位，参考 PPUnitType 定义

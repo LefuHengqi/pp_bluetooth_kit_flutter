@@ -1265,6 +1265,42 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
+  Future<bool> unReceiveBroadcastData(PPDeviceModel device, int peripheralType) async {
+    PPBluetoothKitLogger.i('取消广播设备数据-peripheralType:$peripheralType');
+
+    final deviceMac = device.deviceMac;
+    final deviceName = device.deviceName;
+
+    if (deviceMac == null || deviceMac.isEmpty) {
+      PPBluetoothKitLogger.i('deviceMac 为空');
+      return false;
+    }
+    if (deviceName == null || deviceName.isEmpty) {
+      PPBluetoothKitLogger.i('deviceName 为空');
+      return false;
+    }
+
+    try {
+      final ret = await _bleChannel
+          .invokeMethod<Map>('unReceiveBroadcastData', <String, dynamic>{
+        'peripheralType': peripheralType,
+        'deviceMac': deviceMac,
+        'deviceName': deviceName
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('取消广播设备数据 结果-$state');
+
+      return state;
+    } catch (e) {
+      PPBluetoothKitLogger.i('取消广播设备数据-异常:$e');
+      return false;
+    }
+  }
+
+  @override
   Future<bool> sendBroadcastData(
       PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) async {
     PPBluetoothKitLogger.i(
