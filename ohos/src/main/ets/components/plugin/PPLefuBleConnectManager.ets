@@ -322,7 +322,7 @@ export class PPLefuBleConnectManager {
           } else if (this.deviceControl instanceof PPJambulDeviceControl) {
             this.addLog(`设备 jambul${deviceMac}`)
             const deviceControlJambul = this.deviceControl as PPJambulDeviceControl;
-            deviceControlBanan.stopSearch()
+            deviceControlJambul.stopSearch()
           }
         }
       }
