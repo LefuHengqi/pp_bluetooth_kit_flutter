@@ -5,11 +5,7 @@ import '../enums/pp_scale_enums.dart';
 ///@date 2025/2/6 17:54
 //@description
 
-
 class PPScaleHelper {
-
-
-
   /// 是否支持历史数据
   static bool isSupportHistoryData(int? deviceFuncType) {
     if (deviceFuncType != null) {
@@ -24,6 +20,22 @@ class PPScaleHelper {
     if (deviceFuncType != null) {
       return (deviceFuncType & PPDeviceFuncType.Wifi.type ==
           PPDeviceFuncType.Wifi.type);
+    }
+    return false;
+  }
+
+  static bool isFuncTypeTime(int? deviceFuncType) {
+    if (deviceFuncType != null) {
+      return (deviceFuncType & PPDeviceFuncType.time.type ==
+          PPDeviceFuncType.time.type);
+    }
+    return false;
+  }
+
+  static bool isFuncTypeVoice(int? deviceFuncType) {
+    if (deviceFuncType != null) {
+      return (deviceFuncType & PPDeviceFuncType.voice.type ==
+          PPDeviceFuncType.voice.type);
     }
     return false;
   }
@@ -139,9 +151,8 @@ class PPScaleHelper {
   /// 是否支持光能充电
   static bool isFuncTypeSolar(int? devicePowerType) {
     if (devicePowerType != null) {
-      return (devicePowerType  == PPDevicePowerType.solar.index);
+      return (devicePowerType == PPDevicePowerType.solar.index);
     }
     return false;
   }
-
 }

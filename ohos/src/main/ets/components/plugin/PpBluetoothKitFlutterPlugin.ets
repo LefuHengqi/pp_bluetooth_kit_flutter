@@ -30,6 +30,8 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
   private dfuEventChannel: EventChannel | null = null;
   private deviceLogEventChannel: EventChannel | null = null;
   private scanStateEventChannel: EventChannel | null = null;
+  private kitchenEventChannel: EventChannel | null = null;
+
   private context: Context = getContext(this);
   private pluginBinding: FlutterPluginBinding | null = null;
   private abilityPluginBinding: AbilityPluginBinding | null = null;
@@ -115,6 +117,12 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     this.bleManager.scanStateStreamHandler = scanStateStreamHandler;
 
     this.scanStateEventChannel.setStreamHandler(scanStateStreamHandler);
+
+    // 设备日志事件通道
+    let kitchenStreamHandler = new PPLefuStreamHandler()
+    this.kitchenEventChannel = new EventChannel(binding.getBinaryMessenger(), "pp_kitchen_streams");
+    this.bleManager.kitchenStreamHandler = kitchenStreamHandler;
+    this.kitchenEventChannel.setStreamHandler(kitchenStreamHandler);
   }
 
   onAttachedToAbility(binding: AbilityPluginBinding) {
@@ -409,6 +417,10 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       this.bleManager.exitScanWifiNetworks(result)
     } else if (method == "exitNetworkConfig") {
       this.bleManager.exitNetworkConfig(result)
+
+    } else if (method == "toZero") {
+      this.bleManager.toZero(result)
+      this.bleManager.sendCommonState(true, result)
     } else if (method == "receiveBroadcastData") {
       const deviceMac = params.get("deviceMac") as string
 
