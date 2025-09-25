@@ -7,7 +7,11 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_light_mode_model.dart';
+
 import 'pp_bluetooth_kit_flutter_method_channel.dart';
+
+
 
 abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   /// Constructs a PpBluetoothKitFlutterPlatform.
@@ -313,5 +317,10 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
       PPUnitType unitType,
       String deviceName) {
     throw UnimplementedError('foodScaleUnit has not been implemented.');
+  }
+
+   Future<bool> setRGBMode(int peripheralType,PPDeviceLightModeModel model)  {
+       throw UnimplementedError('setRGBModel has not been implemented.');
+
   }
 }

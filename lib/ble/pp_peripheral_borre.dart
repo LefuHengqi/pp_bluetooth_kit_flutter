@@ -6,6 +6,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_light_mode_model.dart';
 
 class PPPeripheralBorre {
   static final _peripheralType = PPDevicePeripheralType.borre.value;
@@ -260,5 +261,10 @@ class PPPeripheralBorre {
   static Future<bool> syncBorreCLast7Data(PPLast7DataModel model) async {
     return PPBluetoothKitFlutterPlatform.instance
         .borreClast7Data(_peripheralType, model);
+  }
+
+  static Future<bool> setRGBMode(PPDeviceLightModeModel model) async {
+    return PPBluetoothKitFlutterPlatform.instance
+        .setRGBMode(_peripheralType, model);
   }
 }

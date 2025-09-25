@@ -329,6 +329,13 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
 
     } else if (method == "setRGBMode") {
 
+      let defalutColor = params.get("defalutColor") as string ?? ""
+      let gainColor = params.get("gainColor") as string ?? ""
+      let lossColor = params.get("lossColor") as string ?? ""
+      let lightEnable = params.get("lightEnable") as number ?? 0
+      let lightMode = params.get("lightMode") as number ?? 0
+      this.bleManager.setRGBMode(lightEnable,lightMode,defalutColor,gainColor,lossColor, result)
+
 
     } else if (method == "syncLast7Data") {
 

@@ -10,6 +10,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_last_7_data_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_torre_user_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_wifi_result.dart';
 import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
+import 'package:pp_bluetooth_kit_flutter/model/pp_device_light_mode_model.dart';
 
 import 'pp_bluetooth_kit_flutter_platform_interface.dart';
 
@@ -688,6 +689,27 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       return binding;
     } catch (e) {
       PPBluetoothKitLogger.i('获取设备绑定状态-异常:$e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> setRGBMode(
+      int peripheralType, PPDeviceLightModeModel model) async {
+    PPBluetoothKitLogger.i('灯光管理peripheralType:$peripheralType');
+
+    try {
+      final ret =
+          await _bleChannel.invokeMethod<Map>('setRGBMode', model.toJson());
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('设置屏幕亮度 结果:$state');
+
+      return state;
+    } catch (e) {
+      PPBluetoothKitLogger.i('设置屏幕亮度-异常:$e');
       return false;
     }
   }
