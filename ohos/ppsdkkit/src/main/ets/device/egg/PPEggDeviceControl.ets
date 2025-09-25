@@ -10,7 +10,7 @@ import { PPUnitType } from '../../enums/PPUnitType';
 import { PPDeviceModel } from '../../vo/PPDeviceModel';
 import { BusinessError } from '@kit.BasicServicesKit';
 
-import { PPFishDeviceDataAnalysis } from './PPFishDeviceDataAnalysis';
+import { PPEggDeviceDataAnalysis } from './PPEggDeviceDataAnalysis';
 import { PPDataChangeListener } from '../../listener/PPDataChangeListener';
 
 /**
@@ -19,12 +19,12 @@ import { PPDataChangeListener } from '../../listener/PPDataChangeListener';
  * 2、当前不同连接状态显示不同文字，连接/断开
  */
 
-export class PPFishDeviceControl extends PPBaseDeviceControl {
+export class PPEggDeviceControl extends PPBaseDeviceControl {
   characteristicFFF1: ble.BLECharacteristic | null = null;
   dataChangeNotify?: (data: string) => void
   deviceInfoCharacteristics: ble.BLECharacteristic[] = [];
   characterBatteryUUID: ble.BLECharacteristic | null = null;
-  dataAnalysis = new PPFishDeviceDataAnalysis();
+  dataAnalysis = new PPEggDeviceDataAnalysis();
 
   override onDiscoverServices(services: ble.GattService[]) {
     try {
@@ -77,7 +77,7 @@ export class PPFishDeviceControl extends PPBaseDeviceControl {
       this.dataChangeNotify(data);
     }
     if (characteristic.characteristicUuid === BleUUID.CHARACTERISTIC_NOTIFY) {
-      PPLogger.i(`PPAppleDeviceControl OnCharacteristicReceived apple notify:${data}`);
+      PPLogger.i(`PPAppleDeviceControl OnCharacteristicReceived egg notify:${data}`);
       this.dataAnalysis.analysisData(dataArray, this.deviceModel ?? null);
     }
   }
@@ -213,7 +213,7 @@ export class PPFishDeviceControl extends PPBaseDeviceControl {
     return ByteUtil.hexToBytes( hexStr)
   }
 
-   crc16(data: Uint8Array): number {
+  crc16(data: Uint8Array): number {
     // 初始化CRC值为0xFFFF
     let crc: number = 0xFFFF;
 

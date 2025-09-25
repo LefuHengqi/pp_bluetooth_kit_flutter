@@ -2,7 +2,7 @@ import { FlutterPlugin, FlutterPluginBinding, MethodCall, MethodCallHandler, Met
 
 import { EventSink } from '@ohos/flutter_ohos/src/main/ets/plugin/common/EventChannel';
 
-import { PPUserGender } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
+import { PPUserGender,PPUserBodyDataType } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
 
 import { PPBluetoothKit } from 'ppsdkkit/src/main/ets/PPBluetoothKit';
 import { PPUserModel } from 'ppsdkkit/src/main/ets/vo/PPUserModel';
@@ -266,6 +266,11 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
     } else if (method == "syncTime") {
       let is24Hour = params.get("is24Hour") as boolean ?? true;
       this.bleManager.syncTime(is24Hour, result)
+
+    } else if (method == "changeBuzzerGate") {
+      let isOpen = params.get("open") as boolean ?? true;
+      this.bleManager.changeBuzzerGate(isOpen, result)
+
     } else if (method == "configWifi") {
       let domain = params.get("domain") as string ?? "";
       let ssId = params.get("ssId") as string ?? "";
@@ -322,6 +327,9 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       const model = this.getUserInfo(params)
       this.bleManager.syncUserInfo(model, result)
 
+    } else if (method == "setRGBMode") {
+
+
     } else if (method == "syncLast7Data") {
 
       const array = params.get("weightList") as Array<Record<string, Any>> ?? []
@@ -346,6 +354,31 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       this.bleManager.syncLast7DaysDataUserInfo(user, last7DaysArray,result)
       this.bleManager.loggerStreamHandler?.success(`syncLast7Data params:${last7DaysArray} user:${user} params ${params.get("userID")}}`)
 
+    } else if (method == "syncBorreCLast7Data") {
+
+      const array = params.get("weightList") as Array<Record<string, Any>> ?? []
+      const last7DaysArray: PPUserRecentBodyData[] = []
+
+      for (const item of array) {
+        const model = this.getUserRecentBodyData(item);
+        last7DaysArray.push(model)
+      }
+
+      let userID = params.get("userID") as string ?? ""
+      let memberID = params.get("memberID") as string ?? ""
+      let targetWeight = params.get("targetWeight") as number ?? 0
+      let idealWeight = params.get("idealWeight") as number ?? 0
+
+      let user = new PPUserModel()
+      user.userID = userID
+      user.memberID = memberID
+      user.targetWeight = targetWeight
+      user.ideaWeight = idealWeight
+
+      let type = params.get("type") as number ?? 0
+
+      this.bleManager.syncBorreCLast7DaysDataUserInfo(user, last7DaysArray,type,result)
+      this.bleManager.loggerStreamHandler?.success(`syncLast7Data params:${last7DaysArray} user:${user} params ${params.get("userID")}}`)
     } else if (method == "syncUserList") {
       const userArray: PPUserModel[] = []
       const array = params.get("userList") as Array<Record<string, Any>> ?? []

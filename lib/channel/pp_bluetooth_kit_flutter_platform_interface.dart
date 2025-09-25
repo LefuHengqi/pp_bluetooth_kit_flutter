@@ -15,7 +15,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static PPBluetoothKitFlutterPlatform _instance = MethodChannelPpBluetoothKitFlutter();
+  static PPBluetoothKitFlutterPlatform _instance =
+      MethodChannelPpBluetoothKitFlutter();
 
   /// The default instance of [PpBluetoothKitFlutterPlatform] to use.
   ///
@@ -29,7 +30,6 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
-
 
   /// API
 
@@ -57,7 +57,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('stopScan has not been implemented.');
   }
 
-  Future<void> connectDevice(PPDeviceModel device, {required Function(PPDeviceConnectionState state) callBack}) {
+  Future<void> connectDevice(PPDeviceModel device,
+      {required Function(PPDeviceConnectionState state) callBack}) {
     throw UnimplementedError('connectDevice has not been implemented.');
   }
 
@@ -65,11 +66,19 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('disconnect has not been implemented.');
   }
 
-  Future<void> addMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
-    throw UnimplementedError('addMeasurementListener has not been implemented.');
+  Future<void> addMeasurementListener(
+      {required Function(PPMeasurementDataState measurementState,
+              PPBodyBaseModel dataModel, PPDeviceModel device)
+          callBack}) {
+    throw UnimplementedError(
+        'addMeasurementListener has not been implemented.');
   }
 
-  Future<void> fetchHistoryData({String? userID,required int peripheralType,required Function(List<PPBodyBaseModel> dataList, bool isSuccess) callBack}) {
+  Future<void> fetchHistoryData(
+      {String? userID,
+      required int peripheralType,
+      required Function(List<PPBodyBaseModel> dataList, bool isSuccess)
+          callBack}) {
     throw UnimplementedError('fetchHistoryData has not been implemented.');
   }
 
@@ -77,15 +86,18 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('deleteHistoryData has not been implemented.');
   }
 
-  Future<bool?> syncUnit(int peripheralType,PPDeviceUser deviceUser) {
+  Future<bool?> syncUnit(int peripheralType, PPDeviceUser deviceUser) {
     throw UnimplementedError('syncUnit has not been implemented.');
   }
 
-  Future<bool?> syncTime(int peripheralType,{bool is24Hour = true}) {
+  Future<bool?> syncTime(int peripheralType, {bool is24Hour = true}) {
     throw UnimplementedError('syncTime has not been implemented.');
   }
 
-  Future<PPWifiResult> configWifi(int peripheralType,{required String domain, required String ssId, required String password}) {
+  Future<PPWifiResult> configWifi(int peripheralType,
+      {required String domain,
+      required String ssId,
+      required String password}) {
     throw UnimplementedError('configWifi has not been implemented.');
   }
 
@@ -97,11 +109,14 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('isConnectWIFI has not been implemented.');
   }
 
-  Future<PPDevice180AModel?> fetchDeviceInfo(int peripheralType,) {
+  Future<PPDevice180AModel?> fetchDeviceInfo(
+    int peripheralType,
+  ) {
     throw UnimplementedError('fetchDeviceInfo has not been implemented.');
   }
 
-  Future<void> fetchBatteryInfo(int peripheralType,{required bool continuity, required Function(int power) callBack}) {
+  Future<void> fetchBatteryInfo(int peripheralType,
+      {required bool continuity, required Function(int power) callBack}) {
     throw UnimplementedError('fetchBatteryInfo has not been implemented.');
   }
 
@@ -113,7 +128,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('fetchConnectedDevice has not been implemented.');
   }
 
-  Future<void> blePermissionListener({required Function (PPBlePermissionState state) callBack}) {
+  Future<void> blePermissionListener(
+      {required Function(PPBlePermissionState state) callBack}) {
     throw UnimplementedError('fetchConnectedDevice has not been implemented.');
   }
 
@@ -130,7 +146,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   }
 
   Future<bool> heartRateSwitchControl(int peripheralType, bool open) {
-    throw UnimplementedError('heartRateSwitchControl has not been implemented.');
+    throw UnimplementedError(
+        'heartRateSwitchControl has not been implemented.');
   }
 
   Future<bool> fetchHeartRateSwitch(int peripheralType) {
@@ -138,7 +155,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   }
 
   Future<bool> impedanceSwitchControl(int peripheralType, bool open) {
-    throw UnimplementedError('impedanceSwitchControl has not been implemented.');
+    throw UnimplementedError(
+        'impedanceSwitchControl has not been implemented.');
   }
 
   Future<bool> fetchImpedanceSwitch(int peripheralType) {
@@ -165,7 +183,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('syncUserInfo has not been implemented.');
   }
 
-  Future<bool> syncUserList(int peripheralType, List<PPTorreUserModel> userList) {
+  Future<bool> syncUserList(
+      int peripheralType, List<PPTorreUserModel> userList) {
     throw UnimplementedError('syncUserList has not been implemented.');
   }
 
@@ -189,7 +208,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('stopMeasure has not been implemented.');
   }
 
-  Future<bool> startBabyModel(int peripheralType, PPBabyModelStep step, int weight) {
+  Future<bool> startBabyModel(
+      int peripheralType, PPBabyModelStep step, int weight) {
     throw UnimplementedError('startBabyModel has not been implemented.');
   }
 
@@ -197,15 +217,19 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('exitBabyModel has not been implemented.');
   }
 
-  void startDFU(int peripheralType, String filePath, String deviceFirmwareVersion, bool isForceCompleteUpdate,{required Function(double progress, bool isSuccess)callBack}) {
+  void startDFU(int peripheralType, String filePath,
+      String deviceFirmwareVersion, bool isForceCompleteUpdate,
+      {required Function(double progress, bool isSuccess) callBack}) {
     throw UnimplementedError('startDFU has not been implemented.');
   }
 
-  void syncDeviceLog(int peripheralType, String logFolder, {required Function(double progress, bool isFailed, String? filePath)callBack}) {
+  void syncDeviceLog(int peripheralType, String logFolder,
+      {required Function(double progress, bool isFailed, String? filePath)
+          callBack}) {
     throw UnimplementedError('syncDeviceLog has not been implemented.');
   }
 
-  void addScanStateListener({required Function(bool isScanning)callBack}) {
+  void addScanStateListener({required Function(bool isScanning) callBack}) {
     throw UnimplementedError('syncDeviceLog has not been implemented.');
   }
 
@@ -221,7 +245,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('setDeviceLanguage has not been implemented.');
   }
 
-  Future<void> fetchDeviceLanguage(int peripheralType, {required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) {
+  Future<void> fetchDeviceLanguage(int peripheralType,
+      {required Function(PPDeviceLanguage? type, bool isSuccess) callBack}) {
     throw UnimplementedError('fetchDeviceLanguage has not been implemented.');
   }
 
@@ -241,34 +266,52 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('receiveBroadcastData has not been implemented.');
   }
 
-  Future<bool> unReceiveBroadcastData(PPDeviceModel device, int peripheralType) {
-    throw UnimplementedError('unReceiveBroadcastData has not been implemented.');
+  Future<bool> unReceiveBroadcastData(
+      PPDeviceModel device, int peripheralType) {
+    throw UnimplementedError(
+        'unReceiveBroadcastData has not been implemented.');
   }
 
-  Future<bool> sendBroadcastData(PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) {
+  Future<bool> sendBroadcastData(
+      PPUnitType unit, PPBroadcastCommand cmd, int peripheralType) {
     throw UnimplementedError('sendBroadcastData has not been implemented.');
   }
 
-
   /// 厨房秤
-  Future<void> addKitchenMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
-    throw UnimplementedError('addKitchenMeasurementListener has not been implemented.');
+  Future<void> addKitchenMeasurementListener(
+      {required Function(PPMeasurementDataState measurementState,
+              PPBodyBaseModel dataModel, PPDeviceModel device)
+          callBack}) {
+    throw UnimplementedError(
+        'addKitchenMeasurementListener has not been implemented.');
   }
 
   Future<bool> toZero(int peripheralType) {
     throw UnimplementedError('toZero has not been implemented.');
   }
 
+  Future<bool> changeBuzzerGate(bool open) async {
+    throw UnimplementedError('changeBuzzerGate has not been implemented.');
+  }
+
   Future<bool> last7Data(int peripheralType, PPLast7DataModel model) {
     throw UnimplementedError('last7Data has not been implemented.');
+  }
+
+  /// 同步最近7天/7次数据
+  Future<bool> borreClast7Data(int peripheralType, PPLast7DataModel model) {
+    throw UnimplementedError('borreClast7Data has not been implemented.');
   }
 
   Future<List<PPTorreUserModel>> fetchUserList(int peripheralType) {
     throw UnimplementedError('fetchUserList has not been implemented.');
   }
 
-  Future<String> foodScaleUnit(double weightG, PPDeviceAccuracyType accuracyType, PPUnitType unitType, String deviceName) {
+  Future<String> foodScaleUnit(
+      double weightG,
+      PPDeviceAccuracyType accuracyType,
+      PPUnitType unitType,
+      String deviceName) {
     throw UnimplementedError('foodScaleUnit has not been implemented.');
   }
-
 }

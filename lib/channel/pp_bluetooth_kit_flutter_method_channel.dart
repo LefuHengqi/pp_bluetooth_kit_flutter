@@ -1265,7 +1265,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
-  Future<bool> unReceiveBroadcastData(PPDeviceModel device, int peripheralType) async {
+  Future<bool> unReceiveBroadcastData(
+      PPDeviceModel device, int peripheralType) async {
     PPBluetoothKitLogger.i('取消广播设备数据-peripheralType:$peripheralType');
 
     final deviceMac = device.deviceMac;
@@ -1382,6 +1383,28 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
+  Future<bool> changeBuzzerGate(bool open) async {
+    PPBluetoothKitLogger.i('开关蜂鸣器 $open');
+
+    try {
+      final ret = await _bleChannel
+          .invokeMethod<Map>('changeBuzzerGate', <String, dynamic>{
+        'open': open,
+      });
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('开关蜂鸣器 结果-$state');
+
+      return state;
+    } catch (e) {
+      PPBluetoothKitLogger.i('开关蜂鸣器-异常:$e');
+      return false;
+    }
+  }
+
+  @override
   Future<bool> last7Data(int peripheralType, PPLast7DataModel model) async {
     PPBluetoothKitLogger.i('同步最近7天/7次数据 peripheralType:$peripheralType');
     try {
@@ -1403,6 +1426,29 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
+  Future<bool> borreClast7Data(
+      int peripheralType, PPLast7DataModel model) async {
+    PPBluetoothKitLogger.i('同步最近7天/7次数据 peripheralType:$peripheralType');
+    try {
+      final dataMap = model.toJson();
+      dataMap['peripheralType'] = peripheralType;
+
+      final ret =
+          await _bleChannel.invokeMethod<Map>('syncBorreCLast7Data', dataMap);
+
+      final retJson = ret?.cast<String, dynamic>();
+      final state = retJson?["state"] as bool? ?? false;
+
+      PPBluetoothKitLogger.i('同步borreC最近7天/7次数据 结果:$state');
+
+      return state;
+    } catch (e) {
+      PPBluetoothKitLogger.i('同步borreC最近7天/7次数据-异常:$e');
+      return false;
+    }
+  }
+
+  @override
   Future<String> foodScaleUnit(
       double weightG,
       PPDeviceAccuracyType accuracyType,
@@ -1419,9 +1465,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
       final retJson = ret?.cast<String, dynamic>();
       final weightStr = retJson?["weightStr"] as String? ?? "";
-      
-      return weightStr;
 
+      return weightStr;
     } catch (e) {
       PPBluetoothKitLogger.i('食物秤转换单位-异常:$e');
       return "";
