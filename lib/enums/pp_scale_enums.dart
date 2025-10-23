@@ -82,7 +82,8 @@ enum PPDeviceProtocolType {
   korre(9),
   lorre(10),
   morre(11),
-  borre_B(12);
+  borre_B(12),
+  borre_C(13);
 
   final int value;
   const PPDeviceProtocolType(this.value);
@@ -401,11 +402,12 @@ enum PPBroadcastCommand {
 }
 
 enum PPLast7DataType {
-  weight(0), // 体重
-  bmi(1), // BMI
-  fat(2), // 体脂率
-  waterPercentage(3), // 水分率
-  musclePercentage(4); // 肌肉率
+  weight(1), // 体重
+  bmi(2), // BMI
+  fat(3), // 体脂率
+  waterPercentage(4), // 水分率
+  muscle(5), // 肌肉率
+  bmr(6);
 
   final int value;
 

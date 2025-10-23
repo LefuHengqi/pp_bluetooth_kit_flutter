@@ -7,7 +7,7 @@ import { PPLoggerPluginOhos } from './util/PPLoggerPluginOhos';
 
 import { PPBluetoothKit } from 'ppsdkkit/src/main/ets/PPBluetoothKit';
 import { PPDeviceModel } from 'ppsdkkit/src/main/ets/vo/PPDeviceModel';
-import { PPDevicePeripheralType } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
+import { PPDevicePeripheralType,PPUserBodyDataType } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
 import { PPBleSearch } from 'ppsdkkit/src/main/ets/ble/search/PPBleSearch';
 import { PPBaseDeviceControl } from 'ppsdkkit/src/main/ets/device/PPBaseDeviceControl';
 import { PPAppleDeviceControl } from 'ppsdkkit/src/main/ets/device/apple/PPAppleDeviceControl';
@@ -17,6 +17,11 @@ import { PPCoconutDeviceControl } from 'ppsdkkit/src/main/ets/device/coconut/PPC
 import { PPJambulDeviceControl } from 'ppsdkkit/src/main/ets/device/jambul/PPJambulDeviceControl';
 import { PPTorreDeviceControl } from 'ppsdkkit/src/main/ets/device/torre/PPTorreDeviceControl';
 import { PPBorreDeviceControl } from 'ppsdkkit/src/main/ets/device/borre/PPBorreDeviceControl';
+import { PPFishDeviceControl } from 'ppsdkkit/src/main/ets/device/fish/PPFishDeviceControl';
+import { PPHamburgerDeviceControl } from 'ppsdkkit/src/main/ets/device/hamburger/PPHamburgerDeviceControl';
+import { PPGrapesDeviceControl } from 'ppsdkkit/src/main/ets/device/grapes/PPGrapesDeviceControl';
+import { PPEggDeviceControl } from 'ppsdkkit/src/main/ets/device/egg/PPEggDeviceControl';
+
 import { PPUserRecentBodyData } from 'ppsdkkit/src/main/ets/vo/PPUserRecentBodyData';
 import { PPScaleHelper } from 'ppsdkkit/src/main/ets/utils/PPScaleHelper'
 
@@ -30,6 +35,7 @@ import {
   PPDataChangeListener,
   PPHistoryDataInterface,
   PPScaleStateHeartRateType,
+  PPScaleStateMeasureResultType,
   PPScaleStateImpedanceType,
   PPWifiModel,
   TimeFormat,
@@ -51,6 +57,8 @@ export class PPLefuBleConnectManager {
   dfuStreamHandler: PPLefuStreamHandler | null = null;
   deviceLogStreamHandler: PPLefuStreamHandler | null = null;
   scanStateStreamHandler: PPLefuStreamHandler | null = null;
+  kitchenStreamHandler: PPLefuStreamHandler | null = null;
+
   private bluetoothState: bluetooth.BluetoothState | null = null;
   private needScan: boolean = false;
   private scanType: PPLefuScanType = PPLefuScanType.SCAN;
@@ -296,10 +304,22 @@ export class PPLefuBleConnectManager {
 
           }
 
+          if (this.deviceControl instanceof PPHamburgerDeviceControl) {
+            const deviceControlHamburger = this.deviceControl as PPHamburgerDeviceControl;
+
+            deviceControlHamburger.startSearch()
+
+
+          }
+
           if (this.deviceControl instanceof PPJambulDeviceControl) {
             const deviceControlJambul = this.deviceControl as PPJambulDeviceControl;
-            this.addLog(`设备2${deviceMac}`)
             deviceControlJambul.startSearch()
+          }
+
+          if (this.deviceControl instanceof PPGrapesDeviceControl) {
+            const deviceControlGrapes = this.deviceControl as PPGrapesDeviceControl;
+            deviceControlGrapes.startSearch()
           }
         }
 
@@ -319,10 +339,19 @@ export class PPLefuBleConnectManager {
             this.addLog(`设备 banana${deviceMac}`)
             const deviceControlBanan = this.deviceControl as PPBananaDeviceControl;
             deviceControlBanan.stopSearch()
+
+          } else if (this.deviceControl instanceof PPHamburgerDeviceControl) {
+
+            const deviceControlHamburger = this.deviceControl as PPHamburgerDeviceControl;
+            deviceControlHamburger.stopSearch()
           } else if (this.deviceControl instanceof PPJambulDeviceControl) {
             this.addLog(`设备 jambul${deviceMac}`)
             const deviceControlJambul = this.deviceControl as PPJambulDeviceControl;
-            deviceControlBanan.stopSearch()
+            deviceControlJambul.stopSearch()
+          } else if (this.deviceControl instanceof PPGrapesDeviceControl) {
+            this.addLog(`设备 grapes${deviceMac}`)
+            const deviceControlGrapes = this.deviceControl as PPGrapesDeviceControl;
+            deviceControlGrapes.stopSearch()
           }
         }
       }
@@ -341,6 +370,9 @@ export class PPLefuBleConnectManager {
       case PPDevicePeripheralType.PeripheralBanana:
         this.deviceControl = new PPBananaDeviceControl(deviceModel);
         break;
+      case PPDevicePeripheralType.PeripheralHamburger:
+        this.deviceControl = new PPHamburgerDeviceControl(deviceModel);
+        break;
       case PPDevicePeripheralType.PeripheralCoconut:
         this.deviceControl = new PPCoconutDeviceControl(deviceModel);
         break;
@@ -352,6 +384,15 @@ export class PPLefuBleConnectManager {
         break;
       case PPDevicePeripheralType.PeripheralBorre:
         this.deviceControl = new PPBorreDeviceControl(deviceModel);
+        break;
+      case PPDevicePeripheralType.PeripheralFish:
+        this.deviceControl = new PPFishDeviceControl(deviceModel);
+        break;
+      case PPDevicePeripheralType.PeripheralGrapes:
+        this.deviceControl = new PPGrapesDeviceControl(deviceModel);
+        break;
+      case PPDevicePeripheralType.PeripheralEgg:
+        this.deviceControl = new PPEggDeviceControl(deviceModel);
         break;
       default:
         this.addLog(`不支持的设备类型:${deviceModel.getDevicePeripheralType()}`);
@@ -375,8 +416,18 @@ export class PPLefuBleConnectManager {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
     } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
       this.deviceControl.registerDataChangeListener(this.dataChangeListener)
-    }
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+    } else if (this.deviceControl instanceof PPHamburgerDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
 
+    } else if (this.deviceControl instanceof PPGrapesDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+
+    } else if (this.deviceControl instanceof PPEggDeviceControl) {
+      this.deviceControl.registerDataChangeListener(this.dataChangeListener)
+
+    }
   }
 
   private unRegisterDataChangeListener() {
@@ -397,8 +448,18 @@ export class PPLefuBleConnectManager {
       this.deviceControl.unRegisterDataChangeListener()
     } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
       this.deviceControl.unRegisterDataChangeListener()
-    }
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+    } else if (this.deviceControl instanceof PPHamburgerDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
 
+    } else if (this.deviceControl instanceof PPGrapesDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+
+    } else if (this.deviceControl instanceof PPEggDeviceControl) {
+      this.deviceControl.unRegisterDataChangeListener()
+
+    }
   }
 
   dataChangeListener: PPDataChangeListener = {
@@ -406,14 +467,31 @@ export class PPLefuBleConnectManager {
     monitorProcessData: (bodyBaseModel: PPBodyBaseModel | null, deviceModel: PPDeviceModel | null) => {
       this.addLog(`实时数据:${bodyBaseModel?.getPpWeightKg()}`)
       const scaleState = bodyBaseModel?.scaleState
-      if (scaleState?.heartRateType === PPScaleStateHeartRateType.HEARTRATE_MEASURING) {
-        this.addLog(`心率测量中 monitorProcessData`)
-        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 2));
-      } else if (scaleState?.impedanceType === PPScaleStateImpedanceType.IMPEDANCE_MEASURING) {
-        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 1));
-      } else {
-        this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 0));
+
+      if(deviceModel?.deviceType === 1 || deviceModel?.deviceType === 2){
+        if (scaleState?.heartRateType === PPScaleStateHeartRateType.HEARTRATE_MEASURING) {
+          this.addLog(`心率测量中 monitorProcessData`)
+          this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 2));
+        } else if (scaleState?.impedanceType === PPScaleStateImpedanceType.IMPEDANCE_MEASURING) {
+          this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 1));
+        } else {
+          this.measureStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 0));
+        }
+      }else{
+        if(scaleState?.measureResultType ==  PPScaleStateMeasureResultType.MEASURE_RESULT_FINISH){
+          this.kitchenStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 10));
+
+        }else{
+          this.kitchenStreamHandler?.success(PPLefuBleExtensionData.sendMeasureData(bodyBaseModel, deviceModel, 0));
+
+        }
       }
+
+
+
+
+
+
     },
 
     monitorLockData: (bodyBaseModel: PPBodyBaseModel | null, deviceModel: PPDeviceModel | null) => {
@@ -691,6 +769,18 @@ export class PPLefuBleConnectManager {
     }
   }
 
+  async changeBuzzerGate(isOpen: boolean, result: MethodResult): Promise<void> {
+    if (this.deviceControl instanceof PPFishDeviceControl) {
+      const syncResult = await this.deviceControl.buzzerGate(isOpen)
+      this.sendCommonState(syncResult, result)
+
+    }else{
+
+      this.loggerStreamHandler?.success(`不支持该功能-changeBuzzerGate`)
+
+    }
+  }
+
   async syncTime(is24Hour: boolean, result: MethodResult): Promise<void> {
     this.addLog(`syncTime is24Hour:${is24Hour}`)
     if (this.deviceControl instanceof PPAppleDeviceControl) {
@@ -708,6 +798,9 @@ export class PPLefuBleConnectManager {
     } else if (this.deviceControl instanceof PPIceDeviceControl) {
       const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime())
       this.sendCommonState(syncResult, result)
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      const syncResult = await this.deviceControl.syncTime(systemDateTime.getTime())
+
     } else if (this.deviceControl instanceof PPBananaDeviceControl) {
       // this.deviceControl.syncTime(systemDateTime.getTime())
     } else if (this.deviceControl instanceof PPJambulDeviceControl) {
@@ -740,6 +833,14 @@ export class PPLefuBleConnectManager {
         await this.deviceControl.syncUnit(UnitUtil.getUnitType(unit, this.deviceControl.deviceModel?.deviceName ?? ""),
           userModel)
       this.sendCommonState(syncResult, result)
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      const syncResult = await this.deviceControl.changeUnit(UnitUtil.getUnitTypeSimple(unit))
+      this.sendCommonState(syncResult, result)
+
+    } else if (this.deviceControl instanceof PPEggDeviceControl) {
+      const syncResult = await this.deviceControl.changeUnit(UnitUtil.getUnitTypeSimple(unit))
+      this.sendCommonState(syncResult, result)
+
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       const syncResult = await this.deviceControl.syncUnit(UnitUtil.getUnitTypeSimple(unit))
     } else if (this.deviceControl instanceof PPBorreDeviceControl) {
@@ -803,6 +904,12 @@ export class PPLefuBleConnectManager {
       const deviceModel = await this.deviceControl.readDeviceInfo()
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
 
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      const deviceModel = await this.deviceControl.readDeviceInfo()
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPEggDeviceControl) {
+      const deviceModel = await this.deviceControl.readDeviceInfo()
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       const deviceModel = await this.deviceControl.readDeviceInfo()
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
@@ -828,6 +935,14 @@ export class PPLefuBleConnectManager {
     } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
       this.batteryStreamHandler?.success({ power: battery })
+
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      const battery = await this.deviceControl.readBatteryLevel();
+      this.batteryStreamHandler?.success({ power: battery })
+    } else if (this.deviceControl instanceof PPEggDeviceControl) {
+      const battery = await this.deviceControl.readBatteryLevel();
+      this.batteryStreamHandler?.success({ power: battery })
+
 
     } else if (this.deviceControl instanceof PPTorreDeviceControl) {
       const battery = await this.deviceControl.readBatteryLevel();
@@ -887,6 +1002,12 @@ export class PPLefuBleConnectManager {
       const deviceModel = await this.deviceControl.deviceModel
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else if (this.deviceControl instanceof PPJambulDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPFishDeviceControl) {
+      const deviceModel = await this.deviceControl.deviceModel
+      result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
+    } else if (this.deviceControl instanceof PPEggDeviceControl) {
       const deviceModel = await this.deviceControl.deviceModel
       result.success(PPLefuBleExtensionData.convertDeviceDict(deviceModel));
     } else {
@@ -1175,7 +1296,30 @@ export class PPLefuBleConnectManager {
     }
   }
 
-  async syncUserInfo(model: PPUserModel, result: MethodResult) {
+  toZero(result: MethodResult): void {
+    this.addLog('去皮')
+    if (this.deviceControl instanceof PPFishDeviceControl) {
+      this.deviceControl.toZero();
+    }
+
+    if (this.deviceControl instanceof PPEggDeviceControl) {
+      this.deviceControl.toZero();
+    }
+  }
+
+  async setRGBMode(lightEnable:number,lightMode:number,defaultColor:string,gainColor:string,lossColor:string, result: MethodResult) {
+    if (this.deviceControl instanceof PPBorreDeviceControl) {
+      let cmdResult = await this.deviceControl?.setRGBMode(lightEnable,lightMode,defaultColor,gainColor,lossColor,((state: number | null)=>{
+
+
+      }))
+      this.sendCommonState(cmdResult, result);
+
+    }
+  }
+
+
+    async syncUserInfo(model: PPUserModel, result: MethodResult) {
     this.addLog(`同步用户信息 model:${JSON.stringify(model)}`)
     if (this.deviceControl instanceof PPTorreDeviceControl) {
       const syncResult = await this.deviceControl.syncUserInfo(model);
@@ -1193,6 +1337,18 @@ export class PPLefuBleConnectManager {
     this.addLog(`同步用户7天数据信息 model:${JSON.stringify(userModel)}`)
     if (this.deviceControl instanceof PPBorreDeviceControl) {
       const syncResult = await this.deviceControl.syncLast7DaysDataUserInfo(userModel, recentList);
+      result.success({ state: syncResult });
+    } else {
+      const deviceModel = this.deviceControl?.deviceModel;
+      this.loggerStreamHandler?.success(`不支持该功能-syncUserInfo-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
+    }
+  }
+
+
+  async syncBorreCLast7DaysDataUserInfo(userModel: PPUserModel, recentList: Array<PPUserRecentBodyData>,type:PPUserBodyDataType, result: MethodResult) {
+    this.addLog(`同步用户7天数据信息 model:${JSON.stringify(userModel)}`)
+    if (this.deviceControl instanceof PPBorreDeviceControl) {
+      const syncResult = await this.deviceControl.syncBorreCLast7DaysDataUserInfo(userModel, recentList,type);
       result.success({ state: syncResult });
     } else {
       const deviceModel = this.deviceControl?.deviceModel;

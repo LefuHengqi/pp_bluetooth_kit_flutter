@@ -1,4 +1,3 @@
-
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_apple.dart';
 import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platform_interface.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
@@ -6,9 +5,7 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_body_base_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/utils/pp_bluetooth_kit_logger.dart';
 
-
 class PPBluetoothKitManager {
-
   /// 初始化蓝牙SDK
   ///
   /// 必须在调用其他功能前先初始化
@@ -17,7 +14,8 @@ class PPBluetoothKitManager {
   /// @param appSecret 应用安全密钥
   /// @param configContent  配置文件内容(加密内容)
   static void initSDK(String appKey, String appSecret, String configContent) {
-    PPBluetoothKitFlutterPlatform.instance.initSDK(appKey, appSecret, configContent);
+    PPBluetoothKitFlutterPlatform.instance
+        .initSDK(appKey, appSecret, configContent);
   }
 
   /// 开始扫描蓝牙设备
@@ -30,6 +28,7 @@ class PPBluetoothKitManager {
 
   /// 停止扫描蓝牙设备
   static Future<void> stopScan() async {
+    print('祝融SDK停止扫描');
     await PPBluetoothKitFlutterPlatform.instance.stopScan();
   }
 
@@ -37,8 +36,10 @@ class PPBluetoothKitManager {
   /// 多次注册，只有最后一次注册生效，建议全局只注册一个
   /// @param callBack 权限变更回调
   ///                 参数：[PPBlePermissionState] 当前权限状态
-  static void addBlePermissionListener({required Function(PPBlePermissionState state) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.blePermissionListener(callBack: callBack);
+  static void addBlePermissionListener(
+      {required Function(PPBlePermissionState state) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance
+        .blePermissionListener(callBack: callBack);
   }
 
   /// 连接指定蓝牙设备
@@ -48,8 +49,10 @@ class PPBluetoothKitManager {
   /// @param callBack 连接状态回调
   ///                 参数：[PPDeviceConnectionState] 连接状态枚举
   ///                 注意：连接成功/断开连接都会触发
-  static void connectDevice(PPDeviceModel device, {required Function(PPDeviceConnectionState state) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.connectDevice(device, callBack: callBack);
+  static void connectDevice(PPDeviceModel device,
+      {required Function(PPDeviceConnectionState state) callBack}) {
+    PPBluetoothKitFlutterPlatform.instance
+        .connectDevice(device, callBack: callBack);
   }
 
   /// 添加测量数据监听器
@@ -58,10 +61,13 @@ class PPBluetoothKitManager {
   ///                 1. [PPMeasurementDataState] 测量状态
   ///                 2. [PPBodyBaseModel] 测量数据模型
   ///                 3. [PPDeviceModel] 数据来源设备
-  static void addMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.addMeasurementListener(callBack: callBack);
+  static void addMeasurementListener(
+      {required Function(PPMeasurementDataState measurementState,
+              PPBodyBaseModel dataModel, PPDeviceModel device)
+          callBack}) {
+    PPBluetoothKitFlutterPlatform.instance
+        .addMeasurementListener(callBack: callBack);
   }
-
 
   /// 获取当前已连接的设备
   ///
@@ -86,10 +92,11 @@ class PPBluetoothKitManager {
   ///
   /// @param callBack 扫描状态回调
   ///                 参数：[bool] 是否正在扫描
-  static void addScanStateListener({required Function(bool isScanning) callBack}) async {
-    PPBluetoothKitFlutterPlatform.instance.addScanStateListener(callBack: callBack);
+  static void addScanStateListener(
+      {required Function(bool isScanning) callBack}) async {
+    PPBluetoothKitFlutterPlatform.instance
+        .addScanStateListener(callBack: callBack);
   }
-
 
   /// 添加厨房秤-测量数据监听器
   /// 多次注册，只有最后一次注册生效
@@ -97,7 +104,11 @@ class PPBluetoothKitManager {
   ///                 1. [PPMeasurementDataState] 测量状态
   ///                 2. [PPBodyBaseModel] 测量数据模型
   ///                 3. [PPDeviceModel] 数据来源设备
-  static void addKitchenMeasurementListener({required Function(PPMeasurementDataState measurementState, PPBodyBaseModel dataModel, PPDeviceModel device) callBack}) {
-    PPBluetoothKitFlutterPlatform.instance.addKitchenMeasurementListener(callBack: callBack);
+  static void addKitchenMeasurementListener(
+      {required Function(PPMeasurementDataState measurementState,
+              PPBodyBaseModel dataModel, PPDeviceModel device)
+          callBack}) {
+    PPBluetoothKitFlutterPlatform.instance
+        .addKitchenMeasurementListener(callBack: callBack);
   }
 }

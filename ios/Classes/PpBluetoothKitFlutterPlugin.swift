@@ -383,6 +383,17 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           }
 
           self.bleManager.receiveBroadcastData(deviceMac: deviceMac, callBack: result)
+      } else if method == "unReceiveBroadcastData" {
+          
+          let deviceMac = params?["deviceMac"] as? String
+          
+          guard let deviceMac = deviceMac else {
+              self.bleManager.loggerStreamHandler?.event?("deviceMac为空")
+              self.bleManager.sendCommonState(false, callBack: result)
+              return;
+          }
+
+          self.bleManager.unReceiveBroadcastData(deviceMac: deviceMac, callBack: result)
       } else if method == "sendBroadcastData" {
           
           let cmd = params?["cmd"] as? String
