@@ -3,21 +3,35 @@ group 'com.example.pp_bluetooth_kit_flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.8.21'
+    ext.kotlin_version = '1.8.22'
     repositories {
+
+        maven { url 'https://maven.aliyun.com/mvn/search' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+
         maven { url "https://raw.githubusercontent.com/LefuHengqi/PPBaseKit-Android/main" }
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.0'
+        classpath 'com.android.tools.build:gradle:8.1.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
     repositories {
+
+        maven { url 'https://maven.aliyun.com/mvn/search' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        maven { url 'https://maven.aliyun.com/repository/google/' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+
         maven { url "https://raw.githubusercontent.com/LefuHengqi/PPBaseKit-Android/main" }
         google()
         mavenCentral()
@@ -33,12 +47,16 @@ android {
     namespace 'com.example.pp_bluetooth_kit_flutter'
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     sourceSets {
@@ -52,18 +70,19 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    
+
     //https://github.com/LefuHengqi/PPBaseKit-Android
     //基础模块，必须/Basic module, must
-    api 'com.lefu.ppbasekit:ppbasekit:4.2.1.1'
+    api 'com.lefu.ppbasekit:ppbasekit:4.6.5'
     //蓝牙协议模块，集成设备和解析体重信息/Bluetooth protocol module, integrating devices and parsing weight information
-    api 'com.lefu.ppbluetoothkit:ppbluetoothkit:4.2.1.1'
+    api 'com.lefu.ppbluetoothkit:ppbluetoothkit:4.6.5'
     //体脂计算库，根据需要引入/Body fat calculation library, introduced as needed
-    api 'com.lefu.ppcalculatekit:ppcalculatekit:4.2.1.1'
+    api 'com.lefu.ppcalculatekit:ppcalculatekit:4.6.5'
+    //基础计算库/Basic computing library
+    //https://github.com/LefuPPScale/PPBasicCalculateKit-Android.git
+    api 'com.lefu.ppbasiccalculatekit:ppbasiccalculatekit:1.1.0'
 
-//    api(project(":ppsdkkit:ppbasekit"))
-//    api(project(":ppsdkkit:ppbluetoothkit"))
-//    api(project(":ppsdkkit:ppcalculatekit"))
+
 
 }
 

@@ -43,73 +43,83 @@ fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Re
     when (currentDevice.getDevicePeripheralType()) {
 
         PPDevicePeripheralType.PeripheralApple -> {
-            this.appleControl?.syncUnit(unit, model, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.appleControl?.syncUnit(unit, model, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralCoconut -> {
-            this.coconutControl?.sendSyncUserAndUnitData(unit, model, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.coconutControl?.sendSyncUserAndUnitData(unit, model, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
-            this.iceControl?.syncUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.iceControl?.syncUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
 
         PPDevicePeripheralType.PeripheralTorre -> {
-            this.torreControl?.getTorreDeviceManager()?.syncUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.torreControl?.getTorreDeviceManager()?.syncUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.borreControl?.getTorreDeviceManager()?.syncUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.borreControl?.getTorreDeviceManager()?.syncUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.syncUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.dorreControl?.getTorreDeviceManager()?.syncUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.forreControl?.getTorreDeviceManager()?.syncUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.forreControl?.getTorreDeviceManager()?.syncUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralFish -> {
-            this.fishControl?.changeKitchenScaleUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.fishControl?.changeKitchenScaleUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralEgg -> {
-            this.eggControl?.changeKitchenScaleUnit(unit, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.eggControl?.changeKitchenScaleUnit(unit, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralDurian -> {
-            this.durianControl?.syncUnit(unit, model, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.durianControl?.syncUnit(unit, model, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
@@ -130,63 +140,72 @@ fun PPLefuBleConnectManager.syncTime(is24Hour: Boolean, callBack: Result) {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralApple -> {
-            this.appleControl?.syncTime({
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.appleControl?.syncTime(object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralCoconut -> {
-            this.coconutControl?.sendSyncTime({
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.coconutControl?.sendSyncTime(object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
-            this.iceControl?.syncTime {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
-            }
+            this.iceControl?.syncTime(object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralTorre -> {
             val code = if (is24Hour) 0 else 1
-            this.torreControl?.getTorreDeviceManager()?.syncTime24(code, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.torreControl?.getTorreDeviceManager()?.syncTime24(code, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
             val code = if (is24Hour) 0 else 1
-            this.borreControl?.getTorreDeviceManager()?.syncTime24(code, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.borreControl?.getTorreDeviceManager()?.syncTime24(code, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
             val code = if (is24Hour) 0 else 1
-            this.dorreControl?.getTorreDeviceManager()?.syncTime24(code, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.dorreControl?.getTorreDeviceManager()?.syncTime24(code, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
             })
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
             val code = if (is24Hour) 0 else 1
-            this.forreControl?.getTorreDeviceManager()?.syncTime24(code, {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
+            this.forreControl?.getTorreDeviceManager()?.syncTime24(code, object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+
             })
         }
 
         PPDevicePeripheralType.PeripheralFish -> {
-            this.fishControl?.sendSyncTime {
-                val success = it == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
-            }
+            this.fishControl?.sendSyncTime(object : PPBleSendResultCallBack {
+                override fun onResult(sendState: PPScaleSendState?) {
+                    sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         else -> {
@@ -1330,27 +1349,35 @@ fun PPLefuBleConnectManager.startMeasure(callBack: Result) {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
-            this.torreControl?.getTorreDeviceManager()?.startMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.torreControl?.getTorreDeviceManager()?.startMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.torreControl?.getTorreDeviceManager()?.startMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.torreControl?.getTorreDeviceManager()?.startMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.startMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.dorreControl?.getTorreDeviceManager()?.startMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.torreControl?.getTorreDeviceManager()?.startMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.torreControl?.getTorreDeviceManager()?.startMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         else -> {
@@ -1370,27 +1397,35 @@ fun PPLefuBleConnectManager.stopMeasure(callBack: Result) {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
-            this.torreControl?.getTorreDeviceManager()?.stopMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.torreControl?.getTorreDeviceManager()?.stopMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.borreControl?.getTorreDeviceManager()?.stopMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.borreControl?.getTorreDeviceManager()?.stopMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.stopMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.dorreControl?.getTorreDeviceManager()?.stopMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.forreControl?.getTorreDeviceManager()?.stopMeasure {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.forreControl?.getTorreDeviceManager()?.stopMeasure(object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         else -> {
@@ -1417,9 +1452,11 @@ fun PPLefuBleConnectManager.startBabyModel(step: Int, weight: Double, callBack: 
              * @param step   0x00：第一步  0x01：第二步
              * @param weight 重量[单位10g]：当步骤为0x01[第一步]时重量发0 当步骤为0x02[第二步]时重量发第一步测得的重量
              */
-            this.torreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.torreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
@@ -1428,21 +1465,27 @@ fun PPLefuBleConnectManager.startBabyModel(step: Int, weight: Double, callBack: 
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.borreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.borreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.dorreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.forreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.forreControl?.getTorreDeviceManager()?.switchBaby(0, step, weight, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         else -> {
@@ -1462,9 +1505,11 @@ fun PPLefuBleConnectManager.exitBabyModel(callBack: Result) {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
-            this.torreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.torreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
@@ -1473,21 +1518,27 @@ fun PPLefuBleConnectManager.exitBabyModel(callBack: Result) {
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.borreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.borreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.dorreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.forreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0) {
-                this.sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
-            }
+            this.forreControl?.getTorreDeviceManager()?.switchBaby(1, 0, 0.0, object : PPBleSendResultCallBack {
+                override fun onResult(it: PPScaleSendState?) {
+                    sendCommonState(it == PPScaleSendState.PP_SEND_SUCCESS, callBack)
+                }
+            })
         }
 
         else -> {
@@ -1590,23 +1641,23 @@ fun PPLefuBleConnectManager.keepAlive() {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
-            this.torreControl?.getTorreDeviceManager()?.keepAlive()
+            this.torreControl?.getTorreDeviceManager()?.startKeepAlive()
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
-            this.iceControl?.keepAlive()
+            this.iceControl?.startKeepAlive()
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.borreControl?.getTorreDeviceManager()?.keepAlive()
+            this.borreControl?.getTorreDeviceManager()?.startKeepAlive()
         }
 
         PPDevicePeripheralType.PeripheralDorre -> {
-            this.dorreControl?.getTorreDeviceManager()?.keepAlive()
+            this.dorreControl?.getTorreDeviceManager()?.startKeepAlive()
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.forreControl?.getTorreDeviceManager()?.keepAlive()
+            this.forreControl?.getTorreDeviceManager()?.startKeepAlive()
         }
 
         else -> {
@@ -1821,10 +1872,12 @@ fun PPLefuBleConnectManager.setDisplayBodyFat(bodyFat: Int, callBack: Result) {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralIce -> {
-            this.iceControl?.syncFat(bodyFat) { state ->
-                val success = state == PPScaleSendState.PP_SEND_SUCCESS
-                this.sendCommonState(success, callBack)
-            }
+            this.iceControl?.syncFat(bodyFat, object : PPBleSendResultCallBack {
+                override fun onResult(state: PPScaleSendState?) {
+                    val success = state == PPScaleSendState.PP_SEND_SUCCESS
+                    sendCommonState(success, callBack)
+                }
+            })
         }
 
         else -> {

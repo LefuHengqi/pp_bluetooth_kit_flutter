@@ -4,6 +4,8 @@ include ':app'
 //include ':ppsdkkit:ppbluetoothkit'
 //include ':ppsdkkit:ppcalculatekit'
 //include ':ppsdkkit:ppbasekit'
+//
+//include ':ppbasiccalculatekit'
 
 def localPropertiesFile = new File(rootProject.projectDir, "local.properties")
 def properties = new Properties()

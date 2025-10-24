@@ -36,11 +36,29 @@ Future<void> main() async {
       print('SDK的日志:$text');
     });
 
-    final path = 'config/Device.json';
-    String jsonStr = await rootBundle.loadString(path);
-    print("jsonStr len:${jsonStr.length}");
-    // printLongJson(jsonStr);
-    PPBluetoothKitManager.setDeviceSetting(jsonStr);
+    // final path = 'config/Device.json';
+    // String jsonStr = await rootBundle.loadString(path);
+    // print("jsonStr len:${jsonStr.length}");
+    // // printLongJson(jsonStr);
+    // PPBluetoothKitManager.setDeviceSetting(jsonStr);
+
+
+    final path = 'config/lefu1.config';
+    String content = await rootBundle.loadString(path);
+    
+    // 按照每500字符分段打印内容
+    void printLongContent(String text) {
+      const int chunkSize = 500;
+      for (int i = 0; i < text.length; i += chunkSize) {
+        int end = (i + chunkSize < text.length) ? i + chunkSize : text.length;
+        String chunk = text.substring(i, end);
+        print('content-part${(i ~/ chunkSize) + 1}: $chunk');
+      }
+    }
+    
+    printLongContent(content);
+    PPBluetoothKitManager.initSDK('lefub60060202a15ac8a', 'UCzWzna/eazehXaz8kKAC6WVfcL25nIPYlV9fXYzqDM=', content);
+
     PPBluetoothKitManager.addBlePermissionListener(callBack: (state) {
       print('蓝牙权限变化-$state');
     });
