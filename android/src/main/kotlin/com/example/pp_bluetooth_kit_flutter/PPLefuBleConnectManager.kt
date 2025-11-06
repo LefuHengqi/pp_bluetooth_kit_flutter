@@ -330,9 +330,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         when (deviceControl?.deviceModel?.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralApple -> {
                 tempScaleHistoryList = mutableListOf()
-                appleControl?.getHistoryData(historyDataInterface, {
-
-                })
+                appleControl?.getHistoryData(historyDataInterface, null)
             }
 
             PPDevicePeripheralType.PeripheralCoconut -> {
@@ -388,33 +386,39 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         when (currentDevice?.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralApple -> {
-                appleControl?.deleteHistoryData {
-                    if (it == PPScaleSendState.PP_SEND_SUCCESS) {
-                        sendCommonState(true, callBack)
-                    } else {
-                        sendCommonState(false, callBack)
+                appleControl?.deleteHistoryData(object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
                     }
-                }
+                })
             }
 
             PPDevicePeripheralType.PeripheralCoconut -> {
-                coconutControl?.deleteHistoryData {
-                    if (it == PPScaleSendState.PP_SEND_SUCCESS) {
-                        sendCommonState(true, callBack)
-                    } else {
-                        sendCommonState(false, callBack)
+                coconutControl?.deleteHistoryData(object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
                     }
-                }
+                })
             }
 
             PPDevicePeripheralType.PeripheralIce -> {
-                iceControl?.deleteHistoryData {
-                    if (it == PPScaleSendState.PP_SEND_SUCCESS) {
-                        sendCommonState(true, callBack)
-                    } else {
-                        sendCommonState(false, callBack)
+                iceControl?.deleteHistoryData(object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
                     }
-                }
+                })
             }
 
             else -> {
@@ -481,12 +485,15 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         when (currentDevice?.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralApple -> {
-                appleControl?.sendResetDevice(deviceSetInfoInterface, {
-                    if (it == PPScaleSendState.PP_SEND_SUCCESS) {
-                        sendCommonState(true, callBack)
-                    } else {
-                        sendCommonState(false, callBack)
+                appleControl?.sendResetDevice(deviceSetInfoInterface, object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
                     }
+
                 })
 
             }
@@ -595,7 +602,10 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             && PPScaleHelper.isFuncTypeTwoBrocast(jambulControl?.deviceModel?.deviceFuncType)
         ) {
             val mode = if (cmd.equals("38")) 1 else 0
-            jambulControl?.startBroadCast(UnitUtil.getUnitType(unitType), mode, jambulControl?.deviceModel?.deviceMac ?: "")
+
+            val userModel = PPUserModel.Builder().setPregnantMode(mode == 1).build()
+
+            jambulControl?.startBroadCast(UnitUtil.getUnitType(unitType), userModel, jambulControl?.deviceModel)
             sendCommonState(true, callBack)
         } else {
             loggerStreamHandler?.sendEvent("不支持的功能-jambul:${jambulControl}-peripheralType:${currentDevice?.getDevicePeripheralType()}")
@@ -646,22 +656,27 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         when (currentDevice?.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralFish -> {
-                fishControl?.toZeroKitchenScale({
-                    if (it == PPScaleSendState.PP_SEND_SUCCESS) {
-                        sendCommonState(true, callBack)
-                    } else {
-                        sendCommonState(false, callBack)
+                fishControl?.toZeroKitchenScale(object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
                     }
                 })
             }
 
             PPDevicePeripheralType.PeripheralEgg -> {
-                eggControl?.toZeroKitchenScale({
-                    if (it == PPScaleSendState.PP_SEND_SUCCESS) {
-                        sendCommonState(true, callBack)
-                    } else {
-                        sendCommonState(false, callBack)
+                eggControl?.toZeroKitchenScale(object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
                     }
+
                 })
             }
 
@@ -900,7 +915,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
     var foodScaleDataChangeListener = object : FoodScaleDataChangeListener() {
 
-        override fun processData(foodScaleGeneral: LFFoodScaleGeneral?, deviceModel: PPDeviceModel?) {
+        override fun processData(foodScaleGeneral: LFFoodScaleGeneral, deviceModel: PPDeviceModel?) {
             if (foodScaleGeneral == null) {
                 return
             }
@@ -919,7 +934,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             )
         }
 
-        override fun lockedData(foodScaleGeneral: LFFoodScaleGeneral?, deviceModel: PPDeviceModel?) {
+        override fun lockedData(foodScaleGeneral: LFFoodScaleGeneral, deviceModel: PPDeviceModel?) {
             if (foodScaleGeneral == null) {
                 return
             }
