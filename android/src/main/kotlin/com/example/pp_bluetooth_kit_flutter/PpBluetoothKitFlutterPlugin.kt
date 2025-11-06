@@ -62,7 +62,19 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var context: Context
   lateinit var bleManager: PPLefuBleConnectManager
 
+  companion object {
+    @Volatile private var initialized = false
+  }
+
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+
+    if (initialized) {
+      // 可加调试日志：重复引擎或重复注册场景
+      Logger.e("PpBluetoothKitFlutterPlugin has been initialized already.")
+      return
+    }
+    initialized = true
+
     context = flutterPluginBinding.applicationContext
     bleManager = PPLefuBleConnectManager.getInstance(context)
 
