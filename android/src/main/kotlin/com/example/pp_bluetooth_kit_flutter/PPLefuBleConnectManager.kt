@@ -605,7 +605,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
             val userModel = PPUserModel.Builder().setPregnantMode(mode == 1).build()
 
-            jambulControl?.startBroadCast(UnitUtil.getUnitType(unitType), userModel, jambulControl?.deviceModel)
+            jambulControl?.startBroadCast(UnitUtil.getUnitType(unitType), 1, jambulControl?.deviceModel?.deviceMac ?: "")
             sendCommonState(true, callBack)
         } else {
             loggerStreamHandler?.sendEvent("不支持的功能-jambul:${jambulControl}-peripheralType:${currentDevice?.getDevicePeripheralType()}")
