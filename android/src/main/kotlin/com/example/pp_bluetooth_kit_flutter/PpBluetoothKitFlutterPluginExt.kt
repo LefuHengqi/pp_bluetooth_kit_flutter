@@ -4,7 +4,6 @@ import android.content.Context
 import com.lefu.ppbase.PPSDKKit
 import com.lefu.ppbase.util.Logger
 import com.lefu.ppbase.util.OnLogCallBack
-import com.lefu.ppcalculate.PPCalculateKit
 import com.peng.ppscale.PPBluetoothKit
 
 fun PpBluetoothKitFlutterPlugin.initSDK(context: Context, appKey: String, appSecret: String, encryptStr: String) {
@@ -67,10 +66,6 @@ fun PpBluetoothKitFlutterPlugin.initSDK(context: Context, appKey: String, appSec
     printLongString("encryptStr", encryptStr)
 
     PPBluetoothKit.setNetConfig(context, appKey, appSecret, encryptStr)
-    /**
-     * PPCalculateKit 计算库初始化
-     */
-    PPCalculateKit.initSdk(context)
 
 }
 
@@ -117,9 +112,6 @@ fun PpBluetoothKitFlutterPlugin.setDeviceSetting(context: Context, encryptStr: S
      * @param configPath 在开放平台下载相应的配置文件以.config结尾，并放到assets目录下，将config文件全名传给SDK
      */
     PPBluetoothKit.setDeviceConfigJsonStr(context, encryptStr)
-    /**
-     * PPCalculateKit 计算库初始化
-     */
-    PPCalculateKit.initSdk(context)
+
 
 }
