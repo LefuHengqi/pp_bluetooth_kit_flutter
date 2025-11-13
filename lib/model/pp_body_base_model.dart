@@ -7,7 +7,7 @@ import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 ///@date 2025/2/6 15:39
 
 class PPBodyBaseModel {
-  // 体重，单位为克
+  // 体重，单位为KG放大100倍
   int weight = 0;
 
   // 4电极算法阻抗

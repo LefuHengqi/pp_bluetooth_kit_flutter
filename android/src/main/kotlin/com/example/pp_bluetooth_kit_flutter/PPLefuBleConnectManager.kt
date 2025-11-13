@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.pp_bluetooth_kit_flutter.extension.convertDeviceDict
 import com.example.pp_bluetooth_kit_flutter.extension.convertMeasurementDict
 import com.example.pp_bluetooth_kit_flutter.extension.convertMeasurementDictFood
+import com.example.pp_bluetooth_kit_flutter.extension.sendHistoryData
 import com.example.pp_bluetooth_kit_flutter.extension.sendBlePermissionState
 import com.example.pp_bluetooth_kit_flutter.extension.sendCommonState
 import com.example.pp_bluetooth_kit_flutter.extension.sendScanState
@@ -826,15 +827,26 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     var historyDataInterface = object : PPHistoryDataInterface() {
         override fun monitorHistoryData(bodyBaseModel: PPBodyBaseModel?, dateTime: String?) {
             addPrint("monitorHistoryData weight: ${bodyBaseModel?.weight}" + " dateTime:$dateTime")
+            bodyBaseModel?.let {
+                if (tempScaleHistoryList == null) {
+                    tempScaleHistoryList = mutableListOf()
+                }
+                tempScaleHistoryList?.add(it)
+            }
         }
 
         override fun monitorHistoryEnd(deviceModel: PPDeviceModel?) {
             addPrint("monitorHistoryEnd")
-
+            val list = tempScaleHistoryList ?: mutableListOf()
+            sendHistoryData(list)
+            tempScaleHistoryList = null
         }
 
         override fun monitorHistoryFail() {
             addPrint("monitorHistoryFail")
+            val list = tempScaleHistoryList ?: mutableListOf()
+            sendHistoryData(list)
+            tempScaleHistoryList = null
         }
     }
 
