@@ -396,6 +396,11 @@ public class PPLefuBleConnectManager:NSObject {
             self.forreControl?.fetchDeviceBatteryInfo(completion: { power in
                 
             })
+            
+        case .peripheralFish:
+            
+            self.batteryStreamHandler?.event?(["power":self.currentDevice?.devicePower ?? 0])
+
         case .peripheralDorre:
             // 在代理方法中统一持续回调
             self.dorreControl?.fetchDeviceBatteryInfo(completion: { power in
@@ -505,8 +510,10 @@ public class PPLefuBleConnectManager:NSObject {
         }
         
         if device.peripheralType == .peripheralJambul, let jambul = self.jambulControl {
+            let user = PPTorreSettingModel()
+
             
-            jambul.sendCBPeripheralDataCurrentUnit(unitType, scaleType: cmd)
+            jambul.sendCBPeripheralDataCurrentUnit(unitType, scaleType: cmd, settingModel: user)
             self.sendCommonState(true, callBack: callBack)
             
         } else {
@@ -516,6 +523,30 @@ public class PPLefuBleConnectManager:NSObject {
         }
         
     }
+    
+    
+    func changeBuzzerGate(isOpen:Bool,  callBack: @escaping FlutterResult) {
+        
+        guard let device = self.currentDevice else {
+            
+            self.loggerStreamHandler?.event?("当前设备为空")
+            self.sendCommonState(false, callBack: callBack)
+            return
+        }
+        
+        if device.peripheralType == .peripheralFish, let fish = self.fishControl {
+
+            
+            fish.changeBuzzerGate(isOpen)
+            self.sendCommonState(true, callBack: callBack)
+            
+        } else {
+            
+            self.sendCommonState(false, callBack: callBack)
+        }
+        
+    }
+    
     
     
     

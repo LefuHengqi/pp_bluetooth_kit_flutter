@@ -7,10 +7,10 @@
 
 
 import Foundation
+
+import Flutter
 import PPBaseKit
 import PPBluetoothKit
-import Flutter
-
 extension PPLefuBleConnectManager {
 
     func syncUnit(model:PPBluetoothDeviceSettingModel, callBack: @escaping FlutterResult) {
@@ -219,7 +219,7 @@ extension PPLefuBleConnectManager {
                     guard let `self` = self else {
                         return
                     }
-                    let success:Bool = configState == .success
+                    let success:Bool = configState == .stateSuccess
 
                     self.sendWIFIResult(isSuccess: success, sn: sn, errorCode: Int(configState.rawValue), callBack: callBack)
                     
@@ -1849,6 +1849,59 @@ extension PPLefuBleConnectManager {
             self.sendCommonState(false, callBack: callBack)
         }
     }
+    func syncBorreCLast7DaysData(recentList:[PPUserBodyData], lastBodyData:PPUserBodyData, type:PPUserBodyDataType, user:PPTorreSettingModel,callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            self.sendCommonState(false, callBack: callBack)
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralBorre:
+            self.borreControl?.syncLatest7BodyData(recentList, type: type, user: user, lastWeightData: lastBodyData,  handler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+            self.sendCommonState(false, callBack: callBack)
+        }
+    }
+    
+    func setRGBMode(lightEnable:Int,lightMode:Int,defalutColor:String,gainColor:String,lossColor:String,callBack: @escaping FlutterResult){
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            self.sendCommonState(false, callBack: callBack)
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralBorre:
+            self.borreControl?.setRGBMode(lightEnable == 1 ? true:false, lightMode: lightMode == 0 ? Borre608LightMode.always :Borre608LightMode.breathing , normalColor: defalutColor, gainColor: gainColor, lossColor: lossColor,  handler: { [weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+            self.sendCommonState(false, callBack: callBack)
+        }
+        
+    }
+
 
     func fetchDeviceInfo(_ callBack: @escaping FlutterResult) {
         

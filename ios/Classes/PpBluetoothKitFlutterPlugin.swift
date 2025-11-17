@@ -407,6 +407,13 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           }
 
           self.bleManager.sendBroadcastData(cmd: cmd, unitType: unitType, callBack: result)
+          
+      } else if method == "changeBuzzerGate" {
+           
+          let open = params?["open"] as? Bool ?? true
+          self.bleManager.changeBuzzerGate(isOpen: open, callBack: result)
+
+
       } else if method == "toZero" {
           self.bleManager.toZero(callBack: result)
       } else if method == "syncLast7Data" {
@@ -440,7 +447,46 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           user.idealWeight = params?["idealWeight"] as? CGFloat ?? 0
 
           self.bleManager.syncLast7Data(recentList: recentList, lastBodyData: last, type: type, user: user, callBack: result)
+          
+          
+      } else if method == "syncBorreCLast7Data" {
+          
+          var recentList = [PPUserBodyData]()
+          let list = params?["weightList"] as? [[String:Any]] ?? []
+          for item in list {
+              let data = PPUserBodyData()
+              data.timeStamp = Double(item["timeStamp"] as? Int64 ?? 0)
+              data.value = item["value"] as? CGFloat ?? 0
+              recentList.append(data)
+          }
+          
+          
+          let typeValue = params?["type"] as? Int ?? 0
+          let type = PPUserBodyDataType(rawValue: typeValue) ?? .weight
+          
+          let lastBody = recentList.last
+          
+      
+          
+          let user = PPTorreSettingModel()
+          user.userID = params?["userID"] as? String ?? ""
+          user.memberID = params?["memberID"] as? String ?? ""
+          user.targetWeight = params?["targetWeight"] as? CGFloat ?? 0
+          user.idealWeight = params?["idealWeight"] as? CGFloat ?? 0
+
+          self.bleManager.syncBorreCLast7DaysData(recentList: recentList, lastBodyData: lastBody ?? PPUserBodyData(), type: type, user: user, callBack: result)
+      } else if method == "setRGBMode" {
+          
+          let defalutColor = params?["defalutColor"] as? String ?? ""
+          let gainColor = params?["defalutColor"] as? String ?? ""
+          let lossColor = params?["defalutColor"] as? String ?? ""
+          let lightEnable = params?["defalutColor"] as? Int ?? 0
+          let lightMode = params?["defalutColor"] as? Int ?? 0
+         
+          self.bleManager.setRGBMode(lightEnable: lightEnable, lightMode: lightMode, defalutColor: defalutColor, gainColor: gainColor, lossColor: lossColor, callBack: result)
+          
       } else if method == "fetchUserInfoList" {
+
           
           self.bleManager.fetchUserInfoList(callBack: result)
       } else if method == "foodScaleUnit" {
