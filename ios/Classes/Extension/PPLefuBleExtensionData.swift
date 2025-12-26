@@ -90,7 +90,9 @@ extension PPLefuBleConnectManager {
             "z20KhzRightArmEnCode":model.z20KhzRightArmEnCode,
             "z20KhzRightLegEnCode":model.z20KhzRightLegEnCode,
             "z20KhzTrunkEnCode":model.z20KhzTrunkEnCode,
-            "isPowerOff":isPowerOff
+            "isPowerOff":isPowerOff,
+            "hasLightStrength":model.hasLightStrength,
+            "lightStrength":model.lightStrength
                 
         ]
         

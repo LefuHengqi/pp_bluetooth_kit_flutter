@@ -8,6 +8,7 @@
 
 import Foundation
 import PPBluetoothKit
+import PPBaseKit
 
 class PPDurianMeasurementHandler:NSObject {
     

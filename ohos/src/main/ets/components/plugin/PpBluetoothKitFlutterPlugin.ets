@@ -382,7 +382,9 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       user.targetWeight = targetWeight
       user.ideaWeight = idealWeight
 
-      let type = params.get("type") as number ?? 0
+      let type = params.get("type") as number ?? 1
+
+      type = type - 1
 
       this.bleManager.syncBorreCLast7DaysDataUserInfo(user, last7DaysArray,type,result)
       this.bleManager.loggerStreamHandler?.success(`syncLast7Data params:${last7DaysArray} user:${user} params ${params.get("userID")}}`)
@@ -481,6 +483,21 @@ export default class PpBluetoothKitFlutterPlugin implements FlutterPlugin, Metho
       }
 
       this.bleManager.unReceiveBroadcastData(deviceMac, result)
+
+    } else if (method == "setDisplayMetrics") {
+
+      const metrics = params.get("metrics") as number  ?? 1
+
+      this.bleManager.loggerStreamHandler?.success(`metrics1 ${metrics}`)
+
+      this.bleManager.setDisplayMetrics(metrics)
+
+
+    } else if (method == "getDisplayMetrics") {
+
+      this.bleManager.getDisplayMetrics(result)
+
+
     } else if (method == "sendBroadcastData") {
       const cmd = params.get("cmd") as string
       const unit = params.get("unit") as number ?? 0

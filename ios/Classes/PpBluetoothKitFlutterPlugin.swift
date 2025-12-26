@@ -478,10 +478,10 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "setRGBMode" {
           
           let defalutColor = params?["defalutColor"] as? String ?? ""
-          let gainColor = params?["defalutColor"] as? String ?? ""
-          let lossColor = params?["defalutColor"] as? String ?? ""
-          let lightEnable = params?["defalutColor"] as? Int ?? 0
-          let lightMode = params?["defalutColor"] as? Int ?? 0
+          let gainColor = params?["gainColor"] as? String ?? ""
+          let lossColor = params?["lossColor"] as? String ?? ""
+          let lightEnable = params?["lightEnable"] as? Int ?? 0
+          let lightMode = params?["lightMode"] as? Int ?? 0
          
           self.bleManager.setRGBMode(lightEnable: lightEnable, lightMode: lightMode, defalutColor: defalutColor, gainColor: gainColor, lossColor: lossColor, callBack: result)
           

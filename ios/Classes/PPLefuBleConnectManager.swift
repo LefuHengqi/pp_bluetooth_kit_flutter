@@ -807,7 +807,7 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
                     return
                 }
                 
-                let dict:[String:Any?] = ["power":model.power]
+                let dict:[String:Any?] = ["power":model.power,"lumen":model.lumen]
                 let filtedDict = dict.compactMapValues { $0 }
                 
                 self.batteryStreamHandler?.event?(filtedDict)
@@ -858,7 +858,7 @@ extension PPLefuBleConnectManager: PPBluetoothCMDDataDelegate{
     
     public func monitorBatteryInfoChange(_ model: PPBatteryInfoModel!, advModel: PPBluetoothAdvDeviceModel!) {
         
-        let dict:[String:Any?] = ["power":model.power]
+        let dict:[String:Any?] = ["power":model.power,"lumen":model.lumen]
         let filtedDict = dict.compactMapValues { $0 }
         
         self.batteryStreamHandler?.event?(filtedDict)

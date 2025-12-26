@@ -7,7 +7,7 @@ import { PPLoggerPluginOhos } from './util/PPLoggerPluginOhos';
 
 import { PPBluetoothKit } from 'ppsdkkit/src/main/ets/PPBluetoothKit';
 import { PPDeviceModel } from 'ppsdkkit/src/main/ets/vo/PPDeviceModel';
-import { PPDevicePeripheralType,PPUserBodyDataType } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
+import { PPDevicePeripheralType,PPUserBodyDataType,PPDisplayMetrics } from 'ppsdkkit/src/main/ets/enums/PPDeviceEnums';
 import { PPBleSearch } from 'ppsdkkit/src/main/ets/ble/search/PPBleSearch';
 import { PPBaseDeviceControl } from 'ppsdkkit/src/main/ets/device/PPBaseDeviceControl';
 import { PPAppleDeviceControl } from 'ppsdkkit/src/main/ets/device/apple/PPAppleDeviceControl';
@@ -1342,6 +1342,27 @@ export class PPLefuBleConnectManager {
       const deviceModel = this.deviceControl?.deviceModel;
       this.loggerStreamHandler?.success(`不支持该功能-syncUserInfo-deviceName:${deviceModel?.deviceName}-peripheralType:${deviceModel?.getDevicePeripheralType()}-`)
     }
+  }
+
+  async setDisplayMetrics(metrics : PPDisplayMetrics) {
+    this.loggerStreamHandler?.success(`metrics2 ${metrics}`)
+
+    if (this.deviceControl instanceof PPBorreDeviceControl) {
+       this.deviceControl.setDisplayMetrics(metrics);
+    }
+
+  }
+
+  async getDisplayMetrics(result: MethodResult){
+    if (this.deviceControl instanceof PPBorreDeviceControl) {
+      this.deviceControl.getDisplayMetrics((met) => {
+
+        result.success({ metrics: met })
+
+      });
+
+    }
+
   }
 
 
