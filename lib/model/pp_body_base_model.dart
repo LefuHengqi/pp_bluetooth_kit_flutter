@@ -1,5 +1,3 @@
-
-
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 
 ///@author liyp
@@ -67,13 +65,15 @@ class PPBodyBaseModel {
   // 20KHz 躯干阻抗加密值
   int z20KhzTrunkEnCode = 0;
 
+  bool hasLightStrength = false;
+
+  int lightStrength = -1;
 
   double getPpWeightKg() {
     return weight / 100.0;
   }
 
   void resetBodyFat() {
-
     z20KhzRightArmEnCode = 0;
     z100KhzRightArmEnCode = 0;
     z20KhzLeftArmEnCode = 0;
@@ -87,7 +87,8 @@ class PPBodyBaseModel {
     impedance = 0;
     impedance100EnCode = 0;
     heartRate = 0;
-
+    hasLightStrength = false;
+    lightStrength = -1;
   }
 
   PPBodyBaseModel();
@@ -111,11 +112,12 @@ class PPBodyBaseModel {
         'z20KhzLeftLegEnCode=$z20KhzLeftLegEnCode,\n'
         'z20KhzRightArmEnCode=$z20KhzRightArmEnCode,\n'
         'z20KhzRightLegEnCode=$z20KhzRightLegEnCode,\n'
-        'z20KhzTrunkEnCode=$z20KhzTrunkEnCode';
+        'z20KhzTrunkEnCode=$z20KhzTrunkEnCode,\n'
+        'hasLightStrength=$hasLightStrength,\n'
+        'lightStrength=$lightStrength';
   }
 
   factory PPBodyBaseModel.fromJson(Map<String, dynamic> json) {
-
     PPUnitType zrType = PPUnitType.Unit_KG;
     int type = json["unit"] ?? 0;
     if (type >= 0 && type < PPUnitType.values.length) {
@@ -142,6 +144,8 @@ class PPBodyBaseModel {
       ..z20KhzRightArmEnCode = json["z20KhzRightArmEnCode"] ?? 0
       ..z20KhzRightLegEnCode = json["z20KhzRightLegEnCode"] ?? 0
       ..z20KhzTrunkEnCode = json["z20KhzTrunkEnCode"] ?? 0
+      ..hasLightStrength = json["hasLightStrength"] ?? false
+      ..lightStrength = json["lightStrength"] ?? -1
       ..unit = zrType;
   }
 
@@ -166,8 +170,8 @@ class PPBodyBaseModel {
       "z20KhzRightArmEnCode": z20KhzRightArmEnCode,
       "z20KhzRightLegEnCode": z20KhzRightLegEnCode,
       "z20KhzTrunkEnCode": z20KhzTrunkEnCode,
+      "hasLightStrength": hasLightStrength,
+      "lightStrength": lightStrength,
     };
   }
-
-
 }

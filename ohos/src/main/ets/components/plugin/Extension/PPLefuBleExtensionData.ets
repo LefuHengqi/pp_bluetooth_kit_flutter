@@ -44,6 +44,7 @@ export class PPLefuBleExtensionData {
       hardwareRevision: device?.hardwareVersion ?? "",
       serialNumber: device?.serialNumber ?? "",
       manufacturerName: device?.manufacturerName ?? "",
+
     };
   }
 
@@ -85,8 +86,9 @@ export class PPLefuBleExtensionData {
       z20KhzRightArmEnCode: model.z20KhzRightArmEnCode ?? 0,
       z20KhzRightLegEnCode: model.z20KhzRightLegEnCode ?? 0,
       z20KhzTrunkEnCode: model.z20KhzTrunkEnCode ?? 0,
-
-      isPowerOff: isPowerOff ?? false
+      isPowerOff: isPowerOff ?? false,
+      hasLightStrength: model.hasLightStrength ?? false,
+      lightStrength: model.lightStrength ?? -1
     };
 
     return dict;
@@ -146,6 +148,8 @@ export interface MeasurementDict {
   z20KhzRightLegEnCode: number;
   z20KhzTrunkEnCode: number;
   isPowerOff: boolean;
+  hasLightStrength: boolean;
+  lightStrength: number;
 }
 
 

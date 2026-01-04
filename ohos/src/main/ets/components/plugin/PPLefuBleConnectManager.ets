@@ -933,7 +933,11 @@ export class PPLefuBleConnectManager {
       const battery = await this.deviceControl.readBatteryLevel();
       this.batteryStreamHandler?.success({ power: battery })
     } else if (this.deviceControl instanceof PPCoconutDeviceControl) {
-      const battery = await this.deviceControl.readBatteryLevel();
+      const battery = await this.deviceControl.readBatteryLevel((battery,lightIntensity) => {
+        this.addLog(`光照强度 ${lightIntensity}`)
+        this.batteryStreamHandler?.success({ power: battery,lumen: lightIntensity})
+
+      });
       this.batteryStreamHandler?.success({ power: battery })
 
     } else if (this.deviceControl instanceof PPFishDeviceControl) {
