@@ -452,6 +452,17 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
 
         bleManager.receiveBroadcastData(deviceMac, result)
       }
+      "unReceiveBroadcastData" -> {
+        val deviceMac = params?.get("deviceMac") as? String
+
+        if (deviceMac == null) {
+          bleManager.loggerStreamHandler?.sendEvent("deviceMac为空")
+          bleManager.sendCommonState(false, result)
+          return
+        }
+
+        bleManager.unReceiveBroadcastData(deviceMac, result)
+      }
       "sendBroadcastData" -> {
         val cmd = params?.get("cmd") as? String
         val unit = params?.get("unit") as? Int ?: 0

@@ -1360,7 +1360,7 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
         _kitchenDataEvent.receiveBroadcastStream().listen((event) {
       try {
         final retJson = event.cast<String, dynamic>();
-
+        PPBluetoothKitLogger.i('接收到的测量数据：$retJson');
         final stateCode = retJson['measurementState'] as int;
         final device = retJson['device'].cast<String, dynamic>();
         final data = retJson['data'].cast<String, dynamic>();

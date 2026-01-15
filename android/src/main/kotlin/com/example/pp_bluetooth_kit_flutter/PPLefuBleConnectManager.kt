@@ -528,11 +528,68 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     /**
      * 接收广播数据
      */
+    fun unReceiveBroadcastData(deviceMac: String, callBack: Result) {
+        val device = tempDeviceDict[deviceMac]
+
+        if (device == null) {
+            Logger.e("receiveBroadcastData 找不到当前设备 deviceMac:$deviceMac")
+            loggerStreamHandler?.sendEvent("找不到当前设备 deviceMac:$deviceMac")
+            sendCommonState(false, callBack)
+            return
+        }
+
+        if (device.deviceConnectType != PPDeviceConnectType.PPDeviceConnectTypeBroadcast) {
+            loggerStreamHandler?.sendEvent("${device.deviceName}-${device.deviceMac}不是广播秤")
+            Logger.e("receiveBroadcastData ${device.deviceName}-${device.deviceMac}不是广播秤")
+            sendCommonState(false, callBack)
+            return
+        }
+
+        currentDevice = device
+
+        when (device.getDevicePeripheralType()) {
+            PPDevicePeripheralType.PeripheralBanana -> {
+                Logger.d("unReceiveBroadcastData PeripheralBanana")
+                bananaControl?.registDataChangeListener(null)
+                bananaControl?.stopSeach()
+            }
+
+            PPDevicePeripheralType.PeripheralJambul -> {
+                Logger.d("unReceiveBroadcastData PeripheralJambul")
+                jambulControl?.registDataChangeListener(null)
+                jambulControl?.stopSeach()
+            }
+
+            PPDevicePeripheralType.PeripheralHamburger -> {
+                Logger.d("unReceiveBroadcastData PeripheralHamburger")
+                hamburgerControl?.registDataChangeListener(null)
+                hamburgerControl?.stopSeach()
+            }
+
+            PPDevicePeripheralType.PeripheralGrapes -> {
+                Logger.d("unReceiveBroadcastData PeripheralGrapes")
+                grapesControl?.registDataChangeListener(null)
+                grapesControl?.stopSeach()
+            }
+
+            else -> {
+                currentDevice = null
+            }
+        }
+
+        if (currentDevice != null) {
+            sendCommonState(true, callBack)
+        } else {
+            sendCommonState(false, callBack)
+        }
+    }
+
     fun receiveBroadcastData(deviceMac: String, callBack: Result) {
         val device = tempDeviceDict[deviceMac]
 
         if (device == null) {
-            loggerStreamHandler?.sendEvent("找不到当前设备")
+            Logger.e("receiveBroadcastData 找不到当前设备 deviceMac:$deviceMac")
+            loggerStreamHandler?.sendEvent("找不到当前设备 deviceMac:$deviceMac")
             sendCommonState(false, callBack)
             return
         }
@@ -540,12 +597,14 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         if (device.deviceConnectType != PPDeviceConnectType.PPDeviceConnectTypeBroadcast) {
             loggerStreamHandler?.sendEvent("${device.deviceName}-${device.deviceMac}不是广播秤")
+            Logger.e("receiveBroadcastData ${device.deviceName}-${device.deviceMac}不是广播秤")
             sendCommonState(false, callBack)
             return
         }
 
         if (!PPBleHelper.isOpenBluetooth()) {
             loggerStreamHandler?.sendEvent("接收广播失败-蓝牙开关未打开")
+            Logger.e("receiveBroadcastData 接收广播失败-蓝牙开关未打开")
             sendCommonState(false, callBack)
             return
         }
@@ -557,30 +616,45 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         when (device.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralBanana -> {
                 bananaControl = PPBlutoothPeripheralBananaController()
+                bananaControl?.deviceModel = device
                 deviceControl = bananaControl
+                registerDataChangeListener()
+                bananaControl?.startSearch(device.deviceMac, bleStateInterface)
             }
 
             PPDevicePeripheralType.PeripheralJambul -> {
                 jambulControl = PPBlutoothPeripheralJambulController()
-                deviceControl = bananaControl
+                jambulControl?.deviceModel = device
+                deviceControl = jambulControl
+                registerDataChangeListener()
+                jambulControl?.startSearch(device.deviceMac, bleStateInterface)
             }
 
             PPDevicePeripheralType.PeripheralHamburger -> {
                 hamburgerControl = PPBlutoothPeripheralHamburgerController()
+                hamburgerControl?.deviceModel = device
                 deviceControl = hamburgerControl
+                registerDataChangeListener()
+                hamburgerControl?.startSearch(device.deviceMac, bleStateInterface)
             }
 
             PPDevicePeripheralType.PeripheralGrapes -> {
                 grapesControl = PPBlutoothPeripheralGrapesController()
+                grapesControl?.deviceModel = device
                 deviceControl = grapesControl
+                registerDataChangeListener()
+                grapesControl?.startSearch(device.deviceMac, bleStateInterface)
             }
 
             else -> {
                 currentDevice = null
             }
         }
-
-        sendCommonState(true, callBack)
+        if (currentDevice != null) {
+            sendCommonState(true, callBack)
+        } else {
+            sendCommonState(false, callBack)
+        }
     }
 
     /**
@@ -746,22 +820,27 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         when (currentDevice?.getDevicePeripheralType()) {
             PPDevicePeripheralType.PeripheralFish -> {
+                Logger.i("fishControl registDataChangeListener")
                 fishControl?.registDataChangeListener(foodScaleDataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralEgg -> {
+                Logger.i("eggControl registDataChangeListener")
                 eggControl?.registDataChangeListener(foodScaleDataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralJambul -> {
+                Logger.i("jambulControl registDataChangeListener")
                 jambulControl?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralGrapes -> {
+                Logger.i("grapesControl registDataChangeListener")
                 grapesControl?.registDataChangeListener(foodScaleDataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralHamburger -> {
+                Logger.i("hamburgerControl registDataChangeListener")
                 hamburgerControl?.registDataChangeListener(foodScaleDataChangeListener)
             }
 
@@ -928,7 +1007,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             if (deviceModel == null) {
                 return
             }
-            val measureMentDataDict = convertMeasurementDictFood(foodScaleGeneral)
+            val measureMentDataDict = convertMeasurementDictFood(foodScaleGeneral, deviceModel)
             //0:过程数据，10:测量完成（获取阻抗、心率等数据进行身体数据计算）
             var measurementState = 0
             kitchenStreamHandler?.sendEvent(
@@ -947,7 +1026,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             if (deviceModel == null) {
                 return
             }
-            val measureMentDataDict = convertMeasurementDictFood(foodScaleGeneral)
+            val measureMentDataDict = convertMeasurementDictFood(foodScaleGeneral, deviceModel)
             var measurementState = 10
             kitchenStreamHandler?.sendEvent(
                 mapOf(

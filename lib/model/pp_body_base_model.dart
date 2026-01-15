@@ -117,31 +117,31 @@ class PPBodyBaseModel {
   factory PPBodyBaseModel.fromJson(Map<String, dynamic> json) {
 
     PPUnitType zrType = PPUnitType.Unit_KG;
-    int type = json["unit"] ?? 0;
+    final type = (json["unit"] as num?)?.toInt() ?? 0;
     if (type >= 0 && type < PPUnitType.values.length) {
       zrType = PPUnitType.values[type];
     }
 
     return PPBodyBaseModel()
-      ..weight = json["weight"] ?? 0
-      ..impedance = json["impedance"] ?? 0
-      ..impedance100EnCode = json["impedance100EnCode"] ?? 0.0
-      ..isHeartRating = json["isHeartRating"] ?? false
-      ..heartRate = json["heartRate"] ?? 0
-      ..isOverload = json["isOverload"] ?? false
-      ..isPlus = json["isPlus"] ?? true
-      ..measureTime = json["measureTime"] ?? ""
-      ..memberId = json["memberId"] ?? ""
-      ..z100KhzLeftArmEnCode = json["z100KhzLeftArmEnCode"] ?? 0
-      ..z100KhzLeftLegEnCode = json["z100KhzLeftLegEnCode"] ?? 0
-      ..z100KhzRightArmEnCode = json["z100KhzRightArmEnCode"] ?? 0
-      ..z100KhzRightLegEnCode = json["z100KhzRightLegEnCode"] ?? 0
-      ..z100KhzTrunkEnCode = json["z100KhzTrunkEnCode"] ?? 0
-      ..z20KhzLeftArmEnCode = json["z20KhzLeftArmEnCode"] ?? 0
-      ..z20KhzLeftLegEnCode = json["z20KhzLeftLegEnCode"] ?? 0
-      ..z20KhzRightArmEnCode = json["z20KhzRightArmEnCode"] ?? 0
-      ..z20KhzRightLegEnCode = json["z20KhzRightLegEnCode"] ?? 0
-      ..z20KhzTrunkEnCode = json["z20KhzTrunkEnCode"] ?? 0
+      ..weight = (json["weight"] as num?)?.toInt() ?? 0
+      ..impedance = (json["impedance"] as num?)?.toInt() ?? 0
+      ..impedance100EnCode = (json["impedance100EnCode"] as num?)?.toInt() ?? 0
+      ..isHeartRating = json["isHeartRating"] as bool? ?? false
+      ..heartRate = (json["heartRate"] as num?)?.toInt() ?? 0
+      ..isOverload = json["isOverload"] as bool? ?? false
+      ..isPlus = json["isPlus"] as bool? ?? true
+      ..measureTime = (json["measureTime"] as num?)?.toInt() ?? 0
+      ..memberId = json["memberId"] as String? ?? ""
+      ..z100KhzLeftArmEnCode = (json["z100KhzLeftArmEnCode"] as num?)?.toInt() ?? 0
+      ..z100KhzLeftLegEnCode = (json["z100KhzLeftLegEnCode"] as num?)?.toInt() ?? 0
+      ..z100KhzRightArmEnCode = (json["z100KhzRightArmEnCode"] as num?)?.toInt() ?? 0
+      ..z100KhzRightLegEnCode = (json["z100KhzRightLegEnCode"] as num?)?.toInt() ?? 0
+      ..z100KhzTrunkEnCode = (json["z100KhzTrunkEnCode"] as num?)?.toInt() ?? 0
+      ..z20KhzLeftArmEnCode = (json["z20KhzLeftArmEnCode"] as num?)?.toInt() ?? 0
+      ..z20KhzLeftLegEnCode = (json["z20KhzLeftLegEnCode"] as num?)?.toInt() ?? 0
+      ..z20KhzRightArmEnCode = (json["z20KhzRightArmEnCode"] as num?)?.toInt() ?? 0
+      ..z20KhzRightLegEnCode = (json["z20KhzRightLegEnCode"] as num?)?.toInt() ?? 0
+      ..z20KhzTrunkEnCode = (json["z20KhzTrunkEnCode"] as num?)?.toInt() ?? 0
       ..unit = zrType;
   }
 
