@@ -62,7 +62,19 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var context: Context
   lateinit var bleManager: PPLefuBleConnectManager
 
+  companion object {
+    @Volatile private var initialized = false
+  }
+
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+
+    if (initialized) {
+      // 可加调试日志：重复引擎或重复注册场景
+      Logger.e("PpBluetoothKitFlutterPlugin has been initialized already.")
+      return
+    }
+    initialized = true
+
     context = flutterPluginBinding.applicationContext
     bleManager = PPLefuBleConnectManager.getInstance(context)
 
@@ -439,6 +451,17 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
         }
 
         bleManager.receiveBroadcastData(deviceMac, result)
+      }
+      "unReceiveBroadcastData" -> {
+        val deviceMac = params?.get("deviceMac") as? String
+
+        if (deviceMac == null) {
+          bleManager.loggerStreamHandler?.sendEvent("deviceMac为空")
+          bleManager.sendCommonState(false, result)
+          return
+        }
+
+        bleManager.unReceiveBroadcastData(deviceMac, result)
       }
       "sendBroadcastData" -> {
         val cmd = params?.get("cmd") as? String

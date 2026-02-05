@@ -5,7 +5,7 @@ import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 ///@date 2025/2/6 15:39
 
 class PPBodyBaseModel {
-  // 体重，单位为克
+  // 体重，单位为KG放大100倍
   int weight = 0;
 
   // 4电极算法阻抗
@@ -119,7 +119,7 @@ class PPBodyBaseModel {
 
   factory PPBodyBaseModel.fromJson(Map<String, dynamic> json) {
     PPUnitType zrType = PPUnitType.Unit_KG;
-    int type = json["unit"] ?? 0;
+    final type = (json["unit"] as num?)?.toInt() ?? 0;
     if (type >= 0 && type < PPUnitType.values.length) {
       zrType = PPUnitType.values[type];
     }

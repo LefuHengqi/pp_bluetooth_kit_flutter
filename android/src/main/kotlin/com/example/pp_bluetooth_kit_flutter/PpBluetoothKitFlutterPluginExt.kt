@@ -2,8 +2,8 @@ package com.example.pp_bluetooth_kit_flutter
 
 import android.content.Context
 import com.lefu.ppbase.PPSDKKit
+import com.lefu.ppbase.util.Logger
 import com.lefu.ppbase.util.OnLogCallBack
-import com.lefu.ppcalculate.PPCalculateKit
 import com.peng.ppscale.PPBluetoothKit
 
 fun PpBluetoothKitFlutterPlugin.initSDK(context: Context, appKey: String, appSecret: String, encryptStr: String) {
@@ -46,11 +46,26 @@ fun PpBluetoothKitFlutterPlugin.initSDK(context: Context, appKey: String, appSec
      * @param appSecret Appp的密钥
      * @param configPath 在开放平台下载相应的配置文件以.config结尾，并放到assets目录下，将config文件全名传给SDK
      */
+    Logger.i("PpBluetoothKitFlutterPlugin initSDK setNetConfig")
+    Logger.i("appkey: $appKey appSecret: $appSecret")
+    // 按照每500字符分段打印encryptStr
+    fun printLongString(tag: String, text: String) {
+        val chunkSize = 500
+        if (text.length <= chunkSize) {
+            Logger.i("$tag: $text")
+        } else {
+            for (i in text.indices step chunkSize) {
+                val end = minOf(i + chunkSize, text.length)
+                val chunk = text.substring(i, end)
+                val partNumber = (i / chunkSize) + 1
+                Logger.i("$tag-part$partNumber: $chunk")
+            }
+        }
+    }
+    
+    printLongString("encryptStr", encryptStr)
+
     PPBluetoothKit.setNetConfig(context, appKey, appSecret, encryptStr)
-    /**
-     * PPCalculateKit 计算库初始化
-     */
-    PPCalculateKit.initSdk(context)
 
 }
 
@@ -97,9 +112,6 @@ fun PpBluetoothKitFlutterPlugin.setDeviceSetting(context: Context, encryptStr: S
      * @param configPath 在开放平台下载相应的配置文件以.config结尾，并放到assets目录下，将config文件全名传给SDK
      */
     PPBluetoothKit.setDeviceConfigJsonStr(context, encryptStr)
-    /**
-     * PPCalculateKit 计算库初始化
-     */
-    PPCalculateKit.initSdk(context)
+
 
 }

@@ -4,6 +4,8 @@ import com.example.pp_bluetooth_kit_flutter.PPLefuBleConnectManager
 import com.example.pp_bluetooth_kit_flutter.util.PPBluetoothState
 import com.lefu.ppbase.PPBodyBaseModel
 import com.lefu.ppbase.PPDeviceModel
+import com.lefu.ppbase.PPScaleDefine.PPDeviceAccuracyType
+import com.lefu.ppbase.util.Logger
 import com.lefu.ppbase.vo.PPScaleStatePowerType
 import com.peng.ppscale.PPBluetoothKit
 import com.peng.ppscale.util.DateUtil
@@ -75,7 +77,7 @@ fun PPLefuBleConnectManager.convertMeasurementDict(model: PPBodyBaseModel): Map<
     map["isOverload"] = model.isOverload
     map["memberId"] = memberId
     map["footLen"] = model.footLen
-    map["unit"] = model.unit?.type
+    map["unit"] = model.unit?.type ?: 0
     map["z100KhzLeftArmEnCode"] = model.z100KhzLeftArmEnCode
     map["z100KhzLeftLegEnCode"] = model.z100KhzLeftLegEnCode
     map["z100KhzRightArmEnCode"] = model.z100KhzRightArmEnCode
@@ -95,13 +97,18 @@ fun PPLefuBleConnectManager.convertMeasurementDict(model: PPBodyBaseModel): Map<
     return map.filterValues { it != null } as Map<String, Any>
 }
 
-fun PPLefuBleConnectManager.convertMeasurementDictFood(model: LFFoodScaleGeneral): Map<String, Any> {
-
+fun PPLefuBleConnectManager.convertMeasurementDictFood(model: LFFoodScaleGeneral, deviceModel: PPDeviceModel?): Map<String, Any> {
     val map = mutableMapOf<String, Any?>()
-    map["weight"] = model.lfWeightKg
-    map["isPlus"] = model.thanZero
+    if (deviceModel?.deviceAccuracyType === PPDeviceAccuracyType.PPDeviceAccuracyTypePoint01G) {
+        map["weight"] = kotlin.math.round(model.lfWeightKg * 10.0).toInt()
+    } else {
+        map["weight"] = kotlin.math.round(model.lfWeightKg).toInt()
+    }
+    Logger.v("convertMeasurementDictFood: ${model.lfWeightKg} weight:${ map["weight"]}")
+    //正负 0表示负值 1 正值
+    map["isPlus"] = model.thanZero == 1
     map["measureTime"] = System.currentTimeMillis()
-    map["unit"] = model.unit
+    map["unit"] = model.unit?.type ?: 0
 
     return map.filterValues { it != null } as Map<String, Any>
 }
@@ -218,7 +225,7 @@ fun PPLefuBleConnectManager.sendScanState(scaning: Boolean) {
 
 fun PPLefuBleConnectManager.sendKitchenData(model: LFFoodScaleGeneral, deviceModel: PPDeviceModel, measureState: Int) {
     val deviceDict = this.convertDeviceDict(deviceModel)
-    val dataDict = this.convertMeasurementDictFood(model)
+    val dataDict = this.convertMeasurementDictFood(model, deviceModel)
 
     this.loggerStreamHandler?.sendEvent("厨房秤-测量状态:$measureState")
 
