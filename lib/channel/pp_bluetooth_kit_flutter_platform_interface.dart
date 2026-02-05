@@ -11,8 +11,6 @@ import 'package:pp_bluetooth_kit_flutter/model/pp_device_light_mode_model.dart';
 
 import 'pp_bluetooth_kit_flutter_method_channel.dart';
 
-
-
 abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   /// Constructs a PpBluetoothKitFlutterPlatform.
   PPBluetoothKitFlutterPlatform() : super(token: _token);
@@ -120,7 +118,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   }
 
   Future<void> fetchBatteryInfo(int peripheralType,
-      {required bool continuity, required Function(int power) callBack}) {
+      {required bool continuity, required Function(int power,int? lumen) callBack}) {
     throw UnimplementedError('fetchBatteryInfo has not been implemented.');
   }
 
@@ -319,8 +317,15 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('foodScaleUnit has not been implemented.');
   }
 
-   Future<bool> setRGBMode(int peripheralType,PPDeviceLightModeModel model)  {
-       throw UnimplementedError('setRGBModel has not been implemented.');
+  Future<bool> setRGBMode(int peripheralType, PPDeviceLightModeModel model) {
+    throw UnimplementedError('setRGBModel has not been implemented.');
+  }
 
+  Future<bool> setDisplayMetrics(int peripheralType, int metrics) async {
+    throw UnimplementedError('setRGBModel has not been implemented.');
+  }
+
+  Future<PPDisplayMetrics> getDisplayMetrics(int peripheralType) async {
+    throw UnimplementedError('setRGBModel has not been implemented.');
   }
 }

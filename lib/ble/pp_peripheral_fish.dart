@@ -35,7 +35,8 @@ class PPPeripheralFish {
   /// 获取设备电量
   /// continuity true:返回实时电量，false:只返回一次电量
   static void fetchBatteryInfo(
-      {required bool continuity, required Function(int power) callBack}) {
+      {required bool continuity,
+      required Function(int power, int? lumen) callBack}) {
     PPBluetoothKitFlutterPlatform.instance.fetchBatteryInfo(_peripheralType,
         continuity: continuity, callBack: callBack);
   }

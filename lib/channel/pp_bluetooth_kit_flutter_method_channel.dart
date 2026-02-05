@@ -147,6 +147,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
           } else {
             callBack(PPDeviceConnectionState.undefine);
           }
+
+          PPBluetoothKitLogger.i('连接状态-state:$state');
         } catch (e) {
           PPBluetoothKitLogger.i('连接状态-返回结果异常:$e');
         }
@@ -176,6 +178,10 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     _measurementSubscription?.cancel();
     _measurementSubscription =
         _measurementDataEvent.receiveBroadcastStream().listen((event) {
+      final retJson1 = event.cast<String, dynamic>();
+
+      PPBluetoothKitLogger.i('$retJson1');
+
       try {
         final retJson = event.cast<String, dynamic>();
 
@@ -426,7 +432,8 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
 
   @override
   Future<void> fetchBatteryInfo(int peripheralType,
-      {required bool continuity, required Function(int power) callBack}) async {
+      {required bool continuity,
+      required Function(int power, int? lumen) callBack}) async {
     _batterySubscription?.cancel();
     _batterySubscription =
         _batteryEvent.receiveBroadcastStream().listen((event) {
@@ -438,15 +445,17 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
         try {
           final retJson = event.cast<String, dynamic>();
           final power = retJson['power'] as int? ?? 0;
-          callBack(power);
+          final lumen = retJson['lumen'] as int?;
+
+          callBack(power, lumen);
         } catch (e) {
           PPBluetoothKitLogger.i('获取电量-返回结果异常:$e');
-          callBack(0);
+          callBack(0, -1);
         }
       } else {
         PPBluetoothKitLogger.i('获取电量-返回数据格式不正确');
 
-        callBack(0);
+        callBack(0, -1);
       }
     });
 
@@ -1467,6 +1476,36 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
     } catch (e) {
       PPBluetoothKitLogger.i('同步borreC最近7天/7次数据-异常:$e');
       return false;
+    }
+  }
+
+  @override
+  Future<bool> setDisplayMetrics(int peripheralType, int metrics) async {
+    PPBluetoothKitLogger.i(
+        '设置显示指标 peripheralType:$peripheralType metrics:$metrics');
+    try {
+      final ret = await _bleChannel
+          .invokeMethod<Map>('setDisplayMetrics', {"metrics": metrics});
+
+      return true;
+    } catch (e) {
+      PPBluetoothKitLogger.i('设置显示指标-异常:$e');
+      return false;
+    }
+  }
+
+  Future<PPDisplayMetrics> getDisplayMetrics(int peripheralType) async {
+    PPBluetoothKitLogger.i('获取显示指标 peripheralType:$peripheralType');
+    try {
+      final ret = await _bleChannel.invokeMethod<Map>('getDisplayMetrics');
+      final retJson = ret?.cast<String, dynamic>();
+
+      final metrics = retJson?["metrics"] as int? ?? 0;
+
+      return PPDisplayMetrics.fromValue(metrics);
+    } catch (e) {
+      PPBluetoothKitLogger.i('获取显示指标-异常:$e');
+      return PPDisplayMetrics.unknown;
     }
   }
 

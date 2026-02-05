@@ -373,6 +373,16 @@ public class PPLefuBleConnectManager:NSObject {
             return
         }
         
+        if(currentDevice.devicePowerType == .unknow){
+            
+            let dict:[String:Any?] = ["power":-1,"lumen":0]
+            let filtedDict = dict.compactMapValues { $0 }
+            
+            self.batteryStreamHandler?.event?(filtedDict)
+            
+            return
+        }
+        
         switch currentDevice.peripheralType {
         case .peripheralApple:
             self.appleControl?.fetchDeviceBatteryInfo()
@@ -788,20 +798,7 @@ extension PPLefuBleConnectManager: PPBluetoothServiceDelegate{
             self.sendConnectState(1)
         case .peripheralDurian:
             self.durianMeasurementHandler = PPDurianMeasurementHandler()
-//            self.durianMeasurementHandler?.monitorProcessDataHandler = {[weak self] (model, advModel) in
-//                guard let `self` = self else {
-//                    return
-//                }
-//                
-//                
-//            }
-//            self.durianMeasurementHandler?.monitorLockDataHandler = {[weak self] (model, advModel) in
-//                guard let `self` = self else {
-//                    return
-//                }
-//                
-//                
-//            }
+
             self.durianMeasurementHandler?.monitorBatteryInfoChangeHandler = {[weak self] (model, advModel) in
                 guard let `self` = self else {
                     return

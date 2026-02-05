@@ -1742,6 +1742,54 @@ extension PPLefuBleConnectManager {
  
     }
     
+    func getDisplayMetrics(callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralBorre:
+            self.borreControl?.getDisplayMetrics { metrics in
+                
+                let dict:[String:Any?] = [
+                    "metrics":metrics.rawValue,
+                    
+                ]
+                let filtedDict = dict.compactMapValues { $0 }
+                
+                callBack(filtedDict)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendCommonState(true, callBack: callBack)
+            }
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+        }
+    }
+    
+    
+    func setDisplayMetrics(_ metrics:Int, callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralBorre:
+            self.borreControl?.setDisplayMetrics(PPDisplayMetrics(rawValue: UInt(metrics))!) { status in
+                self.sendCommonState(status == 0, callBack: callBack)
+            }
+         
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+        }
+    }
+    
     func setDisplayBodyFat(_ bodyFat:Int, callBack: @escaping FlutterResult) {
         
         guard let currentDevice = self.currentDevice else {
@@ -1832,6 +1880,7 @@ extension PPLefuBleConnectManager {
             
             return
         }
+        
         
         switch currentDevice.peripheralType {
         case .peripheralBorre:

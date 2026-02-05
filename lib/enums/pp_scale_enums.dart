@@ -164,6 +164,28 @@ enum PPDevicePowerType {
   }
 }
 
+enum PPDisplayMetrics {
+  unknown(0),
+  PPDisplayMetricsBMI(1),
+  PPDisplayMetricsFat(2),
+  PPDisplayMetricsPRO(3),
+  PPDisplayMetricsMus(4),
+  PPDisplayMetricsTbw(5),
+  PPDisplayMetricsBon(6),
+  PPDisplayMetricsAge(7);
+
+  final int value;
+  const PPDisplayMetrics(this.value);
+
+  static PPDisplayMetrics fromValue(int value) {
+    try {
+      return values.firstWhere((e) => e.value == value);
+    } catch (_) {
+      return unknown;
+    }
+  }
+}
+
 /// 功能类型，可多功能叠加
 enum PPDeviceFuncType {
   // 称重

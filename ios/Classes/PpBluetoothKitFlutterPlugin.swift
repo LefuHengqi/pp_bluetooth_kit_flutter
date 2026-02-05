@@ -498,7 +498,22 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
           
           self.bleManager.foodScaleUnit(weightG: weightG, accuracyType: accuracyType, unitType: unitType, deviceName:deviceName, callBack: result)
           
+      } else if method == "getDisplayMetrics" {
+          
+      
+          self.bleManager.getDisplayMetrics(callBack: result)
+          
+      } else if method == "setDisplayMetrics" {
+          
+          let metrics = params?["metrics"] as? Int ?? 0
+
+          self.bleManager.setDisplayMetrics(metrics, callBack: result)
+          
       }
+      
+      
+      
+      
       
   }
     
