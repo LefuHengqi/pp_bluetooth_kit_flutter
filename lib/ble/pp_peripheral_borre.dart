@@ -99,7 +99,8 @@ class PPPeripheralBorre {
   /// 获取设备电量
   /// continuity true:返回实时电量，false:只返回一次电量
   static void fetchBatteryInfo(
-      {required bool continuity, required Function(int power,int? lumen) callBack}) {
+      {required bool continuity,
+      required Function(int power, int? lumen) callBack}) {
     PPBluetoothKitFlutterPlatform.instance.fetchBatteryInfo(_peripheralType,
         continuity: continuity, callBack: callBack);
   }
@@ -146,7 +147,7 @@ class PPPeripheralBorre {
 
   /// 获取绑定状态
   /// 返回：true-已绑定，false-未绑定
-  static Future<bool> fetchBindingState() async {
+  static Future<bool?> fetchBindingState() async {
     return PPBluetoothKitFlutterPlatform.instance
         .fetchBindingState(_peripheralType);
   }

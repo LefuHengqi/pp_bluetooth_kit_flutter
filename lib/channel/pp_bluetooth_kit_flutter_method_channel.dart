@@ -684,21 +684,21 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
   }
 
   @override
-  Future<bool> fetchBindingState(int peripheralType) async {
+  Future<bool?> fetchBindingState(int peripheralType) async {
     PPBluetoothKitLogger.i('获取绑定状态-peripheralType:$peripheralType');
     try {
       final ret = await _bleChannel.invokeMethod<Map>('fetchBindingState',
           <String, dynamic>{'peripheralType': peripheralType});
 
       final retJson = ret?.cast<String, dynamic>();
-      final binding = retJson?["binding"] as bool? ?? false;
+      final binding = retJson?["binding"] as bool? ?? null;
 
       PPBluetoothKitLogger.i('获取绑定状态 结果-binding:$binding');
 
       return binding;
     } catch (e) {
       PPBluetoothKitLogger.i('获取设备绑定状态-异常:$e');
-      return false;
+      return null;
     }
   }
 
@@ -918,11 +918,12 @@ class MethodChannelPpBluetoothKitFlutter extends PPBluetoothKitFlutterPlatform {
       return false;
     }
 
-    if (memberID.isEmpty ||
-        peripheralType == PPDevicePeripheralType.torre.value) {
-      // 删除 userID 下所有成员
-      memberID = "ff";
-    }
+    // if (memberID.isEmpty ||
+    //     peripheralType == PPDevicePeripheralType.torre.value) {
+    //   // 删除 userID 下所有成员
+
+    // memberID = "ff";
+    // }
 
     PPBluetoothKitLogger.i(
         '删除设备用户-userID:$userID memberID:$memberID peripheralType:$peripheralType');

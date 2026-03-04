@@ -314,7 +314,11 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
       } else if method == "deleteUser" {
           
           let userID = params?["userID"] as? String ?? ""
-          let memberID = params?["memberID"] as? String ?? ""
+          var memberID = params?["memberID"] as? String ?? ""
+
+          if(memberID == ""){
+            memberID = "ff"
+          }
           
           let user = PPTorreSettingModel()
           user.userID = userID

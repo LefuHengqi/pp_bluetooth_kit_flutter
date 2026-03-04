@@ -388,6 +388,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
           .setMemberId(memberID)
           .build()
 
+
         bleManager.deleteUser(user, result)
       }
       "startMeasure" -> {

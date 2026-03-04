@@ -118,7 +118,8 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
   }
 
   Future<void> fetchBatteryInfo(int peripheralType,
-      {required bool continuity, required Function(int power,int? lumen) callBack}) {
+      {required bool continuity,
+      required Function(int power, int? lumen) callBack}) {
     throw UnimplementedError('fetchBatteryInfo has not been implemented.');
   }
 
@@ -169,7 +170,7 @@ abstract class PPBluetoothKitFlutterPlatform extends PlatformInterface {
     throw UnimplementedError('setBindingState has not been implemented.');
   }
 
-  Future<bool> fetchBindingState(int peripheralType) {
+  Future<bool?> fetchBindingState(int peripheralType) {
     throw UnimplementedError('fetchBindingState has not been implemented.');
   }
 

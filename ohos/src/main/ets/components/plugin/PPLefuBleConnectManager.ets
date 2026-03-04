@@ -1602,7 +1602,7 @@ export class PPLefuBleConnectManager {
           this.sendCommonState(isSuccess, result);
         });
       }
-    } else if (this.deviceControl instanceof PPTorreDeviceControl) {
+    } else if (this.deviceControl instanceof PPBorreDeviceControl) {
       if (type == 0) {
         const clearResult = await this.deviceControl.clearAllDeviceInfo((isSuccess: boolean) => {
           this.sendCommonState(isSuccess, result);

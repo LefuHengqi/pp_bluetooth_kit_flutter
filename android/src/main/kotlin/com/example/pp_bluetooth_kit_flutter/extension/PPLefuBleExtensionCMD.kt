@@ -941,17 +941,16 @@ fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
             this.torreControl?.getTorreDeviceManager()?.getImpendanceState(object : PPTorreDeviceModeChangeInterface {
-                override fun readHeartRateStateCallBack(type: Int, state: Int) {
-                    if (type == 2) {
-                        callBack.success(mapOf("open" to (state == 0)))
-                    }
+                override fun controlImpendanceCallBack(type: Int, state: Int) {
+                    callBack.success(mapOf("open" to (state == 0)))
+
                 }
             })
         }
 
         PPDevicePeripheralType.PeripheralIce -> {
             this.iceControl?.getImpendanceState(object : PPTorreDeviceModeChangeInterface {
-                override fun readHeartRateStateCallBack(type: Int, state: Int) {
+                override fun controlImpendanceCallBack(type: Int, state: Int) {
                     if (type == 2) {
                         callBack.success(mapOf("open" to (state == 0)))
                     }
@@ -961,7 +960,7 @@ fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
 
         PPDevicePeripheralType.PeripheralBorre -> {
             this.borreControl?.getTorreDeviceManager()?.getImpendanceState(object : PPTorreDeviceModeChangeInterface {
-                override fun readHeartRateStateCallBack(type: Int, state: Int) {
+                override fun controlImpendanceCallBack(type: Int, state: Int) {
                     if (type == 2) {
                         callBack.success(mapOf("open" to (state == 0)))
                     }
@@ -971,7 +970,7 @@ fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
 
         PPDevicePeripheralType.PeripheralDorre -> {
             this.dorreControl?.getTorreDeviceManager()?.getImpendanceState(object : PPTorreDeviceModeChangeInterface {
-                override fun readHeartRateStateCallBack(type: Int, state: Int) {
+                override fun controlImpendanceCallBack(type: Int, state: Int) {
                     if (type == 2) {
                         callBack.success(mapOf("open" to (state == 0)))
                     }
@@ -981,7 +980,7 @@ fun PPLefuBleConnectManager.fetchImpedanceSwitch(callBack: Result) {
 
         PPDevicePeripheralType.PeripheralForre -> {
             this.forreControl?.getTorreDeviceManager()?.getImpendanceState(object : PPTorreDeviceModeChangeInterface {
-                override fun readHeartRateStateCallBack(type: Int, state: Int) {
+                override fun controlImpendanceCallBack(type: Int, state: Int) {
                     if (type == 2) {
                         callBack.success(mapOf("open" to (state == 0)))
                     }
@@ -1015,7 +1014,7 @@ fun PPLefuBleConnectManager.setBindingState(binding: Boolean, callBack: Result) 
             this.torreControl?.getTorreDeviceManager()?.deviceBindStatus(1, if (binding) 1 else 0, object : PPTorreDeviceModeChangeInterface {
                 override fun bindStateCallBack(type: Int, state: Int) {
                     if (type == 1) {
-                        val success = state == 0
+                        val success = state == 1
                         sendCommonState(success, callBack)
                     }
                 }
@@ -1026,7 +1025,7 @@ fun PPLefuBleConnectManager.setBindingState(binding: Boolean, callBack: Result) 
             this.borreControl?.getTorreDeviceManager()?.deviceBindStatus(1, if (binding) 1 else 0, object : PPTorreDeviceModeChangeInterface {
                 override fun bindStateCallBack(type: Int, state: Int) {
                     if (type == 1) {
-                        val success = state == 0
+                        val success = state == 1
                         sendCommonState(success, callBack)
                     }
                 }
@@ -1076,7 +1075,7 @@ fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
             this.torreControl?.getTorreDeviceManager()?.deviceBindStatus(2, 0, object : PPTorreDeviceModeChangeInterface {
                 override fun bindStateCallBack(type: Int, state: Int) {
                     if (type == 2) {
-                        callBack.success(mapOf("binding" to (state == 0)))
+                        callBack.success(mapOf("binding" to (state == 1)))
                     }
                 }
             })
@@ -1086,7 +1085,7 @@ fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
             this.borreControl?.getTorreDeviceManager()?.deviceBindStatus(2, 0, object : PPTorreDeviceModeChangeInterface {
                 override fun bindStateCallBack(type: Int, state: Int) {
                     if (type == 2) {
-                        callBack.success(mapOf("binding" to (state == 0)))
+                        callBack.success(mapOf("binding" to (state == 1)))
                     }
                 }
             })
@@ -1096,7 +1095,7 @@ fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
             this.dorreControl?.getTorreDeviceManager()?.deviceBindStatus(2, 0, object : PPTorreDeviceModeChangeInterface {
                 override fun bindStateCallBack(type: Int, state: Int) {
                     if (type == 2) {
-                        callBack.success(mapOf("binding" to (state == 0)))
+                        callBack.success(mapOf("binding" to (state == 1)))
                     }
                 }
             })
@@ -1106,7 +1105,7 @@ fun PPLefuBleConnectManager.fetchBindingState(callBack: Result) {
             this.forreControl?.getTorreDeviceManager()?.deviceBindStatus(2, 0, object : PPTorreDeviceModeChangeInterface {
                 override fun bindStateCallBack(type: Int, state: Int) {
                     if (type == 2) {
-                        callBack.success(mapOf("binding" to (state == 0)))
+                        callBack.success(mapOf("binding" to (state == 1)))
                     }
                 }
             })
@@ -1297,6 +1296,7 @@ fun PPLefuBleConnectManager.deleteUser(user: PPUserModel, callBack: Result) {
 
     when (currentDevice.getDevicePeripheralType()) {
         PPDevicePeripheralType.PeripheralTorre -> {
+
             this.torreControl?.getTorreDeviceManager()?.deleteUserInfo(user, object : PPUserInfoInterface {
                 override fun deleteUserInfoSuccess(userModel: PPUserModel?) {
                     sendCommonState(true, callBack)
@@ -1306,6 +1306,9 @@ fun PPLefuBleConnectManager.deleteUser(user: PPUserModel, callBack: Result) {
                     sendCommonState(false, callBack)
                 }
             })
+
+
+
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
