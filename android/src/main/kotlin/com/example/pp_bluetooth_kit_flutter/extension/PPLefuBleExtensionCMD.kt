@@ -564,7 +564,7 @@ fun PPLefuBleConnectManager.fetchDeviceInfo(callBack: Result) {
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.torreControl?.getTorreDeviceManager()?.readDeviceInfoFromCharacter(object : PPTorreDeviceModeChangeInterface {
+            this.borreControl?.getTorreDeviceManager()?.readDeviceInfoFromCharacter(object : PPTorreDeviceModeChangeInterface {
                 override fun onReadDeviceInfo(deviceModel: PPDeviceModel?) {
                     val deviceInfo = convert180A(deviceModel)
                     callBack.success(deviceInfo)
@@ -582,7 +582,7 @@ fun PPLefuBleConnectManager.fetchDeviceInfo(callBack: Result) {
         }
 
         PPDevicePeripheralType.PeripheralForre -> {
-            this.torreControl?.getTorreDeviceManager()?.readDeviceInfoFromCharacter(object : PPTorreDeviceModeChangeInterface {
+            this.forreControl?.getTorreDeviceManager()?.readDeviceInfoFromCharacter(object : PPTorreDeviceModeChangeInterface {
                 override fun onReadDeviceInfo(deviceModel: PPDeviceModel?) {
                     val deviceInfo = convert180A(deviceModel)
                     callBack.success(deviceInfo)
@@ -1256,7 +1256,7 @@ fun PPLefuBleConnectManager.selectUser(user: PPUserModel, callBack: Result) {
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
-            this.torreControl?.getTorreDeviceManager()?.confirmCurrentUser(user, object : PPUserInfoInterface {
+            this.borreControl?.getTorreDeviceManager()?.confirmCurrentUser(user, object : PPUserInfoInterface {
                 override fun confirmCurrentUserInfoSuccess() {
                     sendCommonState(true, callBack)
                 }
@@ -2117,4 +2117,34 @@ fun PPLefuBleConnectManager.syncUserList(userList: List<PPUserModel>, callBack: 
 
 
 }
+
+fun PPLefuBleConnectManager.setRGBMode(lightEnable:Int,lightMode:Int,defalutColor:String,gainColor:String,lossColor:String, callBack: Result) {
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(mapOf<String, Any>())
+        return
+    }
+
+    when (currentDevice.getDevicePeripheralType()) {
+
+        PPDevicePeripheralType.PeripheralBorre -> {
+            this.borreControl?.getTorreDeviceManager()
+                ?.setRGB(lightEnable)
+        }
+
+            else -> {
+                this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+                callBack.success(mapOf<String, Any>())
+            }
+        }
+
+
+
+
+
+
+
+}
+
 

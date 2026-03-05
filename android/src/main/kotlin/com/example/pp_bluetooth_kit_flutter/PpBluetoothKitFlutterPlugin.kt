@@ -464,6 +464,9 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
 
         bleManager.unReceiveBroadcastData(deviceMac, result)
       }
+      "setRGBMode" -> {
+
+      }
       "sendBroadcastData" -> {
         val cmd = params?.get("cmd") as? String
         val unit = params?.get("unit") as? Int ?: 0
