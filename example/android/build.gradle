@@ -39,6 +39,22 @@ allprojects {
     }
 }
 
+subprojects { subproject ->
+    afterEvaluate {
+        def androidExt = subproject.extensions.findByName("android")
+        if (androidExt != null && androidExt.hasProperty("compileOptions")) {
+            androidExt.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
+            androidExt.compileOptions.targetCompatibility = JavaVersion.VERSION_17
+        }
+
+        if (subproject.plugins.hasPlugin("kotlin-android") || subproject.plugins.hasPlugin("org.jetbrains.kotlin.android")) {
+            subproject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                kotlinOptions.jvmTarget = "17"
+            }
+        }
+    }
+}
+
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir

@@ -9,12 +9,12 @@ import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_banana.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_borre.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_coconut.dart';
-import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_dorre.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_fish.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_hamburger.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_ice.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_jambul.dart';
 import 'package:pp_bluetooth_kit_flutter/ble/pp_peripheral_torre.dart';
+import 'package:pp_bluetooth_kit_flutter/channel/pp_bluetooth_kit_flutter_platform_interface.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_model.dart';
 import 'package:pp_bluetooth_kit_flutter/model/pp_device_user.dart';
@@ -323,8 +323,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           print(str);
                           _updateText(str);
                         } else if (index == 8) {
-                          PPPeripheralApple.fetchBatteryInfo(continuity: true, callBack: (power){
-                            final str = "业务-获取电量:$power 时间:${DateTime.now().millisecondsSinceEpoch}";
+                          PPPeripheralApple.fetchBatteryInfo(continuity: true, callBack: (int power, int? lumen) {
+                            final str = "业务-获取电量:$power lumen:$lumen 时间:${DateTime.now().millisecondsSinceEpoch}";
                             print(str);
                             _updateText(str);
                           });
@@ -551,7 +551,8 @@ class _DynamicTextPageState extends State<DynamicTextPage> {
                           final ret = await PPPeripheralFish.toZero();
                           _updateText('去皮/清零-$ret');
                         } else if (index == 39) {
-                          final ret = await PPPeripheralDorre.fetchUserList();
+                          final ret = await PPBluetoothKitFlutterPlatform.instance
+                              .fetchUserList(PPDevicePeripheralType.dorre.value);
                           _updateText('Dorre设备用户-$ret');
                         } else if (index == 40) {
                           final ret = await PPUnitHelper.foodScaleUnit(90, PPDeviceAccuracyType.pointG, PPUnitType.UnitLBOZ, "");

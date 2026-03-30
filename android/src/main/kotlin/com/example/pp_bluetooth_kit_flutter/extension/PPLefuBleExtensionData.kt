@@ -67,7 +67,7 @@ fun PPLefuBleConnectManager.convertMeasurementDict(model: PPBodyBaseModel): Map<
     } else {
         map["measureTime"] = DateUtil.stringToLong(model.dateStr)
     }
-    val memberId = model.memberId
+    val memberId = model.userModel?.memberID
 
     map["weight"] = model.weight
     map["impedance"] = model.impedance
@@ -154,6 +154,12 @@ fun PPLefuBleConnectManager.sendBlePermissionState(state: PPBluetoothState) {
         stateValue = 2
     } else if (state == PPBluetoothState.POWERED_OFF) {
         stateValue = 3
+    } else if (state == PPBluetoothState.POSITIONING_ON) {
+        stateValue = 4
+    } else if (state == PPBluetoothState.POSITIONING_OFF) {
+        stateValue = 5
+    } else if (state == PPBluetoothState.PERMANENTLY_DENY) {
+        stateValue = 6
     }
 
     val dict = mapOf(

@@ -1,10 +1,6 @@
 package com.example.pp_bluetooth_kit_flutter.extension
 
-import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import com.example.pp_bluetooth_kit_flutter.PPLefuBleConnectManager
-import com.example.pp_bluetooth_kit_flutter.model.PPDfuPackageModel
 import com.lefu.ppbase.*
 import com.lefu.ppbase.PPScaleDefine.*
 import com.lefu.ppbase.vo.PPUserModel
@@ -12,21 +8,16 @@ import com.peng.ppscale.business.ble.configWifi.PPConfigStateMenu
 import com.peng.ppscale.business.ble.configWifi.PPConfigWifiInfoInterface
 import com.peng.ppscale.business.ble.listener.PPBleSendResultCallBack
 import com.peng.ppscale.business.ble.listener.PPDeviceInfoInterface
-import com.peng.ppscale.business.ble.listener.PPDeviceLogInterface
 import com.peng.ppscale.business.ble.listener.PPDeviceSetInfoInterface
 import com.peng.ppscale.business.ble.listener.PPTorreDeviceModeChangeInterface
 import com.peng.ppscale.business.ble.listener.PPUserInfoInterface
 import com.peng.ppscale.business.ota.OnOTAStateListener
-import com.peng.ppscale.business.torre.listener.OnDFUStateListener
 import com.peng.ppscale.business.torre.listener.PPClearDataInterface
 import com.peng.ppscale.business.torre.listener.PPTorreConfigWifiInterface
-import com.peng.ppscale.device.PeripheralApple.PPBlutoothPeripheralAppleController
-import com.peng.ppscale.device.PeripheralCoconut.PPBlutoothPeripheralCoconutController
 import com.peng.ppscale.util.UnitUtil
 import com.peng.ppscale.vo.PPScaleSendState
 import com.peng.ppscale.vo.PPWifiModel
 import io.flutter.plugin.common.MethodChannel.Result
-import java.util.logging.Logger
 
 /**
  * PPLefuBleConnectManager的命令处理扩展
@@ -100,7 +91,15 @@ fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Re
         }
 
         PPDevicePeripheralType.PeripheralFish -> {
-            this.fishControl?.changeKitchenScaleUnit(unit, object : PPBleSendResultCallBack {
+
+            var unitArray = currentDevice.deviceUnitType.split(",").filter { it.isNotEmpty() }
+
+            val nextUnit = getNextUnitIndex(unit.type,unitArray)
+
+            val next = UnitUtil.getUnitType(nextUnit, currentDevice.deviceName);
+
+
+            this.fishControl?.changeKitchenScaleUnit(next, object : PPBleSendResultCallBack {
                 override fun onResult(sendState: PPScaleSendState?) {
                     sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
                 }
@@ -108,7 +107,15 @@ fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Re
         }
 
         PPDevicePeripheralType.PeripheralEgg -> {
-            this.eggControl?.changeKitchenScaleUnit(unit, object : PPBleSendResultCallBack {
+
+            val unitArray = currentDevice.deviceUnitType.split(",").filter { it.isNotEmpty() }
+
+            val nextUnit = getNextUnitIndex(unit.type,unitArray)
+
+            val next = UnitUtil.getUnitType(nextUnit, currentDevice.deviceName);
+
+
+            this.eggControl?.changeKitchenScaleUnit(next, object : PPBleSendResultCallBack {
                 override fun onResult(sendState: PPScaleSendState?) {
                     sendCommonState(sendState == PPScaleSendState.PP_SEND_SUCCESS, callBack)
                 }
@@ -128,6 +135,24 @@ fun PPLefuBleConnectManager.syncUnit(unit: Int, model: PPUserModel, callBack: Re
             sendCommonState(false, callBack)
         }
     }
+}
+
+fun getNextUnitIndex(currentUnit: Int, unitArray: List<String>): Int {
+    // 1. 格式化数值为字符串（等价 OC 的 stringWithFormat）
+    val unitStr = currentUnit.toString()
+
+    // 2. 查找索引（处理未找到的情况：indexOf 返回 -1 时默认设为 0）
+    val index = unitArray.indexOf(unitStr).takeIf { it != -1 } ?: 0
+
+    // 3. 计算下一个索引并处理循环
+    var nextIndex = index + 1
+    if (nextIndex > unitArray.lastIndex) {
+        nextIndex = 0
+    }
+
+    val nextUnit = unitArray[nextIndex].toInt()
+
+    return nextUnit
 }
 
 fun PPLefuBleConnectManager.syncTime(is24Hour: Boolean, callBack: Result) {
@@ -2034,6 +2059,7 @@ fun PPLefuBleConnectManager.syncUserInfo(model: PPUserModel, callBack: Result) {
         }
 
         PPDevicePeripheralType.PeripheralBorre -> {
+
             this.borreControl?.getTorreDeviceManager()?.syncUserInfo(model, object : PPUserInfoInterface {
                 override fun syncUserInfoSuccess() {
                     sendCommonState(true, callBack)
@@ -2115,7 +2141,6 @@ fun PPLefuBleConnectManager.syncUserList(userList: List<PPUserModel>, callBack: 
         }
     }
 
-
 }
 
 fun PPLefuBleConnectManager.setRGBMode(lightEnable:Int,lightMode:Int,defalutColor:String,gainColor:String,lossColor:String, callBack: Result) {
@@ -2130,21 +2155,47 @@ fun PPLefuBleConnectManager.setRGBMode(lightEnable:Int,lightMode:Int,defalutColo
 
         PPDevicePeripheralType.PeripheralBorre -> {
             this.borreControl?.getTorreDeviceManager()
-                ?.setRGB(lightEnable)
+                ?.setRGB(defalutColor, gainColor, lossColor, lightEnable, lightMode, null)
         }
 
-            else -> {
-                this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
-                callBack.success(mapOf<String, Any>())
-            }
+        else -> {
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            callBack.success(mapOf<String, Any>())
         }
-
-
-
-
-
-
-
+    }
 }
+
+
+fun PPLefuBleConnectManager.setDisplayMetrics(metrics: Int, callBack: Result) {
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(mapOf<String, Any>())
+        return
+    }
+
+    when (currentDevice.getDevicePeripheralType()) {
+
+
+        PPDevicePeripheralType.PeripheralBorre -> {
+//            this.borreControl?.getTorreDeviceManager()?.setSingleIndicatorDisPlay(metrics) { status ->
+//                sendCommonState(
+//                    status == 1,
+//                    callBack
+//                )
+//            }
+
+
+        }
+
+
+
+        else -> {
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            callBack.success(mapOf<String, Any>())
+        }
+    }
+}
+
 
 
