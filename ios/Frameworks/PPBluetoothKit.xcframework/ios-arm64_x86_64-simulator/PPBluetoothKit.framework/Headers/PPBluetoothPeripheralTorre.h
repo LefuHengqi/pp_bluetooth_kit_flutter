@@ -17,17 +17,8 @@
 #import "PPTorreDFUDataModel.h"
 #import "PPWifiInfoModel.h"
 #import <PPBaseKit/PPBaseKit.h>
+#import "PPFingerprintInfo.h"
 
-typedef NS_ENUM(NSUInteger, PPTorreLanguage) {
-    PPTorreLanguageSimplifiedChinese = 0, // 中文简体
-    PPTorreLanguageEnglish = 1, // 英文
-    PPTorreLanguageTraditionalChinese = 2, // 中文繁体
-    PPTorreLanguageJapanese = 3, // 日语
-    PPTorreLanguageSpanish = 4, // 西班牙语
-    PPTorreLanguagePortuguese = 5, // 葡萄牙语
-    PPTorreLanguageArabic = 6, // 阿拉伯语
-    PPTorreLanguageKorean = 7 // 韩语
-};
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -141,7 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)codeCloseHeartRateSwitch:(void(^)(NSInteger status))handler;
 
 /// 获取阻抗开关状态
-/// - Parameter handler: 0心率测量打开 1心率测量关闭
+/// - Parameter handler: 0阻抗开关打开 1阻抗开关关闭
 - (void)codeFetchImpedanceSwitch:(void(^)(NSInteger status))handler;
 
 /// 打开阻抗测量
@@ -343,22 +334,79 @@ transferContinueStatus:(NSInteger)transferContinueStatus
 /// - Parameter handler: 0打开 1关闭
 - (void)fetchImpedanceTestMode:(void(^)(NSInteger status))handler;
 
-/// 设置设备语言
+/// 设置设备语言（部分设备支持）
 /// - Parameter handler: 0成功 1失败
 - (void)setLanguage:(PPTorreLanguage)language completion:(void(^)(NSInteger status))completion;
 
-/// 获取设备语言
+/// 获取设备语言（部分设备支持）
 /// - Parameter status: 0成功 1失败
 /// - Parameter language: 设备语言
 - (void)getLanguageWithCompletion:(void(^)(NSInteger status, PPTorreLanguage language))completion;
 
-/// 获取设备支持的语言列表
+/// 获取设备支持的语言列表（部分设备支持）
 /// - Parameter status: 0成功 1失败
-/// - Parameter languages: 设备支持的语言（0: 中文简体，1: 英文，2: 中文繁体，3: 日语，4: 西班牙语，5: 葡萄牙语，6: 阿拉伯语，7: 韩语）
+/// - Parameter languages: 设备支持的语言（0: 中文简体，1: 英文，2: 中文繁体，3: 日语，4: 西班牙语，5: 葡萄牙语，6: 阿拉伯语，7: 韩语，8: 德语 9: 斯洛伐克语 10: 捷克语 11: 波兰语 12: 匈牙利语 13：巴西葡萄牙语 14：俄语）
 - (void)getSupportedLanguageListWithCompletion:(void(^)(NSInteger status, NSArray<NSNumber *> *languages))completion;
 
 /// 获取电量
 - (void)fetchDeviceBatteryInfoWithCompletion:(void(^)(PPBatteryInfoModel *batteryInfo))completion;
+
+/// 显示Wi-Fi图标（打开Wi-Fi图标显示）
+/// - Parameter handler: 0设置成功 1设置失败
+- (void)showWifiIcon:(void(^)(NSInteger status))handler;
+
+/// 隐藏Wi-Fi图标（关闭Wi-Fi图标显示）
+/// - Parameter handler: 0设置成功 1设置失败
+- (void)hideWifiIcon:(void(^)(NSInteger status))handler;
+
+/// 获取Wi-Fi图标显示控制状态
+/// - Parameter handler: 0显示Wi-Fi图标  1隐藏Wi-Fi图标
+- (void)fetchWifiIconStatus:(void(^)(NSInteger status))handler;
+
+/// 删除指定成员指纹（部分设备支持）
+/// - Parameters:
+///   - userModel: 单个用户信息 - userId、memberId为必传项
+///   - handler:  0设置成功 1设置失败
+- (void)deleteFingerprint:(PPTorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
+
+/// 录入指定成员指纹（部分设备支持）
+/// - Parameters:
+///   - userModel: 单个用户信息 - userId、memberId为必传项
+///   - handler:  0设置成功 1设置失败
+- (void)registerFingerprint:(PPTorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
+
+/// 获取用户指纹信息列表（部分设备支持）
+/// - Parameter handler: 返回设备端所有用户的指纹信息
+- (void)fetchFingerprintList:(void(^)(NSArray<PPFingerprintInfo *> *infos)) handler;
+
+/// 设置显示指标（部分设备支持）
+/// - handler:  0设置成功 1设置失败
+- (void)setDisplayMetrics:(PPDisplayMetrics)metrics hanlder:(void(^)(NSInteger status))handler;
+
+/// 获取显示指标（部分设备支持）
+- (void)getDisplayMetricsWithHanlder:(void(^)(PPDisplayMetrics metrics))handler;
+
+/// 设置隐私模式开关
+/// - Parameters:
+/// status 0 成功 1 失败
+- (void)setPrivacyMode:(BOOL)open handler:(void(^)(int status))handler;
+
+
+/// 获取隐私模式开关
+/// - Parameters:
+/// open:  0 关闭 1 开启
+- (void)getPrivacyModeWithHandler:(void(^)(int open))handler;
+
+/// 设置重力加速度区域（部分设备支持）
+/// - Parameters:
+///   - interval: 1： 9.805，2 ： 9.8009，3： 9.7969，4： 9.7949，5 ：  9.7905
+///   - handler:  0设置成功 1设置失败
+- (void)setGravityAcceleration:(NSInteger)interval hanlder:(void(^)(NSInteger status))handler;
+
+/// 获取重力加速度区域（部分设备支持）
+/// - Parameters:
+///   - result: 1： 9.805，2 ： 9.8009，3： 9.7969，4： 9.7949，5 ：  9.7905
+- (void)getGravityAccelerationWithHanlder:(void(^)(NSInteger result))handler;
 
 @end
 

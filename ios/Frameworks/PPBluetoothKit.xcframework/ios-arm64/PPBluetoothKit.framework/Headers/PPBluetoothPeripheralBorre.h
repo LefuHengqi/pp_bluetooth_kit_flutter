@@ -19,6 +19,10 @@
 #import "PPUserRecentBodyData.h"
 #import "PPTorreSettingModel.h"
 #import "PPBatteryInfoModel.h"
+#import "PPTargetModel.h"
+#import "PPUserBodyData.h"
+#import "PPFingerprintInfo.h"
+
 
 typedef NS_ENUM(NSUInteger, Borre608LightMode) {
     Borre608LightModeBreathing = 0,
@@ -351,6 +355,74 @@ transferContinueStatus:(NSInteger)transferContinueStatus
 
 /// 获取电量
 - (void)fetchDeviceBatteryInfoWithCompletion:(void(^)(PPBatteryInfoModel *batteryInfo))completion;
+
+/// 同步目标数据
+- (void)syncTargetDataWithUser:(PPTorreSettingModel *)userModel targetList:(NSArray<PPTargetModel *> *)targetList handler:(void(^)(int status))handler;
+
+/// 同步最近7次趋势数据（部分设备支持）
+/// - Parameters:
+///     - recentList - 最近7次数据，按时间升序排序
+///     - type - 7次数据的类型（体重/BMI/体脂率/水分率/肌肉量/BMR）
+///     - userModel - 用户信息，需要 userID memberID
+///     - lastWeightData - 最后一次的体重数据
+- (void)syncLatest7BodyData:(NSArray <PPUserBodyData *> *)recentList type:(PPUserBodyDataType)type user:(PPTorreSettingModel *)userModel lastWeightData:(PPUserBodyData *)lastWeightData handler:(void(^)(int status))handler;
+
+
+/// 设置设备目标状态（部分设备支持）
+///  status: 0-成功，1-失败
+- (void)setTargetStatus:(PPTargetStatus)status handler:(void(^)(int status))handler;
+
+/// 获取设备目标状态（部分设备支持）
+- (void)getTargetStatusWithHandler:(void(^)(PPTargetStatus status))handler;
+
+/// 设置设备语言（部分设备支持）
+/// - Parameter handler: 0成功 1失败
+- (void)setLanguage:(PPTorreLanguage)language completion:(void(^)(NSInteger status))completion;
+
+/// 获取设备语言（部分设备支持）
+/// - Parameter status: 0成功 1失败
+/// - Parameter language: 设备语言
+- (void)getLanguageWithCompletion:(void(^)(NSInteger status, PPTorreLanguage language))completion;
+
+/// 获取设备支持的语言列表（部分设备支持）
+/// - Parameter status: 0成功 1失败
+/// - Parameter languages: 设备支持的语言（0: 中文简体，1: 英文，2: 中文繁体，3: 日语，4: 西班牙语，5: 葡萄牙语，6: 阿拉伯语，7: 韩语，8: 德语 9: 斯洛伐克语 10: 捷克语 11: 波兰语 12: 匈牙利语 13：巴西葡萄牙语 14：俄语）
+- (void)getSupportedLanguageListWithCompletion:(void(^)(NSInteger status, NSArray<NSNumber *> *languages))completion;
+
+/// 删除指定成员指纹（部分设备支持）
+/// - Parameters:
+///   - userModel: 单个用户信息 - userId、memberId为必传项
+///   - handler:  0设置成功 1设置失败
+- (void)deleteFingerprint:(PPTorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
+
+/// 录入指定成员指纹（部分设备支持）
+/// - Parameters:
+///   - userModel: 单个用户信息 - userId、memberId为必传项
+///   - handler:  0设置成功 1设置失败
+- (void)registerFingerprint:(PPTorreSettingModel *)userModel withHandler:(void(^)(NSInteger status))handler;
+
+/// 获取用户指纹信息列表（部分设备支持）
+/// - Parameter handler: 返回设备端所有用户的指纹信息
+- (void)fetchFingerprintList:(void(^)(NSArray<PPFingerprintInfo *> *infos)) handler;
+
+/// 设置显示指标（部分设备支持）
+/// - handler:  0设置成功 1设置失败
+- (void)setDisplayMetrics:(PPDisplayMetrics)metrics hanlder:(void(^)(NSInteger status))handler;
+
+/// 获取显示指标（部分设备支持）
+- (void)getDisplayMetricsWithHanlder:(void(^)(PPDisplayMetrics metrics))handler;
+
+/// 设置隐私模式开关
+/// - Parameters:
+/// status 0 成功 1 失败
+- (void)setPrivacyMode:(BOOL)open handler:(void(^)(int status))handler;
+
+
+/// 获取隐私模式开关
+/// - Parameters:
+/// open:  0 关闭 1 开启
+- (void)getPrivacyModeWithHandler:(void(^)(int open))handler;
+
 
 @end
 

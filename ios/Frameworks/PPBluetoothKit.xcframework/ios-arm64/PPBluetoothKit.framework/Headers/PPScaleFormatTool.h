@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 static NSInteger ABNORMAL_HISTORY_INTERVAL_TIME = 1577808000; //2020/1/1
 
-static NSInteger TORRE_ABNORMAL_HISTORY_INTERVAL_TIME = 1643731200; //2022-2-3，
+static NSInteger TORRE_ABNORMAL_HISTORY_INTERVAL_TIME = 1675353600; //2023-2-3，
 
 
 
@@ -65,6 +65,10 @@ static NSInteger TORRE_ABNORMAL_HISTORY_INTERVAL_TIME = 1643731200; //2022-2-3�
 + (NSString *)formatHexStringWithPrefix:(NSString *)hexString;
 
 + (NSInteger)calculateFoodWithValue:(CGFloat)value total:(CGFloat)total;
+
++ (BOOL)hasChinese:(NSString *)str;
+
++ (BOOL) hasJapanese:(NSString *)str;
 
 @end
 

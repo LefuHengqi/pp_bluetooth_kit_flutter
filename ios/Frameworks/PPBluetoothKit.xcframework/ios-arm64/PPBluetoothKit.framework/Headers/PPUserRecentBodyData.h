@@ -10,13 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, PPUserBodyDataType) {
-    PPUserBodyDataTypeWeight,
-    PPUserBodyDataTypeBMI,
-    PPUserBodyDataTypeFat,
-    PPUserBodyDataTypeWaterPercentage,
-    PPUserBodyDataTypeMusclePercentage,
-};
+
 
 @interface PPUserRecentBodyData : NSObject
 

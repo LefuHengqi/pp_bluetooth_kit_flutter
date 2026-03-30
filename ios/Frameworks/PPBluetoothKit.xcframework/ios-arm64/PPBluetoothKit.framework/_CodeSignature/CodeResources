@@ -6,11 +6,19 @@
 	<dict>
 		<key>Device.json</key>
 		<data>
-		GHHlj7qzoLd2c6Ep5mJ5eF/t9yU=
+		JWZ9FZ4R92Nrs6sHptGadD5ioeU=
 		</data>
 		<key>Headers/AESTool.h</key>
 		<data>
 		zUFE+2R/UAAxBI5KWXTNmSaZXXQ=
+		</data>
+		<key>Headers/BluetoothDFUManager.h</key>
+		<data>
+		odQAOcr5BVdxOxw9t8QpEflAXZ8=
+		</data>
+		<key>Headers/PPAdvancedConfig.h</key>
+		<data>
+		zq1r+FvG+zQO+vZTeM7p5rvTYtw=
 		</data>
 		<key>Headers/PPAnalysisResultModel.h</key>
 		<data>
@@ -26,7 +34,7 @@
 		</data>
 		<key>Headers/PPBMPConverter.h</key>
 		<data>
-		QA9eHrzFU2fw48Iafqd8anVMePQ=
+		QRHiQ/PTR0G8hjVwvxS29ImmOSk=
 		</data>
 		<key>Headers/PPBatteryInfoModel.h</key>
 		<data>
@@ -38,7 +46,7 @@
 		</data>
 		<key>Headers/PPBluetoothAdvDeviceModel.h</key>
 		<data>
-		B2AxW8AZobPdrSSDqS5uN3MLOIk=
+		2KrWuLL0QRWJ2pR6mtVPYS8Y1qE=
 		</data>
 		<key>Headers/PPBluetoothAppleDataAnalysis.h</key>
 		<data>
@@ -46,23 +54,23 @@
 		</data>
 		<key>Headers/PPBluetoothBorreDataAnalysis.h</key>
 		<data>
-		BWTpNZPfdTV1wUUBh3wgxy0eCg0=
+		tVM4UX0PjzMs2tAgXFmJpFuPFVE=
 		</data>
 		<key>Headers/PPBluetoothCMDApple.h</key>
 		<data>
-		2dmqjlZL6k437sk4cfw5AznPKdE=
+		SL9OREYU/kMejKHFJ43bUZzCMeo=
 		</data>
 		<key>Headers/PPBluetoothCMDBorre.h</key>
 		<data>
-		kwF6O24kzFBwBj1Xg8wKpDwRpNw=
+		MYPM4H1nfXHS0dHuY070tXWHcXs=
 		</data>
 		<key>Headers/PPBluetoothCMDCoconut.h</key>
 		<data>
-		JqnZR/xDS2NY74g6l0ypuKprjmY=
+		Z15J100MXh1+2xYgkFPMMwpaVto=
 		</data>
 		<key>Headers/PPBluetoothCMDDorre.h</key>
 		<data>
-		gVfwmSeT4j7gya4QXLwOlkhM1S8=
+		bMOmE4B51Vliy+OA96oIIwMcd8A=
 		</data>
 		<key>Headers/PPBluetoothCMDDurian.h</key>
 		<data>
@@ -78,7 +86,7 @@
 		</data>
 		<key>Headers/PPBluetoothCMDForre.h</key>
 		<data>
-		gBlfT1RDtdviAq5CRr2upNWhuOI=
+		rG9wR+cY+6KX2uumKA9DwqQlmX4=
 		</data>
 		<key>Headers/PPBluetoothCMDIce.h</key>
 		<data>
@@ -92,9 +100,13 @@
 		<data>
 		mUoQrxq21Jx8qxIzw4cBQXXymJg=
 		</data>
+		<key>Headers/PPBluetoothCMDMorre.h</key>
+		<data>
+		NZtFY8NRV2lqmj0VIpCkxe58+4g=
+		</data>
 		<key>Headers/PPBluetoothCMDTorre.h</key>
 		<data>
-		sKwRtb4Bybr7drcwNh7oVQBGcWI=
+		TuwakOGguJRrgz4dmwVvuNltsoQ=
 		</data>
 		<key>Headers/PPBluetoothCoconutDataAnalysis.h</key>
 		<data>
@@ -106,11 +118,11 @@
 		</data>
 		<key>Headers/PPBluetoothDefine.h</key>
 		<data>
-		vtPO2rZAYIw9zDeEyM8u3RpqNRE=
+		5e3HlnFj7wF0PXSXdR2He+hbkFc=
 		</data>
 		<key>Headers/PPBluetoothDorreDataAnalysis.h</key>
 		<data>
-		IxtGKF4ms61n5j4LUSQPSamUlvs=
+		P2opXk2BJlSnU2KLQQfGG0idHKE=
 		</data>
 		<key>Headers/PPBluetoothDurianDataAnalysis.h</key>
 		<data>
@@ -146,11 +158,11 @@
 		</data>
 		<key>Headers/PPBluetoothInterface.h</key>
 		<data>
-		V4v7nz+cZVI7QJstArYaR4bcmP0=
+		fGI8LZxcwZyEs6X2EPjycX4/h3A=
 		</data>
 		<key>Headers/PPBluetoothKit.h</key>
 		<data>
-		/s5zTtmxOhAFwpomCbb1/wDZ2wI=
+		wHayXjclQYjkMuDa+XSxF9Ks8X0=
 		</data>
 		<key>Headers/PPBluetoothKorreDataAnalysis.h</key>
 		<data>
@@ -162,11 +174,15 @@
 		</data>
 		<key>Headers/PPBluetoothManager.h</key>
 		<data>
-		ojaLRg4QDj7qZALQeKEJ54ohOlQ=
+		FuRMOIcfiZmAPNpYLcUpUxGnF2w=
+		</data>
+		<key>Headers/PPBluetoothMorreDataAnalysis.h</key>
+		<data>
+		snoGBbAAPaRAS6otSu4SHZxxnMU=
 		</data>
 		<key>Headers/PPBluetoothPeripheralApple.h</key>
 		<data>
-		zD2NREOZPWRUn5cIEkY1PnrogBU=
+		tUsgBK5iWEBjxvf2vzh9G472jf0=
 		</data>
 		<key>Headers/PPBluetoothPeripheralBanana.h</key>
 		<data>
@@ -174,15 +190,15 @@
 		</data>
 		<key>Headers/PPBluetoothPeripheralBorre.h</key>
 		<data>
-		on4mTYQZFjW7wqDamxtixWV7cuk=
+		vguBiq+2PSzd7Hat6bhGHGGQLDE=
 		</data>
 		<key>Headers/PPBluetoothPeripheralCoconut.h</key>
 		<data>
-		gopafM1z0I2ceS5XhDnk2/F4vAE=
+		ijwngub+fvRjLCW1HqyCXh4IBLE=
 		</data>
 		<key>Headers/PPBluetoothPeripheralDorre.h</key>
 		<data>
-		KdLARv6gIOCPsOFjup+N+pvaQFo=
+		pbRVMUiX3n4IAVP8YMdEEu4kAg0=
 		</data>
 		<key>Headers/PPBluetoothPeripheralDurian.h</key>
 		<data>
@@ -194,7 +210,7 @@
 		</data>
 		<key>Headers/PPBluetoothPeripheralFish.h</key>
 		<data>
-		V87pZF/9FzziQPWIIUZs3Ll35qw=
+		UD72JJsptqi6WOK7AaogMTX0pls=
 		</data>
 		<key>Headers/PPBluetoothPeripheralForre.h</key>
 		<data>
@@ -210,11 +226,11 @@
 		</data>
 		<key>Headers/PPBluetoothPeripheralIce.h</key>
 		<data>
-		aAUpnUI2y/oGQWxEYjYfI0HEvnE=
+		3awm+jEvaOlz0z2E4wYAdMI65sM=
 		</data>
 		<key>Headers/PPBluetoothPeripheralJambul.h</key>
 		<data>
-		Cym4+m1zYaL0D2G6q0pPOVh6uoE=
+		lGoSS6b3JDWyI9foU+BmqwTcrCc=
 		</data>
 		<key>Headers/PPBluetoothPeripheralJambulDataAnalysis.h</key>
 		<data>
@@ -228,9 +244,13 @@
 		<data>
 		DvHT9+bgG3E7eFQkX4O9FhZUCIc=
 		</data>
+		<key>Headers/PPBluetoothPeripheralMorre.h</key>
+		<data>
+		70cTnvZj3pQibn76BhLJFRfJ64E=
+		</data>
 		<key>Headers/PPBluetoothPeripheralTorre.h</key>
 		<data>
-		AD+3xJHiXiBasgsS8igpdh2AkAM=
+		IIZtO0w0d+o5dSxev7RLLzQ4uak=
 		</data>
 		<key>Headers/PPBluetoothPrivacyManager.h</key>
 		<data>
@@ -238,15 +258,27 @@
 		</data>
 		<key>Headers/PPBluetoothScaleBaseModel.h</key>
 		<data>
-		TwzXMaCfaXpo5KF08442gdSFXLg=
+		0jFe8N3dP2MFOOV11wVyWEoaiBA=
 		</data>
 		<key>Headers/PPBluetoothTorreDataAnalysis.h</key>
 		<data>
-		hdJsKJvk9ddgAVdkKf33at0xl/0=
+		6JB2Ay7We5lRXr7xlzZMQ6zHDBA=
+		</data>
+		<key>Headers/PPCoffeeScaleDataModel.h</key>
+		<data>
+		vihPgP5xegquzkl/diS1YGsX1XA=
+		</data>
+		<key>Headers/PPFingerprintInfo.h</key>
+		<data>
+		K1rz0koE2Xr40+W2PDaYPU4LEMc=
+		</data>
+		<key>Headers/PPImpedanceFailModel.h</key>
+		<data>
+		OHnTwVFB95ugRJuBffhDb3imHvE=
 		</data>
 		<key>Headers/PPKorreFoodInfo.h</key>
 		<data>
-		ULrG23T104wjlGLXIRyejxgZ/Zo=
+		9JwNEqb9Jg1QflXypGQYP9DtLR8=
 		</data>
 		<key>Headers/PPKorreUserModel.h</key>
 		<data>
@@ -258,11 +290,19 @@
 		</data>
 		<key>Headers/PPScaleFormatTool.h</key>
 		<data>
-		CkdxwtS6vPM/ObuaiRWY/aRD5ho=
+		NfckINGVwPcslvhVaFR2c7dpL1I=
 		</data>
 		<key>Headers/PPScaleState.h</key>
 		<data>
-		/XmNGPy5aez06h8j2RDsRoO/0wA=
+		VHnKFo3eolVZvu5KNlfviRCYsi8=
+		</data>
+		<key>Headers/PPSyncBodyModel.h</key>
+		<data>
+		PVhbZSvLlEWjS6OgZ7U+cBmuqqQ=
+		</data>
+		<key>Headers/PPTargetModel.h</key>
+		<data>
+		19PI7WvI0cbPNyhtRWiAtrjAqW4=
 		</data>
 		<key>Headers/PPTorreDFUDataModel.h</key>
 		<data>
@@ -278,15 +318,19 @@
 		</data>
 		<key>Headers/PPTorreSettingModel.h</key>
 		<data>
-		2hIF6t8Z+39PbmEdFNxRRedcqXM=
+		I36GuYm9+UJDz3mUvnvFzCoJJGw=
 		</data>
 		<key>Headers/PPUnitTool.h</key>
 		<data>
 		wN/3T3Os+hr1S+zZZgdolUsUGI4=
 		</data>
+		<key>Headers/PPUserBodyData.h</key>
+		<data>
+		TbJPLoXu6+pLPVIt7d50fu4F9hU=
+		</data>
 		<key>Headers/PPUserRecentBodyData.h</key>
 		<data>
-		uKGbVz+vVBwjeSBYBepBwx+3gAw=
+		lIeUP4VHO9cX2kge8FhI0orsHuE=
 		</data>
 		<key>Headers/PPWifiInfoModel.h</key>
 		<data>
@@ -311,11 +355,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			GHHlj7qzoLd2c6Ep5mJ5eF/t9yU=
+			JWZ9FZ4R92Nrs6sHptGadD5ioeU=
 			</data>
 			<key>hash2</key>
 			<data>
-			nQqj2oXL8sbS/rXfW+4o5ppB7eAKdtUhw95WwUGct+M=
+			F0MtHU7FieZuzr6M8/7hcn2RwQsf1cdKMxRunV/LL/I=
 			</data>
 		</dict>
 		<key>Headers/AESTool.h</key>
@@ -327,6 +371,28 @@
 			<key>hash2</key>
 			<data>
 			QNrLA0DRC1TR9LyoVUkO/jfXd0gz7NvbNbJi6v2gij8=
+			</data>
+		</dict>
+		<key>Headers/BluetoothDFUManager.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			odQAOcr5BVdxOxw9t8QpEflAXZ8=
+			</data>
+			<key>hash2</key>
+			<data>
+			AJo+vr3aKpoIgsUjE9GkuIfd5ubZIvM0qHf+pdUnClo=
+			</data>
+		</dict>
+		<key>Headers/PPAdvancedConfig.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			zq1r+FvG+zQO+vZTeM7p5rvTYtw=
+			</data>
+			<key>hash2</key>
+			<data>
+			2CUioT0TQAuEch1EaxAB/c79O4ClIZ8sdJcjA5AGjoU=
 			</data>
 		</dict>
 		<key>Headers/PPAnalysisResultModel.h</key>
@@ -366,11 +432,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			QA9eHrzFU2fw48Iafqd8anVMePQ=
+			QRHiQ/PTR0G8hjVwvxS29ImmOSk=
 			</data>
 			<key>hash2</key>
 			<data>
-			qUk5UXb7yoRzp7Zlp9ZBbxqb3xoDZd7FlBKWMASgzDs=
+			7YoSSfnf/0h0lQsLgYEM8Wn/+4a0oTrjFbg5aewn6h8=
 			</data>
 		</dict>
 		<key>Headers/PPBatteryInfoModel.h</key>
@@ -399,11 +465,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			B2AxW8AZobPdrSSDqS5uN3MLOIk=
+			2KrWuLL0QRWJ2pR6mtVPYS8Y1qE=
 			</data>
 			<key>hash2</key>
 			<data>
-			nsCjFM4+hz5hRDNZc4XHd19Zm3zC5RRpgMPMoEg8GQs=
+			DPwjEjY8V1QZUIXsI8L7phtcMT7VKaTmqypOpCzCNIs=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothAppleDataAnalysis.h</key>
@@ -421,55 +487,55 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			BWTpNZPfdTV1wUUBh3wgxy0eCg0=
+			tVM4UX0PjzMs2tAgXFmJpFuPFVE=
 			</data>
 			<key>hash2</key>
 			<data>
-			28dVb35uZu70CAlsD/KjnXToDutcbwLpWAuCMpvd7aA=
+			7mZfhRanhIdS8DBXyr6IiOgkIBrX6GAdNrXToqql+Vw=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCMDApple.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			2dmqjlZL6k437sk4cfw5AznPKdE=
+			SL9OREYU/kMejKHFJ43bUZzCMeo=
 			</data>
 			<key>hash2</key>
 			<data>
-			IvJvzyHOhyLBTKNOtgsK2QZ3AaBSGEmRsM9SQfD/Ygg=
+			H4g2s4hS+7ZwRPWalgX3ajrACkQHAbBvutpT/Gmd/E0=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCMDBorre.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			kwF6O24kzFBwBj1Xg8wKpDwRpNw=
+			MYPM4H1nfXHS0dHuY070tXWHcXs=
 			</data>
 			<key>hash2</key>
 			<data>
-			8HE26uMp8UrwlJ/LT5ArRHRbSqMgUsgsvCMxYrmdYgk=
+			kYXp8qUmeCWlKEGWcmeQ3FXWzz5OQhfTf6kSsg7VLK8=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCMDCoconut.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			JqnZR/xDS2NY74g6l0ypuKprjmY=
+			Z15J100MXh1+2xYgkFPMMwpaVto=
 			</data>
 			<key>hash2</key>
 			<data>
-			J+TSP2+BZsIhsUvTpaFlhJ9oFLVzOMlgzvv/Tp9oVxg=
+			6+aouA5Le5XVzsGbwagThtpQx1LIYl5pRc5Ye5bgufg=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCMDDorre.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			gVfwmSeT4j7gya4QXLwOlkhM1S8=
+			bMOmE4B51Vliy+OA96oIIwMcd8A=
 			</data>
 			<key>hash2</key>
 			<data>
-			yY24oE6M1kugTawY6/MI5V+un3y+C75wmKD8p1fEK/0=
+			2lKgVtokofljXeGxkGi5dFP/x2PbbxaRt+uV1fIqE50=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCMDDurian.h</key>
@@ -509,11 +575,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			gBlfT1RDtdviAq5CRr2upNWhuOI=
+			rG9wR+cY+6KX2uumKA9DwqQlmX4=
 			</data>
 			<key>hash2</key>
 			<data>
-			S3y0HfNldDdp1iLf/owbbiKrFJSM2wNIMKBzfuevyL4=
+			Ox7MYqNup4ANZlOTR51jh0mvHciWmj/x0Ecxwdu+wa0=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCMDIce.h</key>
@@ -549,15 +615,26 @@
 			jmLUC3VLoSz7FeGYh2jwOWD/XU66cMfWRe/2Y905OhM=
 			</data>
 		</dict>
+		<key>Headers/PPBluetoothCMDMorre.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			NZtFY8NRV2lqmj0VIpCkxe58+4g=
+			</data>
+			<key>hash2</key>
+			<data>
+			HWX+6JjZT+heVJrKXKFsX1K9m5P0cg1wbKCGxt5/xnM=
+			</data>
+		</dict>
 		<key>Headers/PPBluetoothCMDTorre.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			sKwRtb4Bybr7drcwNh7oVQBGcWI=
+			TuwakOGguJRrgz4dmwVvuNltsoQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			mvPhlDNVLcLeP9UQU9uBy79vIcmmHU0yZlwLePNWsgM=
+			nF/BUT2E1D+JC+GxMfPe+ImgG+BfXlHGTU098SwG+l8=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothCoconutDataAnalysis.h</key>
@@ -586,22 +663,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			vtPO2rZAYIw9zDeEyM8u3RpqNRE=
+			5e3HlnFj7wF0PXSXdR2He+hbkFc=
 			</data>
 			<key>hash2</key>
 			<data>
-			sqcTxRXYsMFtoJUy5VkEahv0s7Olq/49/RfOECs1aa0=
+			HID0lg/VtKTJRUGOa3QwW1Xvz5HLcE5AB8ZcMqi5vdk=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothDorreDataAnalysis.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			IxtGKF4ms61n5j4LUSQPSamUlvs=
+			P2opXk2BJlSnU2KLQQfGG0idHKE=
 			</data>
 			<key>hash2</key>
 			<data>
-			zbxPA0hxfQiD9BfmxXiXD/l2DbK0uPsLTfnRrcXrJ8Y=
+			U6d4WUJ3/MgcFCaKTd2qq/WJ3hv1RfHaNAfmdP/Or8k=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothDurianDataAnalysis.h</key>
@@ -696,22 +773,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			V4v7nz+cZVI7QJstArYaR4bcmP0=
+			fGI8LZxcwZyEs6X2EPjycX4/h3A=
 			</data>
 			<key>hash2</key>
 			<data>
-			+RWH1+PwItqPewldAL6Xe/DC6xVa3JMzajS0ustrEGg=
+			tOWZZCU+w4wlBPOO1sZ5ADv+86DdX2sG72Q1uZf7eqE=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothKit.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			/s5zTtmxOhAFwpomCbb1/wDZ2wI=
+			wHayXjclQYjkMuDa+XSxF9Ks8X0=
 			</data>
 			<key>hash2</key>
 			<data>
-			6huKEqGUsNMn6Q33xP47fcJJwo60K9XOUO1hPG9WWro=
+			EtY6fInXjcN/hIsy/pUFT5APaBvw7hdY6jC9e/6Oydk=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothKorreDataAnalysis.h</key>
@@ -740,22 +817,33 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			ojaLRg4QDj7qZALQeKEJ54ohOlQ=
+			FuRMOIcfiZmAPNpYLcUpUxGnF2w=
 			</data>
 			<key>hash2</key>
 			<data>
-			+424lRKrd5bClfhqfOK1hdP7JvmXUQIS8MAGfmzI3ls=
+			o6rv61IeKIL+TE9+qhMIPbkMTo+RMGzHYMA0aZWGWWc=
+			</data>
+		</dict>
+		<key>Headers/PPBluetoothMorreDataAnalysis.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			snoGBbAAPaRAS6otSu4SHZxxnMU=
+			</data>
+			<key>hash2</key>
+			<data>
+			gSoowIuvKpPQnmfJUDaTPpocrE15G7gitci3vwL4YzE=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralApple.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			zD2NREOZPWRUn5cIEkY1PnrogBU=
+			tUsgBK5iWEBjxvf2vzh9G472jf0=
 			</data>
 			<key>hash2</key>
 			<data>
-			TRUUUUvAIYno1whgVICf/S/fDzzJhSCXQJvJxWRtI9U=
+			DgNkk5EWvLrCrllBtnfgojC5hyxVpzsM3xwRMlnOxX0=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralBanana.h</key>
@@ -773,33 +861,33 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			on4mTYQZFjW7wqDamxtixWV7cuk=
+			vguBiq+2PSzd7Hat6bhGHGGQLDE=
 			</data>
 			<key>hash2</key>
 			<data>
-			yq1eoIRVZjudAVTry+UN0laUlyAKK4VWLr5uLuC6+ic=
+			eTgYsTFKezyB9EqkzZZD3hUPFrmkQHZyfSw5QJe5BaA=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralCoconut.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			gopafM1z0I2ceS5XhDnk2/F4vAE=
+			ijwngub+fvRjLCW1HqyCXh4IBLE=
 			</data>
 			<key>hash2</key>
 			<data>
-			OKkT0EcRWDfccsLsXCzjMMZqD2yozkd5iop1LbRt4yw=
+			CVijWSSdRQgdkFS9qmGLOS+viAnoNnNJHpv39+HsYw4=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralDorre.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			KdLARv6gIOCPsOFjup+N+pvaQFo=
+			pbRVMUiX3n4IAVP8YMdEEu4kAg0=
 			</data>
 			<key>hash2</key>
 			<data>
-			keKqLkaBa6o7Bvs8utJbj6JZ27843CfohkHg0smoFzw=
+			jQiXXenr89axbTcGSJeHpqPM3VTfy2cxhVaMOPgQrys=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralDurian.h</key>
@@ -828,11 +916,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			V87pZF/9FzziQPWIIUZs3Ll35qw=
+			UD72JJsptqi6WOK7AaogMTX0pls=
 			</data>
 			<key>hash2</key>
 			<data>
-			7oYrYcEipzRf2kocN+PvYHl+hn06GHvcPgqeYgfXGk0=
+			+uwueUb6IvQysKDRtHDNT5GiXFL7t+s9rP7dWNfmlpc=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralForre.h</key>
@@ -872,22 +960,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			aAUpnUI2y/oGQWxEYjYfI0HEvnE=
+			3awm+jEvaOlz0z2E4wYAdMI65sM=
 			</data>
 			<key>hash2</key>
 			<data>
-			l32TLv1NrfG0a7eeRNGVewryLHuXOna+dTJ16oQrpPA=
+			KHeAGVSq9s3tJxYDjttlVGPkxLwVhvoYbf8brpGptP8=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralJambul.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			Cym4+m1zYaL0D2G6q0pPOVh6uoE=
+			lGoSS6b3JDWyI9foU+BmqwTcrCc=
 			</data>
 			<key>hash2</key>
 			<data>
-			ytjg8Nlb8IMjeQAITOa4ynMZF6/HgLQQ+fftThWd15o=
+			oGSrZKBDIf8bvcImNUEBIV/U0GFZvJYNE3Rg7sTpLvE=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPeripheralJambulDataAnalysis.h</key>
@@ -923,15 +1011,26 @@
 			xo/B0c4qJbRuJdYrUSQMaiL0AnQpCJBTIXxm/0lav3g=
 			</data>
 		</dict>
+		<key>Headers/PPBluetoothPeripheralMorre.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			70cTnvZj3pQibn76BhLJFRfJ64E=
+			</data>
+			<key>hash2</key>
+			<data>
+			DQZbdRNWpgPGA14zzGP1AHY6PdJe5T/KTt037vlZcV0=
+			</data>
+		</dict>
 		<key>Headers/PPBluetoothPeripheralTorre.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			AD+3xJHiXiBasgsS8igpdh2AkAM=
+			IIZtO0w0d+o5dSxev7RLLzQ4uak=
 			</data>
 			<key>hash2</key>
 			<data>
-			ss3bGzLOX6DiauVg+aOxbAP583mJBhtlz0a55UO4Fpc=
+			B/MduZN4kn0omdqGbK5TFs+kOGd1uuzFcn6riCpC2Sw=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothPrivacyManager.h</key>
@@ -949,33 +1048,66 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			TwzXMaCfaXpo5KF08442gdSFXLg=
+			0jFe8N3dP2MFOOV11wVyWEoaiBA=
 			</data>
 			<key>hash2</key>
 			<data>
-			23GvxQaHxIxcYVL9swjah+qq0M2QsLhKbtKIHzIpAUg=
+			vcqrV+sWKBMnj8yQOMGY9pbPFQs4ymgSllKBnhbJqRE=
 			</data>
 		</dict>
 		<key>Headers/PPBluetoothTorreDataAnalysis.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			hdJsKJvk9ddgAVdkKf33at0xl/0=
+			6JB2Ay7We5lRXr7xlzZMQ6zHDBA=
 			</data>
 			<key>hash2</key>
 			<data>
-			5onlGAYt5j5ZpMSmIw4FWpAmnGDDorfL845L473/2B0=
+			aGJnXCDtY/+AQsBhicme3Ck5t2ZlMxSplYGac3u+3OE=
+			</data>
+		</dict>
+		<key>Headers/PPCoffeeScaleDataModel.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			vihPgP5xegquzkl/diS1YGsX1XA=
+			</data>
+			<key>hash2</key>
+			<data>
+			oesOvWWelCL78zsjRHuYydpGaQ5xcOb8Yg6WxNYPOmU=
+			</data>
+		</dict>
+		<key>Headers/PPFingerprintInfo.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			K1rz0koE2Xr40+W2PDaYPU4LEMc=
+			</data>
+			<key>hash2</key>
+			<data>
+			M6S2/yRjDPk/VOWII66lfBOGrfJe3Gyf+G/qNfTh29Y=
+			</data>
+		</dict>
+		<key>Headers/PPImpedanceFailModel.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			OHnTwVFB95ugRJuBffhDb3imHvE=
+			</data>
+			<key>hash2</key>
+			<data>
+			H8zDibgkoHlbm9trPuMUXGLd//stvhGuFPGqRLvsxAo=
 			</data>
 		</dict>
 		<key>Headers/PPKorreFoodInfo.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			ULrG23T104wjlGLXIRyejxgZ/Zo=
+			9JwNEqb9Jg1QflXypGQYP9DtLR8=
 			</data>
 			<key>hash2</key>
 			<data>
-			QFMf0mQSX5lpU6UJN0j8Kmuw1wfGeW8w732SoMI5Yvs=
+			7EUb8CFeafgj8ZEePQ/xFMlcW09JV9Y/uQNwFTLt7/M=
 			</data>
 		</dict>
 		<key>Headers/PPKorreUserModel.h</key>
@@ -1004,22 +1136,44 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			CkdxwtS6vPM/ObuaiRWY/aRD5ho=
+			NfckINGVwPcslvhVaFR2c7dpL1I=
 			</data>
 			<key>hash2</key>
 			<data>
-			25bGy9sPDQjxNVKkcZigbfIV2NZxUec0yTfE4RDMLz8=
+			muB2RfvH/BQDX+7VuBUxaYsd3MTGU+5nsYtY4pRywDQ=
 			</data>
 		</dict>
 		<key>Headers/PPScaleState.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			/XmNGPy5aez06h8j2RDsRoO/0wA=
+			VHnKFo3eolVZvu5KNlfviRCYsi8=
 			</data>
 			<key>hash2</key>
 			<data>
-			wtBBrjzbl8qTHwEJXpSVwKc3tGdjcraG1FAmuCcZ7Gw=
+			oFWnEf/R0ndbfMcctZBR5kzrJ28veT2JBYtHMuLm0dA=
+			</data>
+		</dict>
+		<key>Headers/PPSyncBodyModel.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			PVhbZSvLlEWjS6OgZ7U+cBmuqqQ=
+			</data>
+			<key>hash2</key>
+			<data>
+			fuC9oGmv0tnY1jYZD2Ea/tezgQR4XXhyr4Vsm7rTe0Y=
+			</data>
+		</dict>
+		<key>Headers/PPTargetModel.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			19PI7WvI0cbPNyhtRWiAtrjAqW4=
+			</data>
+			<key>hash2</key>
+			<data>
+			mhG1oNaYC6ERH8ZHaaSUy1IFNoilTL84qUGa7J+AVNg=
 			</data>
 		</dict>
 		<key>Headers/PPTorreDFUDataModel.h</key>
@@ -1059,11 +1213,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			2hIF6t8Z+39PbmEdFNxRRedcqXM=
+			I36GuYm9+UJDz3mUvnvFzCoJJGw=
 			</data>
 			<key>hash2</key>
 			<data>
-			MBGgqAckw1J7dEaSJaIR7iNwEkdgtkd7bDFXRqvnBL0=
+			+pwZ3LSqQgqnhUbAxDKAMJojndpFIZPq3Op4wPaBcuM=
 			</data>
 		</dict>
 		<key>Headers/PPUnitTool.h</key>
@@ -1077,15 +1231,26 @@
 			KmatbAdlneVQo73rE91Mltb2JuQWaA56jOcwGWlrVjg=
 			</data>
 		</dict>
+		<key>Headers/PPUserBodyData.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			TbJPLoXu6+pLPVIt7d50fu4F9hU=
+			</data>
+			<key>hash2</key>
+			<data>
+			4IxjZ8blRRI6B22Ps319qfP2NO7m0I/YOeGElY1XBFk=
+			</data>
+		</dict>
 		<key>Headers/PPUserRecentBodyData.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			uKGbVz+vVBwjeSBYBepBwx+3gAw=
+			lIeUP4VHO9cX2kge8FhI0orsHuE=
 			</data>
 			<key>hash2</key>
 			<data>
-			PrBjfsjzkMw3VyxphB7kmzTwwO5Yf4a91Cmx6Yngirg=
+			bAGn7msEbj65sSiv16jadFJqA/p4VjtX4ZIvaUsyiXk=
 			</data>
 		</dict>
 		<key>Headers/PPWifiInfoModel.h</key>

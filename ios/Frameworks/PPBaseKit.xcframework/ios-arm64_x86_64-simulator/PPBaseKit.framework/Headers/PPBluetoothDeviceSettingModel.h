@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger age;
 @property (nonatomic, assign) PPDeviceGenderType gender;
 @property (nonatomic, assign) NSInteger height;
+@property (nonatomic, assign) CGFloat currentWeight;
+@property (nonatomic, assign) NSInteger userIndex;
 
 
 @end

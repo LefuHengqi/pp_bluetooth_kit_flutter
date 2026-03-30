@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "PPTorreSettingModel.h"
 #import "PPBluetoothDefine.h"
+#import "PPBluetoothAdvDeviceModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 #pragma mark - fff2
-- (NSArray *)userInfo:(PPTorreSettingModel *)userModel;
+- (NSArray *)userInfo:(PPTorreSettingModel *)userModel advDevice:(PPBluetoothAdvDeviceModel *)advDevice;
 
 - (NSArray *)memberByUserId:(NSString *)userId memberId:(NSString *)memberId;
 

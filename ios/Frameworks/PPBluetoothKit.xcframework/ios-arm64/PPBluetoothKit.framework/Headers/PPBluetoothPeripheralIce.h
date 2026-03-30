@@ -107,7 +107,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameters:
 ///   - model: name 和 pwd
 ///   - handler:
-- (void)dataConfigNetWork:(PPWifiInfoModel *)model withHandler:(void(^)(BOOL isSuccess, NSString *sn))handler;
+- (void)configNetWork:(PPWifiInfoModel *)model withHandler:(void(^)(BOOL isSuccess, NSString *sn, PPBluetoothAppleWifiConfigState configState))handler;
+
+/// 配网
+/// 此方法即将过期，使用 - (void)configNetWork:(PPWifiInfoModel *)model withHandler:(void(^)(BOOL isSuccess, NSString *sn, PPBluetoothAppleWifiConfigState configState))handler 代替
+/// - Parameters:
+///   - model: name 和 pwd
+///   - handler:
+- (void)dataConfigNetWork:(PPWifiInfoModel *)model withHandler:(void(^)(BOOL isSuccess, NSString *sn))handler API_DEPRECATED("Use - (void)configNetWork:(PPWifiInfoModel *)model withHandler:(void(^)(BOOL isSuccess, NSString *sn, PPBluetoothAppleWifiConfigState configState))handler instead", ios(1.0, API_TO_BE_DEPRECATED), visionos(1.0, API_TO_BE_DEPRECATED));
 
 /// 退出配网
 - (void)exitWifiConfig;
@@ -155,6 +162,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// - Parameter progress 获取设备日志的进度
 /// - Parameter isFailed  是否失败
 - (void)dataSyncLogWithLogFolder:(NSString *)folderPath handler:(void(^)(CGFloat progress, NSString *filePath, BOOL isFailed))handler;
+
+- (void)openDFUServices;
 
 @end
 

@@ -36,6 +36,11 @@
 #import "PPTorreSettingModel.h"
 #import "PPKorreUserModel.h"
 #import "PPKorreFoodInfo.h"
+#import "PPCoffeeScaleDataModel.h"
+#import "PPTargetModel.h"
+#import "PPSyncBodyModel.h"
+#import "PPFingerprintInfo.h"
+#import "PPImpedanceFailModel.h"
 
 #import "PPScaleState.h"
 #import "PPBluetoothDefine.h"

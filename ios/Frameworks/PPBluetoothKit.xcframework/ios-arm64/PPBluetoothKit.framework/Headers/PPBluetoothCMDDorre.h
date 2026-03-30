@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import "PPTorreSettingModel.h"
 #import "PPBluetoothDefine.h"
+#import "PPBluetoothAdvDeviceModel.h"
+#import "PPUserBodyData.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 #pragma mark - fff2
-- (NSArray *)userInfo:(PPTorreSettingModel *)userModel;
+- (NSArray *)userInfo:(PPTorreSettingModel *)userModel advDevice:(PPBluetoothAdvDeviceModel *)advDevice;
 
 - (NSArray *)memberByUserId:(NSString *)userId memberId:(NSString *)memberId;
 
@@ -36,6 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSArray *)subCode:(NSString *)str byMtu:(NSInteger)mtu;
 
 + (NSArray *)subData:(NSData *)data byMtu:(NSInteger)mtu;
+
+
+- (NSArray *)bodyData16Days:(NSArray <PPUserBodyData *> *)recentData type:(PPUserBodyDataType)type user:(PPTorreSettingModel *)userModel advDevice:(PPBluetoothAdvDeviceModel *)advDevice count:(int)count;
+
+- (NSString *)convertDeviceUserName:(NSString *)userName;
+
 @end
 
 NS_ASSUME_NONNULL_END

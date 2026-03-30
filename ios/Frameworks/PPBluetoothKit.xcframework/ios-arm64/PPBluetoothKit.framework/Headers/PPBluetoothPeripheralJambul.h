@@ -10,7 +10,7 @@
 #import "PPBluetoothAdvDeviceModel.h"
 #import "PPBluetoothDefine.h"
 #import "PPBluetoothInterface.h"
-
+#import "PPTorreSettingModel.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface PPBluetoothPeripheralJambul : NSObject
@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDevice:(PPBluetoothAdvDeviceModel *)device;
 
 //发送双向广播
--(void)sendCBPeripheralDataCurrentUnit:(PPDeviceUnit)unit scaleType:(NSString *)scaleType;
+-(void)sendCBPeripheralDataCurrentUnit:(PPDeviceUnit)unit scaleType:(NSString *)scaleType settingModel:(PPTorreSettingModel *)settingModel;
 @end
 
 NS_ASSUME_NONNULL_END

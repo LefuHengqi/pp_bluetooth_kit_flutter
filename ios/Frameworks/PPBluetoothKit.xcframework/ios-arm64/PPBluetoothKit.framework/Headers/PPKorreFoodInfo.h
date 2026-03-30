@@ -26,7 +26,7 @@
 @property (nonatomic, assign) CGFloat cholesterol;       // 胆固醇(mg)
 @property (nonatomic, assign) CGFloat sodium;            // 钠(mg)
 
-
+@property (nonatomic, assign) NSInteger imageIndex; //食物头像编号
 
 @property (nonatomic, assign) CGFloat calciumMg;          // 钙 (mg)
 @property (nonatomic, assign) CGFloat vitaminAG;          // 维生素A (g)

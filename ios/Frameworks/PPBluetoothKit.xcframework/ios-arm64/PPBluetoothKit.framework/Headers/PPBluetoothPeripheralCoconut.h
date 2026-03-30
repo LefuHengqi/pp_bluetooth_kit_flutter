@@ -12,6 +12,10 @@
 #import "PPBluetoothInterface.h"
 //#import "PPBluetoothDeviceSettingModel.h"
 #import <PPBaseKit/PPBaseKit.h>
+#import "PPTorreDFUPackageModel.h"
+#import "PPBluetoothDefine.h"
+#import "PPSyncBodyModel.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -43,6 +47,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)syncDeviceTime;
 
 - (void)syncDeviceSetting:(PPBluetoothDeviceSettingModel *)settingModel;
+
+/// DFU升级，部分设备支持
+- (void)startDfu:(NSString *)packagePath handler:(void(^)(CGFloat progress, PPDFUState state))handler;
+/// 进入内码模式，部分设备支持
+- (void)enterInternalCodeModeWithComplete:(void(^)(void))completion;
+/// 退出内码模式，部分设备支持
+- (void)exitInternalCodeModeWithComplete:(void(^)(void))completion;
+
+/// 同步身体数据（部分设备支持）
+- (void)syncBodyData:(PPSyncBodyModel *)model;
 
 @end
 

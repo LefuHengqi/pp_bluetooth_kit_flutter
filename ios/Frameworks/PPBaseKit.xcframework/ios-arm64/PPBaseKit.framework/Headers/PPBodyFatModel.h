@@ -18,6 +18,7 @@
 @class PPPeopleGeneral;
 @class Bh1TwoLegs140;
 @class Bh3TwoLegs240;
+@class Bh5Body270;
 
 ///错误类型(针对输入的参数)
 typedef NS_ENUM(NSInteger, PPBodyfatErrorType){
@@ -448,6 +449,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic,strong) PPBodyDetailStandardArray *standardArray;
 
 @property (nonatomic, strong) Bh2Body270 *body270;
+
+@property (nonatomic, strong) Bh5Body270 *body5_270;
 
 @property (nonatomic, strong) BhTwoLegs140 *bodyLegs140;
 

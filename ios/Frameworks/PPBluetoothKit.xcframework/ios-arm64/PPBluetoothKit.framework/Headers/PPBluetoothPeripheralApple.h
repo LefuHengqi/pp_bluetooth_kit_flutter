@@ -16,15 +16,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSUInteger, PPBluetoothAppleWifiConfigState) {
-    PPBluetoothAppleWifiConfigStateSuccess = 0, // 配网成功 Successful distribution network
-    PPBluetoothAppleWifiConfigStateLowBatteryLevel = 1, // 电量过低 Low battery level
-    PPBluetoothAppleWifiConfigStateRegistFail = 3, // 注册失败 login has failed
-    PPBluetoothAppleWifiConfigStateUnableToFindRouter = 5, // 找不到路由 Unable to find route
-    PPBluetoothAppleWifiConfigStatePasswordError = 6, //密码错误 Password error
-    PPBluetoothAppleWifiConfigStateOtherFail, // 其它错误（app可以不用关注） Other errors (app can be ignored)
-};
-
 @interface PPBluetoothPeripheralApple : NSObject
 
 @property (nonatomic, weak) id<PPBluetoothServiceDelegate> serviceDelegate;
@@ -37,6 +28,7 @@ typedef NS_ENUM(NSUInteger, PPBluetoothAppleWifiConfigState) {
 
 @property (nonatomic, strong) PPBatteryInfoModel *batteryInfo;
 
+@property (nonatomic, strong) PPBluetoothAdvDeviceModel *deviceAdv;
 
 - (instancetype)initWithPeripheral:(CBPeripheral *)peripheral  andDevice:(PPBluetoothAdvDeviceModel *)device;
 
@@ -53,6 +45,11 @@ typedef NS_ENUM(NSUInteger, PPBluetoothAppleWifiConfigState) {
 /// 同步时间
 ///  - status 0 : 成功，1 : 失败
 - (void)syncDeviceTimeWithHandler:(void(^)(NSInteger status))handler;
+
+/// 同步时间-指定时区
+/// 使用该方法前，请确认设备的时区
+///  - status 0 : 成功，1 : 失败
+- (void)syncDeviceTimeWithZone:(PPZoneType)zoneType handler:(void(^)(NSInteger status))handler;
 
 - (void)fetchDeviceBatteryInfo;
 
@@ -109,6 +106,13 @@ typedef NS_ENUM(NSUInteger, PPBluetoothAppleWifiConfigState) {
 /// 注：调用此方法前请确保设备已经配网，并且部分机型不支持该功能
 /// code:  0 接收成功，启动OTA，1 接收失败 没有配ssid 退出OTA，2 电量不足 退出OTA，3 充电中 退出OTA
 - (void)startUserOTAWithHandler:(void(^)(NSInteger code))handler;
+
+/// DFU升级，部分设备支持
+- (void)startDfu:(NSString *)packagePath handler:(void(^)(CGFloat progress, PPDFUState state))handler;
+/// 进入内码模式，部分设备支持
+- (void)enterInternalCodeModeWithComplete:(void(^)(void))completion;
+/// 退出内码模式，部分设备支持
+- (void)exitInternalCodeModeWithComplete:(void(^)(void))completion;
 
 @end
 

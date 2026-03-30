@@ -54,7 +54,7 @@
 		</data>
 		<key>Headers/PPBaseDefine.h</key>
 		<data>
-		XTMxAECK3vpo6UwoPWY8tNN2E/I=
+		4TotYhgPW0YZjsRSNhl8HFJlwJc=
 		</data>
 		<key>Headers/PPBaseKit.h</key>
 		<data>
@@ -62,11 +62,11 @@
 		</data>
 		<key>Headers/PPBluetoothDeviceSettingModel.h</key>
 		<data>
-		97iOhs/aReT/XnYTFWZmdXpmRIo=
+		1EJXAu3sCDKvClUNUpCQ2OjP2mI=
 		</data>
 		<key>Headers/PPBodyFatModel.h</key>
 		<data>
-		xRkG6avPo+8Crig3nZsHdbYVDAA=
+		WMt7BhiutrbdzuvAX+dZs3BxVVQ=
 		</data>
 		<key>Headers/PPCalculateTools.h</key>
 		<data>
@@ -75,6 +75,10 @@
 		<key>Headers/PPLog.h</key>
 		<data>
 		ZYnuQMfWbCM063Vh7JTqzUj3jw8=
+		</data>
+		<key>Headers/PPSensitiveDataMasker.h</key>
+		<data>
+		11/XZxka3LeXwJgP3yDctTlJ1Qk=
 		</data>
 		<key>Info.plist</key>
 		<data>
@@ -227,11 +231,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			XTMxAECK3vpo6UwoPWY8tNN2E/I=
+			4TotYhgPW0YZjsRSNhl8HFJlwJc=
 			</data>
 			<key>hash2</key>
 			<data>
-			pamG3sGubLOu+ClinrzxLlT0vy+IoQ19tGq9dVls1XE=
+			/hSD6KRz+W3OKz7pofUa7NiJc6Si+tVmzYl/0lDoVIo=
 			</data>
 		</dict>
 		<key>Headers/PPBaseKit.h</key>
@@ -249,22 +253,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			97iOhs/aReT/XnYTFWZmdXpmRIo=
+			1EJXAu3sCDKvClUNUpCQ2OjP2mI=
 			</data>
 			<key>hash2</key>
 			<data>
-			ofOWJmp8Mg+Ja4UocYC4gyrsI+Gj/QiGUph9mByIfPg=
+			N7QkFzREIFiGIYj/2F+wi0bwTPQY2D8iwj9WdfYjsBk=
 			</data>
 		</dict>
 		<key>Headers/PPBodyFatModel.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			xRkG6avPo+8Crig3nZsHdbYVDAA=
+			WMt7BhiutrbdzuvAX+dZs3BxVVQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			GMQ23jevukDSS00Yo5L3aLAE37QjWZ9HgOBMIvgvZzk=
+			6SMAukAL83LT36HY0jqfZXBk9UI4LKjdkoc/WeInvqY=
 			</data>
 		</dict>
 		<key>Headers/PPCalculateTools.h</key>
@@ -287,6 +291,17 @@
 			<key>hash2</key>
 			<data>
 			ReXwNzYwKNV96plJA028RD5d1xJUd9p5j6PcXqyLS/g=
+			</data>
+		</dict>
+		<key>Headers/PPSensitiveDataMasker.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			11/XZxka3LeXwJgP3yDctTlJ1Qk=
+			</data>
+			<key>hash2</key>
+			<data>
+			SCV2iHCbnLXJmRLDA2rBiz2uk2lHATX1S/GtMLCoFSI=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

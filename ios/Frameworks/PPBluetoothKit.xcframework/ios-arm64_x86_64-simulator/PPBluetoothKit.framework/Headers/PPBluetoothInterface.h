@@ -18,6 +18,8 @@
 @class PPBluetooth180ADeviceModel;
 @class PPBodyFatModel;
 @class PPBatteryInfoModel;
+@class PPCoffeeScaleDataModel;
+
 
 @protocol PPBluetoothUpdateStateDelegate <NSObject>
 
@@ -110,5 +112,20 @@
 - (void)monitorScaleState:(PPScaleState *)scaleState;
 
 @end
+
+
+@protocol PPBluetoothCoffeeScaleDataDelegate <NSObject>
+
+- (void)monitorCoffeeData:(PPCoffeeScaleDataModel *)model advModel:(PPBluetoothAdvDeviceModel*)advModel;
+
+@optional
+
+- (void)monitorWeightModeData:(PPBluetoothScaleBaseModel *)model advModel:(PPBluetoothAdvDeviceModel*)advModel;
+
+- (void)monitorWeightModeScaleState:(PPScaleState *)scaleState;
+
+@end
+
+
 
 #endif /* PPBluetoothInterface_h */

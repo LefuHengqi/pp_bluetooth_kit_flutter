@@ -44,6 +44,9 @@ typedef NS_ENUM(NSUInteger, PPScaleFootState) {
 /// 脚长测量状态
 @property (nonatomic, assign) PPScaleFootState footState;
 
+///  营养秤当前模式
+@property (nonatomic, assign) PPNutritionalScaleMode nutritionalScaleMode;
+
 
 @end
 
