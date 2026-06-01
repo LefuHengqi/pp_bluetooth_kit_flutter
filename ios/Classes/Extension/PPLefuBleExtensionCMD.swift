@@ -2275,4 +2275,106 @@ extension PPLefuBleConnectManager {
         callBack(["weightStr":weightStr])
 
     }
+    
+    func registerFingerprint(user:PPTorreSettingModel, callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralTorre:
+            self.torreControl?.registerFingerprint(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        case .peripheralBorre:
+            self.borreControl?.registerFingerprint(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+            callBack([:])
+        }
+    }
+    
+    func deleteFingerprint(user:PPTorreSettingModel, callBack: @escaping FlutterResult) {
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            callBack([:])
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralTorre:
+            self.torreControl?.deleteFingerprint(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        case .peripheralBorre:
+            self.borreControl?.deleteFingerprint(user, withHandler: {[weak self] status in
+                guard let `self` = self else {
+                    return
+                }
+                
+                let success = status == 0
+                self.sendCommonState(success, callBack: callBack)
+                
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+            callBack([:])
+        }
+    }
+    
+    func fetchFingerprintList(callBack: @escaping FlutterResult) {
+        
+        guard let currentDevice = self.currentDevice else {
+            self.loggerStreamHandler?.event?("当前无连接设备")
+            
+            return
+        }
+        
+        switch currentDevice.peripheralType {
+        case .peripheralTorre:
+            self.torreControl?.fetchFingerprintList({ list in
+                
+                var retList = [[String:Any]]()
+                for print in list {
+                    
+                    var dict:[String:Any] = [:]
+                    dict["memberID"] = print.memberID ?? ""
+                    dict["hasFingerprint"] = print.hasFingerprint ? 1 : 0
+                    
+                    retList.append(dict)
+                    
+                }
+                
+                callBack(["fingerprintList":retList])
+
+            })
+        default:
+            self.loggerStreamHandler?.event?("不支持的设备类型-\(currentDevice.peripheralType)")
+        }
+    }
+    
 }

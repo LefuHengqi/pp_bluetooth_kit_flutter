@@ -55,6 +55,7 @@ extension PPLefuBleConnectManager {
             "brandId":device.brandId,
             "imgUrl":device.imgUrl,
             "avatarType":device.avatarType.rawValue,
+            "advancedConfig":device.advancedConfig,
         ]
         
         let filtedDict = dict.compactMapValues { $0 }
@@ -92,9 +93,11 @@ extension PPLefuBleConnectManager {
             "z20KhzTrunkEnCode":model.z20KhzTrunkEnCode,
             "isPowerOff":isPowerOff,
             "hasLightStrength":model.hasLightStrength,
-            "lightStrength":model.lightStrength
+            "lightStrength":model.lightStrength,
+         
                 
         ]
+        
         
         let filtedDict = dict.compactMapValues { $0 }
         
@@ -104,7 +107,28 @@ extension PPLefuBleConnectManager {
     func sendMeasureData(_ model:PPBluetoothScaleBaseModel, advModel: PPBluetoothAdvDeviceModel, measureState:Int) {
         
         let deviceDict:[String:Any] = self.convertDeviceDict(advModel)
-        let dataDict:[String:Any] = self.convertMeasurementDict(model)
+        var dataDict:[String:Any] = self.convertMeasurementDict(model)
+        
+        
+        
+        if(model.impedanceFailReason != nil){
+            
+            print(model.impedanceFailReason.exceptionCode ?? "")
+            
+            
+            if(model.impedanceFailReason.exceptionCode == "01" || model.impedanceFailReason.exceptionCode ==  "04"){
+                dataDict["imErrorType"] = 5
+            }else if(model.impedanceFailReason.exceptionCode == "02" || model.impedanceFailReason.exceptionCode ==  "08"){
+                dataDict["imErrorType"] = 6
+            }else if(model.impedanceFailReason.exceptionCode == "10" || model.impedanceFailReason.exceptionCode ==  "40"){
+                dataDict["imErrorType"] = 4
+            }else if(model.impedanceFailReason.exceptionCode == "20" || model.impedanceFailReason.exceptionCode ==  "80"){
+                dataDict["imErrorType"] = 3
+            }else{
+                dataDict["imErrorType"] = 7
+
+            }
+        }
         
         self.loggerStreamHandler?.event?("测量状态:\(measureState)")
         
@@ -236,4 +260,6 @@ extension PPLefuBleConnectManager {
         self.kitchenStreamHandler?.event?(dict)
     }
     
+   
+
 }
