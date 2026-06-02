@@ -215,7 +215,7 @@ fun PPLefuBleConnectManager.sendCommonState(state: Boolean, callBack: Result?) {
     callBack?.success(dict)
 }
 
-fun PPLefuBleConnectManager.sendDfuResult(progress: Float, isSuccess: Boolean) {
+fun PPLefuBleConnectManager.sendDfuResult(progress: Double, isSuccess: Boolean) {
     val dict = mapOf(
         "progress" to progress,
         "isSuccess" to isSuccess

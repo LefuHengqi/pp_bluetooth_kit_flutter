@@ -3,7 +3,10 @@ package com.example.pp_bluetooth_kit_flutter.extension
 import com.example.pp_bluetooth_kit_flutter.PPLefuBleConnectManager
 import com.lefu.ppbase.*
 import com.lefu.ppbase.PPScaleDefine.*
+import com.lefu.ppbase.util.PPUtil
+import com.lefu.ppbase.vo.PPUnitType
 import com.lefu.ppbase.vo.PPUserModel
+
 import com.peng.ppscale.business.ble.configWifi.PPConfigStateMenu
 import com.peng.ppscale.business.ble.configWifi.PPConfigWifiInfoInterface
 import com.peng.ppscale.business.ble.listener.PPBleSendResultCallBack
@@ -18,6 +21,15 @@ import com.peng.ppscale.util.UnitUtil
 import com.peng.ppscale.vo.PPScaleSendState
 import com.peng.ppscale.vo.PPWifiModel
 import io.flutter.plugin.common.MethodChannel.Result
+import java.math.BigDecimal
+import android.content.Context
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.zip.ZipInputStream
+
+import com.example.pp_bluetooth_kit_flutter.model.PPDfuPackageModel
+import kotlin.math.absoluteValue
 
 /**
  * PPLefuBleConnectManager的命令处理扩展
@@ -1576,53 +1588,60 @@ fun PPLefuBleConnectManager.exitBabyModel(callBack: Result) {
     }
 }
 
-fun PPLefuBleConnectManager.startDFU(filePath: String, deviceFirmwareVersion: String, isForceCompleteUpdate: Boolean, callBack: Result) {
-    val currentDevice = deviceControl?.deviceModel
-    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
-        this.loggerStreamHandler?.sendEvent("当前无连接设备")
-        this.sendCommonState(false, callBack)
-        return
-    }
+//fun PPLefuBleConnectManager.startDFU(filePath: String, deviceFirmwareVersion: String, isForceCompleteUpdate: Boolean, callBack: Result) {
+//
+//
+//
+//
+//
+//    val currentDevice = deviceControl?.deviceModel
+//    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+//        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+//        this.sendCommonState(false, callBack)
+//        return
+//    }
+//
+//    when (currentDevice.getDevicePeripheralType()) {
+//        PPDevicePeripheralType.PeripheralTorre -> {
+//            if (isForceCompleteUpdate) {
+//                this.torreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
+//            } else {
+//                this.torreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
+//            }
+//        }
+//
+//        PPDevicePeripheralType.PeripheralBorre -> {
+//            if (isForceCompleteUpdate) {
+//                this.borreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
+//            } else {
+//                this.borreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
+//            }
+//        }
+//
+//        PPDevicePeripheralType.PeripheralDorre -> {
+//            if (isForceCompleteUpdate) {
+//                this.dorreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
+//            } else {
+//                this.dorreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
+//            }
+//        }
+//
+//        PPDevicePeripheralType.PeripheralForre -> {
+//            if (isForceCompleteUpdate) {
+//                this.forreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
+//            } else {
+//                this.forreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
+//            }
+//        }
+//
+//        else -> {
+//            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+//            this.sendCommonState(false, callBack)
+//        }
+//    }
+//}
 
-    when (currentDevice.getDevicePeripheralType()) {
-        PPDevicePeripheralType.PeripheralTorre -> {
-            if (isForceCompleteUpdate) {
-                this.torreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
-            } else {
-                this.torreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
-            }
-        }
 
-        PPDevicePeripheralType.PeripheralBorre -> {
-            if (isForceCompleteUpdate) {
-                this.borreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
-            } else {
-                this.borreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
-            }
-        }
-
-        PPDevicePeripheralType.PeripheralDorre -> {
-            if (isForceCompleteUpdate) {
-                this.dorreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
-            } else {
-                this.dorreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
-            }
-        }
-
-        PPDevicePeripheralType.PeripheralForre -> {
-            if (isForceCompleteUpdate) {
-                this.forreControl?.getTorreDeviceManager()?.startDFU(filePath, onDFUStateListener)
-            } else {
-                this.forreControl?.getTorreDeviceManager()?.startSmartDFU(filePath, deviceFirmwareVersion, onDFUStateListener)
-            }
-        }
-
-        else -> {
-            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
-            this.sendCommonState(false, callBack)
-        }
-    }
-}
 
 fun PPLefuBleConnectManager.syncDeviceLog(logFolder: String, callBack: Result) {
     val currentDevice = deviceControl?.deviceModel
@@ -2141,6 +2160,108 @@ fun PPLefuBleConnectManager.syncUserList(userList: List<PPUserModel>, callBack: 
         }
     }
 
+
+}
+
+fun PPLefuBleConnectManager.fetchFingerprintList(callBack: Result){
+
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(mapOf<String, Any>())
+        return
+    }
+
+
+    when (currentDevice.getDevicePeripheralType()) {
+
+        PPDevicePeripheralType.PeripheralTorre -> {
+            this.torreControl?.getTorreDeviceManager()
+                ?.getUserFingerprintList { result ->
+                    result?.onSuccess { list ->
+                        // 将 List<PPFingerprintInfo> 转换为 List<Map<String, Any>>
+                        val retList = list.map { print ->
+                            mapOf(
+                                "memberID" to (print.memberID ?: ""),
+                                "hasFingerprint" to if (print.hasFingerprint) 1 else 0
+                            )
+                        }
+
+                        // 返回结果
+                        callBack.success(mapOf("fingerprintList" to retList))
+                    }?.onFailure {
+                        // 处理失败情况
+                        callBack.success(mapOf<String, Any>())
+                    }
+                }
+        }
+
+            else -> {
+                this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+                callBack.success(mapOf<String, Any>())
+            }
+        }
+
+}
+
+fun PPLefuBleConnectManager.registerFingerprint(user: PPUserModel, callBack: Result){
+
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(mapOf<String, Any>())
+        return
+    }
+
+
+    when (currentDevice.getDevicePeripheralType()) {
+
+        PPDevicePeripheralType.PeripheralTorre -> {
+            this.torreControl?.getTorreDeviceManager()?.inputUserFingerprintStart(user) { success ->
+                if (success) {
+                    callBack.success(mapOf("success" to true))
+                } else {
+                    callBack.success(mapOf("success" to false))
+                }
+            }
+        }
+
+        else -> {
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            callBack.success(mapOf<String, Any>())
+        }
+    }
+
+}
+
+fun PPLefuBleConnectManager.deleteFingerprint(user: PPUserModel, callBack: Result){
+
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(mapOf<String, Any>())
+        return
+    }
+
+
+    when (currentDevice.getDevicePeripheralType()) {
+
+        PPDevicePeripheralType.PeripheralTorre -> {
+            this.torreControl?.getTorreDeviceManager()?.delUserFingerprintStart(user) { success ->
+                if (success) {
+                    callBack.success(mapOf("success" to true))
+                } else {
+                    callBack.success(mapOf("success" to false))
+                }
+            }
+        }
+
+        else -> {
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            callBack.success(mapOf<String, Any>())
+        }
+    }
+
 }
 
 fun PPLefuBleConnectManager.setRGBMode(lightEnable:Int,lightMode:Int,defalutColor:String,gainColor:String,lossColor:String, callBack: Result) {
@@ -2158,11 +2279,18 @@ fun PPLefuBleConnectManager.setRGBMode(lightEnable:Int,lightMode:Int,defalutColo
                 ?.setRGB(defalutColor, gainColor, lossColor, lightEnable, lightMode, null)
         }
 
-        else -> {
-            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
-            callBack.success(mapOf<String, Any>())
+            else -> {
+                this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+                callBack.success(mapOf<String, Any>())
+            }
         }
-    }
+
+
+
+
+
+
+
 }
 
 
@@ -2175,16 +2303,43 @@ fun PPLefuBleConnectManager.setDisplayMetrics(metrics: Int, callBack: Result) {
     }
 
     when (currentDevice.getDevicePeripheralType()) {
+   
+
+        PPDevicePeripheralType.PeripheralBorre -> {
+            this.borreControl?.getTorreDeviceManager()?.setSingleIndicatorDisPlay(metrics) { status ->
+                sendCommonState(
+                    status == 1,
+                    callBack
+                )
+            }
+
+
+        }
+
+      
+
+        else -> {
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            callBack.success(mapOf<String, Any>())
+        }
+    }
+}
+
+
+fun PPLefuBleConnectManager.getDisplayMetrics(callBack: Result) {
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(mapOf<String, Any>())
+        return
+    }
+
+    when (currentDevice.getDevicePeripheralType()) {
 
 
         PPDevicePeripheralType.PeripheralBorre -> {
-//            this.borreControl?.getTorreDeviceManager()?.setSingleIndicatorDisPlay(metrics) { status ->
-//                sendCommonState(
-//                    status == 1,
-//                    callBack
-//                )
-//            }
-
+            this.borreControl?.getTorreDeviceManager()?.getSingleIndicatorDisPlay { metrics ->
+                callBack.success(mapOf("metrics" to metrics))}
 
         }
 
@@ -2197,5 +2352,182 @@ fun PPLefuBleConnectManager.setDisplayMetrics(metrics: Int, callBack: Result) {
     }
 }
 
+
+/**
+ * 启动 DFU 固件升级
+ * @param filePath ZIP 文件路径
+ * @param deviceFirmwareVersion 设备固件版本
+ * @param isForceCompleteUpdate 是否强制完整更新
+ * @param callBack 回调
+ */
+fun PPLefuBleConnectManager.startDFU(
+    filePath: String,
+    deviceFirmwareVersion: String,
+    isForceCompleteUpdate: Boolean,
+    callBack: Result
+) {
+    val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        callBack.success(emptyMap<String, Any>())
+        return
+    }
+
+    var deviceVersion = deviceFirmwareVersion
+    if (isForceCompleteUpdate) {
+        deviceVersion = "0.0.0"
+    }
+
+    // 补充版本号格式（确保有4段）
+    val dotCount = deviceVersion.count { it == '.' }
+    if (dotCount < 3) {
+        repeat(3 - dotCount) {
+            deviceVersion += ".001"
+        }
+    }
+
+    try {
+        // 解压 ZIP 文件
+        var unzipPath = unzipDFUFile(context, filePath)
+        if (unzipPath == null) {
+            this.loggerStreamHandler?.sendEvent("解压路径为空")
+            this.sendDfuResult(0.0, false)
+            return
+        }
+
+        // 遍历目录找到包含 package.json 的实际目录
+        val actualPath = findActualDFUDirectory(unzipPath)
+        if (actualPath == null) {
+            this.loggerStreamHandler?.sendEvent("未找到 DFU 文件目录")
+            this.sendDfuResult(0.0, false)
+            return
+        }
+
+        this.loggerStreamHandler?.sendEvent("找到 DFU 目录: $actualPath")
+        unzipPath = actualPath + "/"
+
+        // 根据设备类型启动 DFU
+        val currentDevice = deviceControl?.deviceModel
+    if (!(deviceControl?.connectState() ?: false) || currentDevice == null) {
+        this.loggerStreamHandler?.sendEvent("当前无连接设备")
+        this.sendCommonState(false, callBack)
+        return
+    }
+
+    when (currentDevice.getDevicePeripheralType()) {
+        PPDevicePeripheralType.PeripheralTorre -> {
+            if (isForceCompleteUpdate) {
+                this.torreControl?.getTorreDeviceManager()?.startDFU(unzipPath, onDFUStateListener)
+            } else {
+                this.torreControl?.getTorreDeviceManager()?.startSmartDFU(unzipPath, deviceFirmwareVersion, onDFUStateListener)
+            }
+        }
+
+        PPDevicePeripheralType.PeripheralBorre -> {
+            if (isForceCompleteUpdate) {
+                this.borreControl?.getTorreDeviceManager()?.startDFU(unzipPath, onDFUStateListener)
+            } else {
+                this.borreControl?.getTorreDeviceManager()?.startSmartDFU(unzipPath, deviceFirmwareVersion, onDFUStateListener)
+            }
+        }
+
+        PPDevicePeripheralType.PeripheralDorre -> {
+            if (isForceCompleteUpdate) {
+                this.dorreControl?.getTorreDeviceManager()?.startDFU(unzipPath, onDFUStateListener)
+            } else {
+                this.dorreControl?.getTorreDeviceManager()?.startSmartDFU(unzipPath, deviceFirmwareVersion, onDFUStateListener)
+            }
+        }
+
+        PPDevicePeripheralType.PeripheralForre -> {
+            if (isForceCompleteUpdate) {
+                this.forreControl?.getTorreDeviceManager()?.startDFU(unzipPath, onDFUStateListener)
+            } else {
+                this.forreControl?.getTorreDeviceManager()?.startSmartDFU(unzipPath, deviceFirmwareVersion, onDFUStateListener)
+            }
+        }
+
+        else -> {
+            this.loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice.getDevicePeripheralType()}")
+            this.sendCommonState(false, callBack)
+        }
+    }
+
+    } catch (e: Exception) {
+        this.loggerStreamHandler?.sendEvent("DFU 启动失败: ${e.message}")
+        this.sendDfuResult(0.0, false)
+    }
+}
+
+/**
+ * 解压 DFU ZIP 文件
+ */
+private fun unzipDFUFile(context: Context, zipFilePath: String): String? {
+    try {
+        val cacheDir = context.cacheDir
+        val destDir = File(cacheDir, "Torre")
+
+        // 清空目标目录
+        if (destDir.exists()) {
+            destDir.deleteRecursively()
+        }
+        destDir.mkdirs()
+
+        // 解压文件
+        val zipFile = File(zipFilePath)
+        if (!zipFile.exists()) {
+            return null
+        }
+
+        ZipInputStream(FileInputStream(zipFile)).use { zis ->
+            var entry = zis.nextEntry
+            while (entry != null) {
+                val file = File(destDir, entry.name)
+                if (entry.isDirectory) {
+                    file.mkdirs()
+                } else {
+                    file.parentFile?.mkdirs()
+                    FileOutputStream(file).use { fos ->
+                        zis.copyTo(fos)
+                    }
+                }
+                zis.closeEntry()
+                entry = zis.nextEntry
+            }
+        }
+
+        return destDir.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
+/**
+ * 遍历目录查找 package.json 并解析配置
+ */
+
+
+/**
+ * 查找包含 package.json 的实际 DFU 目录
+ * 解压后的文件结构通常是：/cache/Torre/[子目录]/package.json
+ * 需要找到这个子目录的路径
+ */
+private fun findActualDFUDirectory(unzipPath: String): String? {
+    val dir = File(unzipPath)
+    if (!dir.exists() || !dir.isDirectory) {
+        return null
+    }
+
+    // 递归查找包含 package.json 的目录
+    dir.walkTopDown().forEach { file ->
+        if (file.isFile && file.name == "package.json") {
+            // 返回包含 package.json 的目录路径
+            return file.parentFile?.absolutePath
+        }
+    }
+
+    return null
+}
 
 

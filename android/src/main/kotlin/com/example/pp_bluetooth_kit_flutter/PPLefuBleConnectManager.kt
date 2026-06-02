@@ -1,19 +1,31 @@
 package com.example.pp_bluetooth_kit_flutter
 
 import android.content.Context
+import android.content.Intent
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import com.example.pp_bluetooth_kit_flutter.ble.GpsSwitchStateReceiver
+import com.example.pp_bluetooth_kit_flutter.ble.LocationHelper
 import com.example.pp_bluetooth_kit_flutter.extension.convertDeviceDict
 import com.example.pp_bluetooth_kit_flutter.extension.convertMeasurementDict
 import com.example.pp_bluetooth_kit_flutter.extension.convertMeasurementDictFood
-import com.example.pp_bluetooth_kit_flutter.extension.sendHistoryData
 import com.example.pp_bluetooth_kit_flutter.extension.sendBlePermissionState
 import com.example.pp_bluetooth_kit_flutter.extension.sendCommonState
+import com.example.pp_bluetooth_kit_flutter.extension.sendHistoryData
 import com.example.pp_bluetooth_kit_flutter.extension.sendScanState
 import com.example.pp_bluetooth_kit_flutter.model.PPDfuPackageModel
 import com.example.pp_bluetooth_kit_flutter.util.PPBleHelper
 import com.example.pp_bluetooth_kit_flutter.util.PPBluetoothState
+import com.example.pp_bluetooth_kit_flutter.util.PermissionSettingUtil
 import com.example.pp_bluetooth_kit_flutter.util.PermissionUtil
+import com.example.pp_bluetooth_kit_flutter.util.PermissionUtil.isLocationEnabled
+import com.lefu.bluetooth.library.Constants
+import com.lefu.ppbase.ImpedanceErrorType
 import com.lefu.ppbase.PPBodyBaseModel
 import com.lefu.ppbase.PPDeviceModel
+import com.lefu.ppbase.PPScaleDefine
 import com.lefu.ppbase.PPScaleDefine.PPDeviceConnectType
 import com.lefu.ppbase.PPScaleDefine.PPDevicePeripheralType
 import com.lefu.ppbase.util.Logger
@@ -21,6 +33,8 @@ import com.lefu.ppbase.vo.PPScaleState
 import com.lefu.ppbase.vo.PPScaleStateHeartRateType
 import com.lefu.ppbase.vo.PPScaleStateImpedanceType
 import com.lefu.ppbase.vo.PPUserModel
+import com.peng.ppscale.PPBluetoothKit
+import com.peng.ppscale.PPBluetoothKit.bluetoothClient
 import com.peng.ppscale.business.ble.PPScaleHelper
 import com.peng.ppscale.business.ble.listener.FoodScaleDataChangeListener
 import com.peng.ppscale.business.ble.listener.PPBleSendResultCallBack
@@ -52,6 +66,7 @@ import com.peng.ppscale.device.PeripheralJambul.PPBlutoothPeripheralJambulContro
 import com.peng.ppscale.device.PeripheralTorre.PPBlutoothPeripheralTorreController
 import com.peng.ppscale.search.PPSearchManager
 import com.peng.ppscale.util.UnitUtil
+import com.peng.ppscale.util.UnitUtils
 import com.peng.ppscale.vo.LFFoodScaleGeneral
 import com.peng.ppscale.vo.PPScaleSendState
 import io.flutter.plugin.common.MethodChannel.Result
@@ -67,7 +82,7 @@ enum class PPLefuScanType(val value: Int) {
  * 蓝牙连接管理器
  * 负责处理蓝牙设备的扫描、连接和数据交互
  */
-class PPLefuBleConnectManager private constructor(private val context: Context) {
+class PPLefuBleConnectManager private constructor(val context: Context) {
 
     companion object {
         @Volatile
@@ -97,13 +112,18 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
 
     // 蓝牙状态相关
-    private var needScan = false
     private var scanType: PPLefuScanType = PPLefuScanType.SCAN
-    private var isScaning: Boolean = false
 
     // 连接状态和历史数据
     private var connectState: Int = 0
     private var tempScaleHistoryList: MutableList<PPBodyBaseModel>? = null
+
+    // 防抖相关
+    private var lastDisconnectTime: Long = 0
+    private var isProcessingDisconnect: Boolean = false
+
+    // 光照强度
+    private var currentLightStrength: Int? = null
 
     // 设备控制器
     var currentDevice: PPDeviceModel? = null
@@ -136,17 +156,83 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     fun initSDK() {
         Logger.e("PPLefuBleConnectManager initSDK")
         ppScale = PPSearchManager.getInstance()
+        ppScale?.registerBluetoothStateListener(bleStateInterface)
+    }
+
+    fun isScanning(): Boolean {
+        var b = false
+        if (ppScale?.isSearching == true) {
+            b = true
+        }
+        return b
+    }
+
+    fun isConnect(): Boolean {
+        deviceControl?.deviceModel?.let {
+            val connectState = PPBluetoothKit.bluetoothClient?.getConnectStatus(deviceControl?.deviceModel?.deviceMac)
+            val isConnect: Boolean = connectState == Constants.STATUS_DEVICE_CONNECTED
+            Logger.d("isConnect() deviceName:${deviceControl?.deviceModel?.deviceName} deviceMac:${deviceControl?.deviceModel?.deviceMac} isConnect  $isConnect connectState:$connectState")
+            return isConnect
+        }
+        return false
+    }
+
+    fun isConnecting(): Boolean {
+        deviceControl?.deviceModel?.let {
+            val connectState = PPBluetoothKit.bluetoothClient?.getConnectStatus(deviceControl?.deviceModel?.deviceMac)
+            val isConnect: Boolean = connectState == Constants.STATUS_DEVICE_CONNECTING
+            Logger.d("isConnecting() deviceName:${deviceControl?.deviceModel?.deviceName} deviceMac:${deviceControl?.deviceModel?.deviceMac} isConnect  $isConnect connectState:$connectState")
+            return isConnect
+        }
+        return false
+    }
+
+    fun isConnected(address: String?): Boolean {
+        if (address.isNullOrEmpty()) {
+            return false
+        }
+        bluetoothClient?.let { client ->
+            return client.getConnectStatus(address) == Constants.STATUS_DEVICE_CONNECTED
+        }
+        return false
+    }
+
+    fun isConnecting(address: String?): Boolean {
+        if (address.isNullOrEmpty()) {
+            return false
+        }
+        bluetoothClient?.let { client ->
+            return client.getConnectStatus(address) == Constants.STATUS_DEVICE_CONNECTING
+        }
+        return false
+    }
+
+    fun isDisconnecting(): Boolean {
+        deviceControl?.deviceModel?.let {
+            val connectState = PPBluetoothKit.bluetoothClient?.getConnectStatus(deviceControl?.deviceModel?.deviceMac)
+            val isDisconnecting: Boolean = connectState == Constants.STATUS_DEVICE_DISCONNECTING
+            Logger.d("isDisconnecting() deviceName:${deviceControl?.deviceModel?.deviceName} deviceMac:${deviceControl?.deviceModel?.deviceMac} isDisconnecting  $isDisconnecting connectState:$connectState")
+            return isDisconnecting
+        }
+        return false
+    }
+
+    fun isConnectOrConnecting(): Boolean {
+        return deviceControl?.connectState() == true
     }
 
     /**
      * 开始扫描设备
      */
-    fun startScan(callBack: Result) {
-        stopScan()
-        disconnect()
+    fun startScan(deviceMac: String?, callBack: Result) {
+
+        if (isScanning()) {
+            Logger.e("PPLefuBleConnectManager startScan isScanning true return 蓝牙已经在扫描中")
+            sendCommonState(true, callBack)
+            return
+        }
 
         tempDeviceDict.clear()
-
         scanDevice(PPLefuScanType.SCAN, callBack)
     }
 
@@ -156,98 +242,38 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     fun scanDevice(type: PPLefuScanType, callBack: Result) {
 
         scanType = type
-        needScan = true
 
         sendCommonState(true, callBack)
         tempDeviceDict.clear()
 
-        ppScale?.registerBluetoothStateListener(bleStateInterface)
-
+        //5s如果没有搜到任何设备，则认定为搜索失败，外部可重启扫描
         ppScale?.startSearchDeviceList(300000, searchDeviceInfoInterface, bleStateInterface)
 
     }
+
+
 
     /**
      * 连接设备
      */
     fun connectDevice(deviceMac: String, deviceName: String) {
 
-        if (deviceControl?.connectState() ?: false && deviceControl?.deviceModel?.deviceMac == deviceMac) {
-            loggerStreamHandler?.sendEvent("$deviceMac-该设备已连接，继续使用")
+        val isConnect = isConnected(deviceMac)
+
+        if (isConnect) {
+            loggerStreamHandler?.sendEvent("$deviceName $deviceMac -该设备已连接，继续使用")
             sendConnectState(1)
             return
         }
-
-        stopScan()
-        disconnect()
-
+        if (isConnecting(deviceMac)) {
+            loggerStreamHandler?.sendEvent("$deviceName $deviceMac -该设备正在连接中，请稍候")
+//            sendConnectState(1)
+            return
+        }
         if (tempDeviceDict.containsKey(deviceMac)) {
             val device = tempDeviceDict[deviceMac]
-
-            if (device != null) {
-                currentDevice = device
-
-                loggerStreamHandler?.sendEvent("开始连接设备:${device.deviceName} ${device.deviceName} ${device.getDevicePeripheralType()}")
-
-                when (device.getDevicePeripheralType()) {
-                    PPDevicePeripheralType.PeripheralApple -> {
-                        appleControl = PPBlutoothPeripheralAppleController()
-                        deviceControl = appleControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralCoconut -> {
-                        coconutControl = PPBlutoothPeripheralCoconutController()
-                        deviceControl = coconutControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralTorre -> {
-                        torreControl = PPBlutoothPeripheralTorreController()
-                        deviceControl = torreControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralIce -> {
-                        iceControl = PPBlutoothPeripheralIceController()
-                        deviceControl = iceControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralBorre -> {
-                        borreControl = PPBlutoothPeripheralBorreController()
-                        deviceControl = borreControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralDorre -> {
-                        dorreControl = PPBlutoothPeripheralDorreController()
-                        deviceControl = dorreControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralForre -> {
-                        forreControl = PPBlutoothPeripheralForreController()
-                        deviceControl = forreControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralFish -> {
-                        fishControl = PPBlutoothPeripheralFishController()
-                        deviceControl = fishControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralEgg -> {
-                        eggControl = PPBlutoothPeripheralEggController()
-                        deviceControl = eggControl
-                    }
-
-                    PPDevicePeripheralType.PeripheralDurian -> {
-                        durianControl = PPBlutoothPeripheralDurianController()
-                        deviceControl = durianControl
-                    }
-
-                    else -> {
-                        loggerStreamHandler?.sendEvent("不支持的设备类型-peripheralType:${device.getDevicePeripheralType()}-$deviceMac")
-                        sendConnectState(2)
-                    }
-                }
-                deviceControl?.startConnect(device, bleStateInterface)
-
-            }
+            stopScan()
+            realConnectDevice(device)
         } else {
             loggerStreamHandler?.sendEvent("找不到设备-$deviceMac")
             sendConnectState(2)
@@ -255,14 +281,80 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
     }
 
     /**
+     * 前面要做连接前的防频繁和防已连接等问题
+     * 真正连接设备
+     */
+    private fun realConnectDevice(device: PPDeviceModel?) {
+        if (device != null) {
+            currentDevice = device
+            loggerStreamHandler?.sendEvent("开始连接设备:${device.deviceName} ${device.deviceName} ${device.getDevicePeripheralType()}")
+
+            when (device.getDevicePeripheralType()) {
+                PPDevicePeripheralType.PeripheralApple -> {
+                    appleControl = PPBlutoothPeripheralAppleController()
+                    deviceControl = appleControl
+                }
+
+                PPDevicePeripheralType.PeripheralCoconut -> {
+                    coconutControl = PPBlutoothPeripheralCoconutController()
+                    deviceControl = coconutControl
+                }
+
+                PPDevicePeripheralType.PeripheralTorre -> {
+                    torreControl = PPBlutoothPeripheralTorreController()
+                    deviceControl = torreControl
+                }
+
+                PPDevicePeripheralType.PeripheralIce -> {
+                    iceControl = PPBlutoothPeripheralIceController()
+                    deviceControl = iceControl
+                }
+
+                PPDevicePeripheralType.PeripheralBorre -> {
+                    borreControl = PPBlutoothPeripheralBorreController()
+                    deviceControl = borreControl
+                }
+
+                PPDevicePeripheralType.PeripheralDorre -> {
+                    dorreControl = PPBlutoothPeripheralDorreController()
+                    deviceControl = dorreControl
+                }
+
+                PPDevicePeripheralType.PeripheralForre -> {
+                    forreControl = PPBlutoothPeripheralForreController()
+                    deviceControl = forreControl
+                }
+
+                PPDevicePeripheralType.PeripheralFish -> {
+                    fishControl = PPBlutoothPeripheralFishController()
+                    deviceControl = fishControl
+                }
+
+                PPDevicePeripheralType.PeripheralEgg -> {
+                    eggControl = PPBlutoothPeripheralEggController()
+                    deviceControl = eggControl
+                }
+
+                PPDevicePeripheralType.PeripheralDurian -> {
+                    durianControl = PPBlutoothPeripheralDurianController()
+                    deviceControl = durianControl
+                }
+
+                else -> {
+                    loggerStreamHandler?.sendEvent("不支持的设备类型-peripheralType:${device.getDevicePeripheralType()}")
+                    sendConnectState(2)
+                }
+            }
+            deviceControl?.startConnect(device, bleStateInterface)
+        }
+    }
+
+    /**
      * 停止扫描
      */
-    fun stopScan() {
-        needScan = false
-        ppScale?.stopSearch()
-
-        if (isScaning) {
-            isScaning = false
+    public fun stopScan() {
+        if (isScanning()) {
+            ppScale?.stopSearch()
             sendScanState(false)
         }
     }
@@ -271,10 +363,14 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      * 断开连接
      */
     fun disconnect() {
-        if (deviceControl?.connectState() == true) {
-            deviceControl?.disConnect()
+        if (PPScaleHelper.isSupportConnect(deviceControl?.deviceModel?.deviceConnectType?.getType())) {
+            if (deviceControl?.connectState() == true) {
+                deviceControl?.disConnect()
+            } else {
+                Logger.e("PPLefuBleConnectManager disconnect 设备未连接,无需断开")
+            }
+            clearData()
         }
-        clearData()
     }
 
     /**
@@ -290,8 +386,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         fishControl = null
         eggControl = null
         durianControl = null
-        needScan = false
         currentDevice = null
+
+        currentLightStrength = null
     }
 
     /**
@@ -299,6 +396,22 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      * 连接状态 0:断开连接 1:连接成功 2:连接错误
      */
     fun sendConnectState(state: Int) {
+        // 防抖：如果是断开连接状态，检查是否在500ms内已经发送过
+        if (state == 0) {
+            val currentTime = System.currentTimeMillis()
+            if (isProcessingDisconnect || (currentTime - lastDisconnectTime) < 500) {
+                loggerStreamHandler?.sendEvent("连接状态:$state - 重复事件，忽略")
+                return
+            }
+            lastDisconnectTime = currentTime
+            isProcessingDisconnect = true
+
+            // 500ms后重置标志
+            Handler(Looper.getMainLooper()).postDelayed({
+                isProcessingDisconnect = false
+            }, 500)
+        }
+
         loggerStreamHandler?.sendEvent("连接状态:$state")
 
         connectState = state
@@ -444,6 +557,10 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 torreControl?.getTorreDeviceManager()?.readDeviceBattery(torreDeviceModeChangeInterface)
             }
 
+            PPDevicePeripheralType.PeripheralCoconut -> {
+                coconutControl?.readDeviceBattery(deviceInfoInterface)
+            }
+
             PPDevicePeripheralType.PeripheralIce -> {
                 iceControl?.readDeviceBattery(deviceInfoInterface)
             }
@@ -458,6 +575,12 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
             PPDevicePeripheralType.PeripheralForre -> {
                 forreControl?.getTorreDeviceManager()?.readDeviceBattery(torreDeviceModeChangeInterface)
+            }
+
+            PPDevicePeripheralType.PeripheralFish -> {
+            }
+
+            PPDevicePeripheralType.PeripheralEgg -> {
             }
 
             else -> {
@@ -551,25 +674,25 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             PPDevicePeripheralType.PeripheralBanana -> {
                 Logger.d("unReceiveBroadcastData PeripheralBanana")
                 bananaControl?.registDataChangeListener(null)
-                bananaControl?.stopSeach()
+//                bananaControl?.stopSeach()
             }
 
             PPDevicePeripheralType.PeripheralJambul -> {
                 Logger.d("unReceiveBroadcastData PeripheralJambul")
                 jambulControl?.registDataChangeListener(null)
-                jambulControl?.stopSeach()
+//                jambulControl?.stopSeach()
             }
 
             PPDevicePeripheralType.PeripheralHamburger -> {
                 Logger.d("unReceiveBroadcastData PeripheralHamburger")
                 hamburgerControl?.registDataChangeListener(null)
-                hamburgerControl?.stopSeach()
+//                hamburgerControl?.stopSeach()
             }
 
             PPDevicePeripheralType.PeripheralGrapes -> {
                 Logger.d("unReceiveBroadcastData PeripheralGrapes")
                 grapesControl?.registDataChangeListener(null)
-                grapesControl?.stopSeach()
+//                grapesControl?.stopSeach()
             }
 
             else -> {
@@ -594,7 +717,6 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             return
         }
 
-
         if (device.deviceConnectType != PPDeviceConnectType.PPDeviceConnectTypeBroadcast) {
             loggerStreamHandler?.sendEvent("${device.deviceName}-${device.deviceMac}不是广播秤")
             Logger.e("receiveBroadcastData ${device.deviceName}-${device.deviceMac}不是广播秤")
@@ -609,8 +731,6 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             return
         }
 
-        disconnect()
-
         currentDevice = device
 
         when (device.getDevicePeripheralType()) {
@@ -619,7 +739,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 bananaControl?.deviceModel = device
                 deviceControl = bananaControl
                 registerDataChangeListener()
-                bananaControl?.startSearch(device.deviceMac, bleStateInterface)
+//                if (isScanning().not()) {
+//                    bananaControl?.startSearch(device.deviceMac, bleStateInterface)
+//                }
             }
 
             PPDevicePeripheralType.PeripheralJambul -> {
@@ -627,7 +749,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 jambulControl?.deviceModel = device
                 deviceControl = jambulControl
                 registerDataChangeListener()
-                jambulControl?.startSearch(device.deviceMac, bleStateInterface)
+//                if (isScanning().not()) {
+//                    jambulControl?.startSearch(device.deviceMac, bleStateInterface)
+//                }
             }
 
             PPDevicePeripheralType.PeripheralHamburger -> {
@@ -635,7 +759,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 hamburgerControl?.deviceModel = device
                 deviceControl = hamburgerControl
                 registerDataChangeListener()
-                hamburgerControl?.startSearch(device.deviceMac, bleStateInterface)
+//                if (isScanning().not()) {
+//                    hamburgerControl?.startSearch(device.deviceMac, bleStateInterface)
+//                }
             }
 
             PPDevicePeripheralType.PeripheralGrapes -> {
@@ -643,7 +769,9 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                 grapesControl?.deviceModel = device
                 deviceControl = grapesControl
                 registerDataChangeListener()
-                grapesControl?.startSearch(device.deviceMac, bleStateInterface)
+//                if (isScanning().not()) {
+//                    grapesControl?.startSearch(device.deviceMac, bleStateInterface)
+//                }
             }
 
             else -> {
@@ -661,11 +789,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
      * 发送广播数据
      */
     fun sendBroadcastData(cmd: String, unitType: Int, callBack: Result) {
-        if (!(deviceControl?.connectState() ?: false)) {
-            loggerStreamHandler?.sendEvent("当前设备为空")
-            sendCommonState(false, callBack)
-            return
-        }
+
 
         if (currentDevice?.getDevicePeripheralType() == PPDevicePeripheralType.PeripheralJambul && jambulControl != null
             && PPScaleHelper.isFuncTypeTwoBrocast(jambulControl?.deviceModel?.deviceFuncType)
@@ -673,7 +797,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             val mode = if (cmd.equals("38")) 1 else 0
 
             val userModel = PPUserModel.Builder().setPregnantMode(mode == 1).build()
-
+            jambulControl?.stopAdvertising()
             jambulControl?.startBroadCast(UnitUtil.getUnitType(unitType), userModel, jambulControl?.deviceModel)
             sendCommonState(true, callBack)
         } else {
@@ -696,20 +820,123 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
     /**
      * 添加蓝牙权限监听
+     * 调用此方法，立即返回当前蓝牙权限状态，并实时监听蓝牙权限状态变化
+     *
+     * Android 蓝牙权限说明：
+     * 1. 优先级，
+     *   - 先判断蓝牙下相关权限是否授权，
+     *   - 再判断定位开关是否打开（Android12以下设备），
+     *   - 再判断蓝牙开关是否打开
+     * 2. 不同的状态的处理方式
+     * 1-未授权，调用申请蓝牙权限API
+     * 2-蓝牙开，系统蓝牙打开，此时检测所有权限API，若收到2(蓝牙开)，则具备所有权限，若回复其他状态则相应的处理即可
+     * 3-蓝牙关，调用请求开启蓝牙开关API
+     * 4-定位开关开，用户主动打开定位开关，处理逻辑与2一样
+     * 5-定位开关关闭，弹窗，让用户选择是否去开启定位开关，选择去设置，则跳转到设置定位开关设置页面，此处桥阶层提供API
+     * 6-权限被永久拒绝，此时弹窗，让用户选择是否去开启蓝牙相关权限，选择去设置，则跳转到系统应用权限申请页面，此处桥阶层提供API。
      */
     fun addBlePermissionListener() {
         try {
+            if (PermissionUtil.isPermissionPermanentlyDenied(context) == true) {
+                Logger.i("DeviceManager addBlePermissionListenmer permanently denied 权限被永久拒绝")
+                sendBlePermissionState(PPBluetoothState.PERMANENTLY_DENY)
+                return
+            }
             if (PermissionUtil.isHasBluetoothPermissions(context)) {
+                initGpsLocationListener()
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                    // Android 12 以下需要检查定位开关
+                    if (!isLocationEnabled(context)) {
+                        Logger.i("DeviceManager addBlePermissionListener location off")
+                        sendBlePermissionState(PPBluetoothState.POSITIONING_OFF)
+                        return
+                    }
+                }
+                // Android 12+ 不需要检查定位开关
                 if (PPBleHelper.isOpenBluetooth()) {
+                    //蓝牙一斤可以用了
+                    Logger.i("DeviceManager addBlePermissionListener bluetooth on")
                     sendBlePermissionState(PPBluetoothState.POWERED_ON)
                 } else {
+                    Logger.i("DeviceManager addBlePermissionListener bluetooth off")
                     sendBlePermissionState(PPBluetoothState.POWERED_OFF)
                 }
             } else {
+                Logger.i("DeviceManager addBlePermissionListener permission unauthorized")
                 sendBlePermissionState(PPBluetoothState.UNAUTHORIZED)
             }
         } catch (e: Exception) {
+            Logger.e("DeviceManager addBlePermissionListener exception ${e.message}")
             sendBlePermissionState(PPBluetoothState.UNAUTHORIZED)
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 请求打开蓝牙
+     */
+    fun openBluetooth() {
+        if (PermissionUtil.isHasBluetoothPermissions(context)) {
+            bluetoothClient?.openBluetooth()
+        } else {
+            Logger.i("DeviceManager openBluetooth permission unauthorized")
+        }
+    }
+
+
+    /**
+     * 直接跳转至位置信息设置界面
+     */
+    fun openLocation() {
+        try {
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * 跳转到权限设置页面
+     */
+    fun gotoPermissionSetting() {
+        PermissionSettingUtil.gotoPermissionSetting(context)
+
+
+    }
+
+    /**
+     * 申请蓝牙权限
+     */
+    fun requestBluetoothPermission() {
+        PermissionUtil.requestBluetoothPermission(context)
+    }
+
+    /**
+     * 注册定位开关监听，
+     */
+    fun initGpsLocationListener() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || PermissionUtil.isHuaweiOS()) {
+            if (PermissionUtil.isHasBluetoothPermissions(context)) {
+                Logger.i("DeviceManager initGpsLocationListener")
+                context?.let { LocationHelper.registerLocationListener(it, onGPSChangeListener) }
+            }
+        }
+    }
+
+    val onGPSChangeListener = object : GpsSwitchStateReceiver.OnGPSChangeListener {
+
+        override fun onChange(isGpsEnabled: Boolean) {
+            Logger.i("DeviceManager onGPSChangeListener onChange isGpsEnabled:$isGpsEnabled")
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || PermissionUtil.isHuaweiOS()) {
+                if (isGpsEnabled.not()) {
+                    stopScan()
+                    disconnect()
+                    sendBlePermissionState(PPBluetoothState.POSITIONING_OFF)
+                } else {
+                    sendBlePermissionState(PPBluetoothState.POSITIONING_ON)
+                }
+            }
         }
     }
 
@@ -756,6 +983,79 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         }
     }
 
+    fun changeBuzzerGate(open: Boolean, callBack: Result) {
+
+        if (!(deviceControl?.connectState() ?: false)) {
+            loggerStreamHandler?.sendEvent("当前无连接设备")
+            sendCommonState(false, callBack)
+            return
+        }
+
+        when (currentDevice?.getDevicePeripheralType()) {
+            PPDevicePeripheralType.PeripheralFish -> {
+                fishControl?.switchBuzzer(open, object : PPBleSendResultCallBack {
+                    override fun onResult(sendState: PPScaleSendState?) {
+                        if (sendState == PPScaleSendState.PP_SEND_SUCCESS) {
+                            sendCommonState(true, callBack)
+                        } else {
+                            sendCommonState(false, callBack)
+                        }
+                    }
+                })
+            }
+
+            else -> {
+                loggerStreamHandler?.sendEvent("不支持的设备类型-${currentDevice?.getDevicePeripheralType()}")
+                sendCommonState(false, callBack)
+            }
+        }
+
+
+    }
+
+    fun foodScaleUnit(
+        weightG: Number,
+        accuracyType: Int,
+        unitType: Int,
+        callBack: Result
+    ) {
+
+        val unit = UnitUtil.getUnitType(unitType)
+
+        // 3. 重量计算逻辑（精度为 .point01G 时乘以 10）
+        var weight = weightG.toDouble()
+        if (accuracyType == PPScaleDefine.PPDeviceAccuracyType.PPDeviceAccuracyTypePoint01G.getType()) {
+            weight = weight * 10
+        }
+
+        val weightStr = UnitUtils.getValue(weight, unit, weight > 0, accuracyType)
+
+        // 4. 调用工具类获取重量字典
+
+
+        // 5. 拼接重量字符串
+//        var weightStr = ""
+//        if (unit == PPUnitType.PPUnitLBOZ) {
+//            // 单位为磅盎司时，拼接 "lb:oz"
+//            val lb = dic["lboz_lb"] ?: ""
+//            val oz = dic["lboz_oz"] ?: ""
+//            weightStr = "$lb:$oz"
+//        } else {
+//            // 其他单位取 weight 字段
+//            weightStr = dic["weight"] ?: ""
+//            // 重量为 0 时强制显示 "0"（处理 Float 转 String 可能的异常）
+//            val weightFloat = weightStr.toFloatOrNull() ?: 0f
+//            if (weightFloat == 0f) {
+//                weightStr = "0"
+//            }
+//        }
+
+        // 6. 执行回调（返回 Map 结构）
+
+        callBack.success(mapOf("weightStr" to weightStr))
+
+    }
+
 
     val bleStateInterface = object : PPBleStateInterface() {
         override fun monitorBluetoothWorkState(ppBleWorkState: PPBleWorkState?, deviceModel: PPDeviceModel?) {
@@ -765,44 +1065,38 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateConnecting) {
 
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateDisconnected) {
-                val map = mutableMapOf<String, Any?>()
-                map.put("deviceMac", deviceModel?.deviceMac)
-                map.put("state", 0)
-                connectStateStreamHandler?.sendEvent(map)
+
+                Logger.d("设备断开连接:${deviceModel?.deviceName} ${deviceModel?.deviceMac}")
+                sendConnectState(0)
+
             } else if (ppBleWorkState == PPBleWorkState.PPBleStateSearchCanceled) {
-                scanStateStreamHandler?.sendState(0)
+//                scanStateStreamHandler?.sendState(0)
+                //主动取消扫描无需对外告知
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkSearchTimeOut) {
                 scanStateStreamHandler?.sendState(0)
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateSearching) {
                 scanStateStreamHandler?.sendState(1)
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateWritable) {
-                val map = mutableMapOf<String, Any?>()
-                map.put("deviceMac", deviceModel?.deviceMac)
-                map.put("state", 1)
-                connectStateStreamHandler?.sendEvent(map)
+                sendConnectState(1)
                 registerDataChangeListener()
             } else if (ppBleWorkState == PPBleWorkState.PPBleWorkStateConnectFailed) {
-                val map = mutableMapOf<String, Any?>()
-                map.put("deviceMac", deviceModel?.deviceMac)
-                map.put("state", 2)
-                connectStateStreamHandler?.sendEvent(map)
+                sendConnectState(2)
+            } else if (ppBleWorkState == PPBleWorkState.PPBleWorkSearchFail) {
             }
         }
 
         override fun monitorBluetoothSwitchState(ppBleSwitchState: PPBleSwitchState?) {
             if (ppBleSwitchState == PPBleSwitchState.PPBleSwitchStateOff) {
+                stopScan()
+                disconnect()
                 sendBlePermissionState(PPBluetoothState.POWERED_OFF)
             } else if (ppBleSwitchState == PPBleSwitchState.PPBleSwitchStateOn) {
                 sendBlePermissionState(PPBluetoothState.POWERED_ON)
-
             }
         }
 
         override fun monitorMtuChange(deviceModel: PPDeviceModel?) {
-            val map = mutableMapOf<String, Any?>()
-            map.put("deviceMac", deviceModel?.deviceMac)
-            map.put("state", 1)
-            connectStateStreamHandler?.sendEvent(map)
+            sendConnectState(1)
             registerDataChangeListener()
         }
 
@@ -845,38 +1139,54 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             }
 
             PPDevicePeripheralType.PeripheralBanana -> {
+                Logger.i("bananaControl registDataChangeListener")
                 bananaControl?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralDurian -> {
+                Logger.i("durianControl registDataChangeListener")
                 durianControl?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralCoconut -> {
+                Logger.i("coconutControl registDataChangeListener")
                 coconutControl?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralApple -> {
+                Logger.i("appleControl registDataChangeListener")
                 appleControl?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralIce -> {
+                Logger.i("iceControl registDataChangeListener")
                 iceControl?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralTorre -> {
+                Logger.i("torreControl registDataChangeListener")
                 torreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
+
+
             }
 
             PPDevicePeripheralType.PeripheralBorre -> {
+                Logger.i("borreControl registDataChangeListener")
                 borreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
+
+                borreControl?.getTorreDeviceManager()?.registerLightIntensityListener { lightIntensity ->
+
+                    currentLightStrength = lightIntensity
+                }
             }
 
             PPDevicePeripheralType.PeripheralDorre -> {
+                Logger.i("dorreControl registDataChangeListener")
                 dorreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
             }
 
             PPDevicePeripheralType.PeripheralForre -> {
+                Logger.i("forreControl registDataChangeListener")
                 forreControl?.getTorreDeviceManager()?.registDataChangeListener(dataChangeListener)
             }
 
@@ -898,8 +1208,46 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             tempDeviceDict.put(deviceModel.deviceMac, deviceModel)
             val deviceDict = convertDeviceDict(deviceModel)
             scanResultStreamHandler?.sendEvent(deviceDict)
+
+            if (currentDevice != null && currentDevice?.deviceMac == deviceModel.deviceMac) {
+                //广播秤的数据从这里解析
+                receivedData(deviceModel, data)
+            }
+
         }
 
+    }
+
+
+    /**
+     * 直接处理数据
+     */
+    fun receivedData(deviceModel: PPDeviceModel?, data: String?) {
+        when (deviceModel?.getDevicePeripheralType()) {
+            PPDevicePeripheralType.PeripheralBanana -> {
+                bananaControl?.deviceModel = deviceModel
+                bananaControl?.onSearchResponse(data)
+            }
+
+            PPDevicePeripheralType.PeripheralJambul -> {
+                jambulControl?.deviceModel = deviceModel
+                jambulControl?.onSearchResponse(data)
+            }
+
+            PPDevicePeripheralType.PeripheralHamburger -> {
+                hamburgerControl?.deviceModel = deviceModel
+                hamburgerControl?.onSearchResponse(data)
+            }
+
+            PPDevicePeripheralType.PeripheralGrapes -> {
+                grapesControl?.deviceModel = deviceModel
+                grapesControl?.onSearchResponse(data)
+            }
+
+            else -> {
+                currentDevice = null
+            }
+        }
     }
 
 
@@ -911,6 +1259,8 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
                     tempScaleHistoryList = mutableListOf()
                 }
                 tempScaleHistoryList?.add(it)
+                addPrint("monitorHistoryEnd")
+
             }
         }
 
@@ -935,6 +1285,11 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             batteryStreamHandler?.sendEvent(mapOf("power" to power, "type" to state))
         }
 
+        override fun onLightIntensityChange(intensity: Int) {
+
+            currentLightStrength = intensity
+        }
+
     }
 
     var torreDeviceModeChangeInterface = object : PPTorreDeviceModeChangeInterface {
@@ -955,12 +1310,13 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         }
 
+
     }
 
 
     var onDFUStateListener: OnDFUStateListener = object : OnDFUStateListener {
         override fun onDfuProgress(progress: Int) {
-            dfuStreamHandler?.sendEvent(mapOf("progress" to progress, "isSuccess" to false, "code" to 0))
+            dfuStreamHandler?.sendEvent(mapOf("progress" to progress.toFloat() / 100.0, "isSuccess" to false, "code" to 0))
         }
 
         override fun onDfuFail(errorType: String?) {
@@ -972,7 +1328,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
         }
 
         override fun onDfuSucess() {
-            dfuStreamHandler?.sendEvent(mapOf("progress" to 100, "isSuccess" to true, "code" to 1))
+            dfuStreamHandler?.sendEvent(mapOf("progress" to 100.toFloat() / 100.0, "isSuccess" to true, "code" to 1))
         }
 
         override fun onStartSendDfuData() {
@@ -1052,6 +1408,7 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
 
         }
 
+
         /**
          * 监听过程数据
          *
@@ -1065,7 +1422,17 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             if (deviceModel == null) {
                 return
             }
-            val measureMentDataDict = convertMeasurementDict(bodyBaseModel)
+
+            bodyBaseModel.heartRate = 0
+
+            val measureMentDataDict = convertMeasurementDict(bodyBaseModel).toMutableMap()
+            // 添加光照强度
+            if (currentLightStrength != null) {
+                measureMentDataDict["hasLightStrength"] = true
+                measureMentDataDict["lightStrength"] = currentLightStrength!!
+            } else {
+                measureMentDataDict["hasLightStrength"] = false
+            }
             //0:过程数据，1:体脂测量中（部分设备无此状态），2:心率测量中，10:测量完成（获取阻抗、心率等数据进行身体数据计算）
             var measurementState = 0
             if (bodyBaseModel.scaleState.impedanceType == PPScaleStateImpedanceType.PP_SCALE_STATE_IMPEDANCE_MEASURING) {
@@ -1096,7 +1463,18 @@ class PPLefuBleConnectManager private constructor(private val context: Context) 
             if (deviceModel == null) {
                 return
             }
-            val measureMentDataDict = convertMeasurementDict(bodyBaseModel)
+            val measureMentDataDict = convertMeasurementDict(bodyBaseModel).toMutableMap()
+            // 添加光照强度
+            if (currentLightStrength != null) {
+                measureMentDataDict["hasLightStrength"] = true
+                measureMentDataDict["lightStrength"] = currentLightStrength!!
+            } else {
+                measureMentDataDict["hasLightStrength"] = false
+            }
+
+               if(bodyBaseModel.imErrorType != ImpedanceErrorType.PP_ERROR_TYPE_NONE){
+                measureMentDataDict["imErrorType"] = bodyBaseModel.imErrorType.getType()
+            }
             if (bodyBaseModel.isHeartRating ?: false) {
                 //isHeartRating： 心率是否测量中  true心率测量中/重量测量完成/阻抗测量完成  false心率测量结束/测量完成
                 measureStreamHandler?.sendEvent(

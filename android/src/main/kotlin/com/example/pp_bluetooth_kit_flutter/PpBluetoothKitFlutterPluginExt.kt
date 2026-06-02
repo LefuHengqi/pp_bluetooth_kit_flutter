@@ -39,6 +39,8 @@ fun PpBluetoothKitFlutterPlugin.initSDK(context: Context, appKey: String, appSec
      *  SDK日志打印控制，true会打印
      */
     PPBluetoothKit.setDebug(true)
+
+
     /**
      * PPBluetoothKit 蓝牙库初始化 所需参数需要自行到开放平台自行申请，请勿直接使用Demo中的参数，
      * Demo中的参数仅供Demo使用
@@ -66,6 +68,7 @@ fun PpBluetoothKitFlutterPlugin.initSDK(context: Context, appKey: String, appSec
     printLongString("encryptStr", encryptStr)
 
     PPBluetoothKit.setNetConfig(context, appKey, appSecret, encryptStr)
+
 
 }
 

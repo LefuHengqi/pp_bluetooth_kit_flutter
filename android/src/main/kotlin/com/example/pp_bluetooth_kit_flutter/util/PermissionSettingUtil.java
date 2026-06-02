@@ -1,113 +1,19 @@
 package com.example.pp_bluetooth_kit_flutter.util;
 
-import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
-import android.text.TextUtils;
-import android.widget.Toast;
-
-import androidx.core.app.ActivityCompat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
 
-/**
- * Created by liyp on 2018/10/27.
- */
 
-public class LocationUtil {
-
-    private static String judgeProvider(LocationManager locationManager, Context context) {
-        List<String> prodiverlist = locationManager.getProviders(true);
-        if(prodiverlist.contains(LocationManager.NETWORK_PROVIDER)){
-            return LocationManager.NETWORK_PROVIDER;//网络定位
-        }
-//        else if(prodiverlist.contains(LocationManager.GPS_PROVIDER)) {
-//            return LocationManager.GPS_PROVIDER;//GPS定位
-//        }
-        else {
-            Toast.makeText(context,"没有可用的位置提供器",Toast.LENGTH_SHORT).show();
-        }
-        return null;
-    }
-
-    public static Location beginLocatioon(Context context) {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        //获得位置服务
-        String provider = judgeProvider(locationManager, context);
-        //有位置提供器的情况
-        if (provider != null) {
-            //为了压制getLastKnownLocation方法的警告
-            if (
-//                    ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-//                    != PackageManager.PERMISSION_GRANTED &&
-                     ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                return null;
-            }
-            return locationManager.getLastKnownLocation(provider);
-        }else{
-            //不存在位置提供器的情况
-            Toast.makeText(context,"不存在位置提供器的情况",Toast.LENGTH_SHORT).show();
-        }
-        return null;
-    }
-
-    /**
-     * 判断定位是否可用,GPS或者AGPS开启一个就认为是开启的
-     *
-     * @return {@code true}: 是
-     * {@code false}: 否
-     * <p>
-     * 通过GPS卫星定位，定位级别可以精确到街（通过24颗卫星定位，在室外和空旷的地方定位准确、速度快）
-     * boolean gps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-     * 通过WLAN或移动网络(3G/2G)确定的位置（也称作AGPS，辅助GPS定位。主要用于在室内或遮盖物（建筑群或茂密的深林等）密集的地方定位）
-     * boolean network = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-     */
-    public static boolean isLocationEnabledS(Context context) {
-        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) || lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-    }
-
-    /**
-     * 判断定位开关是否打开
-     *
-     * @param context
-     * @return
-     */
-    public static boolean isLocationEnabled(Context context) {
-        int locationMode = 0;
-        String locationProviders;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            try {
-                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-        } else {
-            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
-        }
-    }
-
-    /**
-     * 直接跳转至位置信息设置界面
-     */
-    public static void openLocation(Context context) {
-        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        context.startActivity(intent);
-    }
+public class PermissionSettingUtil {
 
     public final static String EMUI = "huawei"; //华为
     public final static String Flyme = "meizu"; //魅族
@@ -179,12 +85,14 @@ public class LocationUtil {
             case SmartisanOS: // 锤子
                 intent = getAppDetailSettingIntent(context);
                 break;
-            case VIVO:
-                intent = context.getPackageManager().getLaunchIntentForPackage("com.iqoo.secure");
-                break;
-            case ColorOS: // OPPO
-                intent = context.getPackageManager().getLaunchIntentForPackage("com.iqoo.secure");
-                break;
+//            case VIVO:
+//                intent = context.getPackageManager().getLaunchIntentForPackage("com.iqoo.secure");
+//                break;
+//            case ColorOS: // OPPO
+//                intent = context.getPackageManager().getLaunchIntentForPackage("com.iqoo.secure");
+////                intent.putExtra("packageName", packageName);
+////                intent.setComponent(new ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.PermissionManagerActivity"));
+//                break;
             default:
                 intent = getAppDetailSettingIntent(context);
                 break;
@@ -211,7 +119,7 @@ public class LocationUtil {
         try {
             Process p = Runtime.getRuntime().exec("getprop " + propName);
             input = new BufferedReader(
-                    new InputStreamReader(p.getInputStream()), 1024);
+                new InputStreamReader(p.getInputStream()), 1024);
             line = input.readLine();
             input.close();
         } catch (IOException ex) {
@@ -227,33 +135,33 @@ public class LocationUtil {
     /**
      * 获取应用详情页面intent（如果找不到要跳转的界面，也可以先把用户引导到系统设置页面）
      *
+     *  Go to your app's Settings page to let user turn on the necessary permissions.
+     *
      * @return
      */
     private static Intent getAppDetailSettingIntent(Context context) {
         Intent localIntent = new Intent();
         localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (Build.VERSION.SDK_INT >= 9) {
-            localIntent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
-            localIntent.setData(Uri.fromParts("package", context.getPackageName(), null));
-        } else if (Build.VERSION.SDK_INT <= 8) {
-            localIntent.setAction(Intent.ACTION_VIEW);
-            localIntent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails");
-            localIntent.putExtra("com.android.settings.ApplicationPkgName", context.getPackageName());
-        }
+        localIntent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        localIntent.setData(Uri.fromParts("package", context.getPackageName(), null));
         return localIntent;
     }
 
-    /**
-     * 判断Gps是否可用
-     *
-     * @return {@code true}: 是
-     * {@code false}: 否
-     */
 
-    public static boolean isGpsEnabled(Context context) {
-        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    /**
+     * 默认打开应用详细页
+     */
+    public static void goIntentSetting(Activity pActivity) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", pActivity.getPackageName(), null);
+        intent.setData(uri);
+        try {
+            pActivity.startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 
 
 }

@@ -2,9 +2,9 @@ package com.example.pp_bluetooth_kit_flutter
 
 import android.content.Context
 import androidx.annotation.NonNull
-import com.example.pp_bluetooth_kit_flutter.PPLefuBleConnectManager
 import com.example.pp_bluetooth_kit_flutter.extension.clearDeviceData
 import com.example.pp_bluetooth_kit_flutter.extension.configWifi
+import com.example.pp_bluetooth_kit_flutter.extension.deleteFingerprint
 import com.example.pp_bluetooth_kit_flutter.extension.deleteUser
 import com.example.pp_bluetooth_kit_flutter.extension.exitBabyModel
 import com.example.pp_bluetooth_kit_flutter.extension.exitNetworkConfig
@@ -12,21 +12,26 @@ import com.example.pp_bluetooth_kit_flutter.extension.exitScanWifiNetworks
 import com.example.pp_bluetooth_kit_flutter.extension.fetchBindingState
 import com.example.pp_bluetooth_kit_flutter.extension.fetchDeviceInfo
 import com.example.pp_bluetooth_kit_flutter.extension.fetchDeviceLanguage
+import com.example.pp_bluetooth_kit_flutter.extension.fetchFingerprintList
 import com.example.pp_bluetooth_kit_flutter.extension.fetchHeartRateSwitch
 import com.example.pp_bluetooth_kit_flutter.extension.fetchImpedanceSwitch
 import com.example.pp_bluetooth_kit_flutter.extension.fetchUserIDList
 import com.example.pp_bluetooth_kit_flutter.extension.fetchWifiInfo
 import com.example.pp_bluetooth_kit_flutter.extension.fetchWifiMac
+import com.example.pp_bluetooth_kit_flutter.extension.getDisplayMetrics
 import com.example.pp_bluetooth_kit_flutter.extension.getScreenBrightness
 import com.example.pp_bluetooth_kit_flutter.extension.heartRateSwitchControl
 import com.example.pp_bluetooth_kit_flutter.extension.impedanceSwitchControl
 import com.example.pp_bluetooth_kit_flutter.extension.keepAlive
+import com.example.pp_bluetooth_kit_flutter.extension.registerFingerprint
 import com.example.pp_bluetooth_kit_flutter.extension.scanWifiNetworks
 import com.example.pp_bluetooth_kit_flutter.extension.selectUser
 import com.example.pp_bluetooth_kit_flutter.extension.sendCommonState
 import com.example.pp_bluetooth_kit_flutter.extension.setBindingState
 import com.example.pp_bluetooth_kit_flutter.extension.setDeviceLanguage
 import com.example.pp_bluetooth_kit_flutter.extension.setDisplayBodyFat
+import com.example.pp_bluetooth_kit_flutter.extension.setDisplayMetrics
+import com.example.pp_bluetooth_kit_flutter.extension.setRGBMode
 import com.example.pp_bluetooth_kit_flutter.extension.setScreenBrightness
 import com.example.pp_bluetooth_kit_flutter.extension.startBabyModel
 import com.example.pp_bluetooth_kit_flutter.extension.startDFU
@@ -48,7 +53,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import com.peng.ppscale.*
 
 
 /** PpBluetoothKitFlutterPlugin */
@@ -180,6 +184,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
         // 初始化SDK
         initSDK(context, appKey, appSecret,  deviceContent)
         bleManager.initSDK()
+
       }
       "setDeviceSetting" -> {
         val deviceContent = params?.get("deviceContent") as? String
@@ -191,6 +196,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
         try {
           setDeviceSetting(context, deviceContent)
           bleManager.sendCommonState(true, result)
+
         } catch (e: Exception) {
           bleManager.loggerStreamHandler?.sendEvent("设备列表-转JSON异常: ${e.message}")
           bleManager.sendCommonState(false, result)
@@ -198,10 +204,12 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
         bleManager.initSDK()
       }
       "startScan" -> {
-        bleManager.startScan(result)
+        val deviceMac = params?.get("deviceMac") as? String
+        bleManager.startScan(deviceMac, result)
       }
       "stopScan" -> {
         bleManager.stopScan()
+        Logger.e("method: Android 桥阶层不支持外部停止扫描")
         bleManager.sendCommonState(true, result)
       }
       "connectDevice" -> {
@@ -237,6 +245,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       "deleteHistory" -> {
         bleManager.deleteHistory(result)
       }
+
       "syncUnit" -> {
         val unit = params?.get("unit") as? Int
         val sex = params?.get("sex") as? Int
@@ -308,6 +317,10 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       }
       "wifiOTA" -> {
         bleManager.wifiOTA(result)
+      }
+
+      "androidOpenBooth" -> {
+        bleManager.gotoPermissionSetting()
       }
       "heartRateSwitchControl" -> {
         val open = params?.get("open") as? Boolean ?: false
@@ -466,6 +479,15 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       }
       "setRGBMode" -> {
 
+        val defalutColor = params?.get("defalutColor") as? String ?: ""
+        val gainColor = params?.get("gainColor") as? String ?: ""
+        val lossColor = params?.get("lossColor") as? String ?: ""
+        val lightEnable = params?.get("lightEnable") as? Int ?: 0
+        val lightMode = params?.get("lightMode") as? Int ?: 0
+
+
+        bleManager.setRGBMode(lightEnable,lightMode,defalutColor,gainColor,lossColor,result)
+
       }
       "sendBroadcastData" -> {
         val cmd = params?.get("cmd") as? String
@@ -482,7 +504,110 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       "toZero" -> {
         bleManager.toZero(result)
       }
-      "syncLast7Data" -> {
+
+      "changeBuzzerGate" -> {
+        val open = params?.get("open") as? Boolean ?: true
+
+        bleManager.changeBuzzerGate(open,result)
+      }
+
+      "foodScaleUnit" -> {
+
+
+        val weightG = params?.get("weightG") as? Double ?: 0
+        val accuracyType = params?.get("accuracyType") as? Int ?: 0
+        val unitType = params?.get("unitType") as? Int ?: 4
+
+        bleManager.foodScaleUnit(weightG,accuracyType,unitType,result)
+
+
+      }
+
+      "fetchFingerprintList" -> {
+        bleManager.fetchFingerprintList(result)
+
+      }
+
+      "registerFingerprint" -> {
+          val userID = params?.get("userID") as? String ?: ""
+          val memberID = params?.get("memberID") as? String ?: ""
+
+        val user = PPUserModel.Builder().setUserID(userID).setMemberId(memberID).build()
+
+
+        bleManager.registerFingerprint(user,result)
+      }
+
+      "deleteFingerprint" -> {
+          val userID = params?.get("userID") as? String ?: ""
+          val memberID = params?.get("memberID") as? String ?: ""
+
+          val user = PPUserModel.Builder().setUserID(userID).setMemberId(memberID).build()
+
+
+          bleManager.deleteFingerprint(user, result)
+      }
+
+      "setDisplayMetrics" -> {
+        val metrics = params?.get("metrics") as? Int ?: 0
+        bleManager.setDisplayMetrics(metrics,result)
+      }
+
+      "getDisplayMetrics" -> {
+        // TODO: Implement bleManager.getDisplayMetrics(result)
+        bleManager.getDisplayMetrics(result)
+      }
+
+      "fetchUserInfoList" -> {
+        // TODO: Implement bleManager.fetchUserInfoList(result)
+        result.notImplemented()
+      }
+
+      "syncBorreCLast7Data" -> {
+        val list = params?.get("weightList") as? List<Map<String, Any>> ?: listOf()
+
+        // 创建历史数据列表
+        val historyList = ArrayList<Double>()
+        val historyTimeList = ArrayList<Long>()
+
+        // 处理历史数据
+        for (item in list) {
+          val weightKg = item.get("value") as? Double ?: 0.0
+          val timeStamp = item.get("timeStamp") as? Long ?: 0
+
+          historyList.add(weightKg)
+          historyTimeList.add(timeStamp)
+        }
+
+        val typeValue = params?.get("type") as? Int ?: 0
+
+        val builder = PPUserModel.Builder()
+          .setUserID(params?.get("userID") as? String ?: "")
+          .setMemberId(params?.get("memberID") as? String ?: "")
+          .setTargetWeight(params?.get("targetWeight") as? Double ?: 0.0)
+          .setIdeaWeight(params?.get("ideaWeight") as? Double ?: 0.0)
+          .setBmi(params?.get("lastBMI") as? Double ?: 0.0)
+          .setMuscleRate(params?.get("lastMuscleRate") as? Double ?: 0.0)
+          .setWaterRate(params?.get("lastWaterRate") as? Double ?: 0.0)
+          .setBodyfat(params?.get("lastBodyFat") as? Double ?: 0.0)
+          .setHeartRate(params?.get("lastHeartRate") as? Int ?: 0)
+          .setMuscle(params?.get("lastMuscle") as? Double ?: 0.0)
+          .setBone(params?.get("lastBone") as? Double ?: 0.0)
+          .setBoneRate(params?.get("lastBoneRate") as? Double ?: 0.0)
+
+        // 设置体重数组和时间数组
+        if (historyList.isNotEmpty()) {
+          builder.setUserWeightArray(historyList.toDoubleArray())
+          builder.setUserWeightTimeArray(historyTimeList.toLongArray())
+        }
+
+        // TODO: Implement bleManager.syncBorreCLast7Data(builder.build(), result)
+        result.notImplemented()
+      }
+
+
+
+        "syncLast7Data" -> {
         val list = params?.get("weightList") as? List<Map<String, Any>> ?: listOf()
 
         // 创建历史数据列表
@@ -579,6 +704,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       .setWeightKg(currentWeight)
       .setTargetWeight(targetWeight)
       .setIdeaWeight(idealWeight)
+      .setPIndex(pIndex)
     
     // 设置体重数组和时间数组
     if (historyList.isNotEmpty()) {
