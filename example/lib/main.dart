@@ -10,7 +10,6 @@ import 'scan_page.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
   // Monitor logs
   PPBluetoothKitLogger.addListener(callBack: (log) {
     print('SDK-Log:$log');
@@ -19,14 +18,14 @@ Future<void> main() async {
   // init SDK
   final path = 'config/lefu.config';
   String content = await rootBundle.loadString(path);
-  PPBluetoothKitManager.initSDK('lefub60060202a15ac8a', 'UCzWzna/eazehXaz8kKAC6WVfcL25nIPYlV9fXYzqDM=', content);
+  PPBluetoothKitManager.initSDK('lefub60060202a15ac8a',
+      'UCzWzna/eazehXaz8kKAC6WVfcL25nIPYlV9fXYzqDM=', content);
 
   // final path = 'config/Device.json';
   // String jsonStr = await rootBundle.loadString(path);
   // print("jsonStr len:${jsonStr.length}");
   // // printLongJson(jsonStr);
   // PPBluetoothKitManager.setDeviceSetting(jsonStr);
-
 
   runApp(const MyApp());
 }
@@ -46,5 +45,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:pp_bluetooth_kit_flutter/ble/pp_bluetooth_kit_manager.dart';
 import 'package:pp_bluetooth_kit_flutter/enums/pp_scale_enums.dart';
@@ -50,6 +51,8 @@ class _ScanPageState extends State<ScanPage> {
 
   Future _onScanPressed() async {
     _scanResults = [];
+    requestBluetoothPermissions();
+
     PPBluetoothKitManager.startScan((device) {
       print('Scan result:${device.toJson()}');
 
@@ -75,6 +78,32 @@ class _ScanPageState extends State<ScanPage> {
       return FloatingActionButton(
           child: const Text("SCAN"), onPressed: _onScanPressed);
     }
+  }
+
+  /// 统一请求蓝牙相关权限
+  Future<bool> requestBluetoothPermissions() async {
+    // 存储权限申请结果
+    Map<Permission, PermissionStatus> statuses;
+
+    // 区分平台申请对应权限
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      // Android 12+ 需要同时申请 扫描、连接、位置
+      statuses = await [
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+        Permission.location,
+      ].request();
+    } else {
+      // iOS 仅需蓝牙 + 位置
+      statuses = await [
+        Permission.bluetooth,
+        Permission.locationWhenInUse,
+      ].request();
+    }
+
+    // 判断所有权限是否全部通过
+    bool allGranted = statuses.values.every((status) => status.isGranted);
+    return allGranted;
   }
 
   void _handleDeviceTap(PPDeviceModel device, int index) {
