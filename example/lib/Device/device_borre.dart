@@ -59,6 +59,7 @@ class _DeviceBorreState extends State<DeviceBorre> {
     GridItem(DeviceMenuType.getImpedanceSW.value),
     GridItem(DeviceMenuType.syncDeviceLog.value),
     GridItem(DeviceMenuType.userOTA.value),
+    GridItem(DeviceMenuType.fetchIdList.value),
   ];
 
   @override
@@ -178,6 +179,11 @@ class _DeviceBorreState extends State<DeviceBorre> {
             ? PPUnitType.Unit_LB
             : PPUnitType.Unit_KG;
         await PPPeripheralBorre.syncUnit(_unit);
+      }
+
+      if (title == DeviceMenuType.fetchIdList.value) {
+        var text = await PPPeripheralBorre.fetchUserIDList();
+        _updateText('fetchIdList:${text.toString()}');
       }
       if (title == DeviceMenuType.getVisitorHistory.value) {
         _updateText('fetchTouristsHistoryData');

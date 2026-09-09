@@ -13,6 +13,7 @@
 //#import "PPBluetoothDeviceSettingModel.h"
 #import "PPWifiInfoModel.h"
 #import <PPBaseKit/PPBaseKit.h>
+#import "PPCAInfoModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -113,6 +114,33 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)enterInternalCodeModeWithComplete:(void(^)(void))completion;
 /// 退出内码模式，部分设备支持
 - (void)exitInternalCodeModeWithComplete:(void(^)(void))completion;
+
+/// 开启心率，部分设备支持
+- (void)openHeartRateSwitchWithComplete:(void(^)(void))completion;
+
+/// 关闭心率，部分设备支持
+- (void)closeHeartRateSwitchWithComplete:(void(^)(void))completion;
+
+/// 查询心率开关状态，部分设备支持
+/// - Parameter handler: 0-心率测量打开， 1-心率测量关闭
+- (void)fetchHeartRateSwitch:(void(^)(NSInteger status))handler;
+
+
+/// 更新CA证书，部分设备支持
+/// - Parameter caContent: ca证书内容
+/// - Parameter handler:
+///       - errorCode: 0设置成功  1异或校验失败，2包序错误，3长度错误，4证书校验失败，5证书有效期异常
+///       - caInfo: ca信息
+- (void)updateCAContent:(NSString *)caContent handler:(void(^)(NSInteger errorCode, PPCAInfoModel *caInfo))handler;
+
+
+/// 获取CA证书信息，部分设备支持
+/// - Parameter handler:
+///       - errorCode: 0设置成功  1异或校验失败，2无证书
+///       - caInfo: ca信息
+- (void)fetchCAInfoWithHandler:(void(^)(NSInteger errorCode, PPCAInfoModel *caInfo))handler;
+
+
 
 @end
 

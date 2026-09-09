@@ -1,4 +1,3 @@
-
 enum DeviceMenuType {
   connectDevice('Connect Device'),
   startMeasure('Start measure'),
@@ -32,7 +31,8 @@ enum DeviceMenuType {
   turnOffImpedance('Turn off the impedance switch'),
   getImpedanceSW('Get impedance switch'),
   syncDeviceLog('Sync device logs'),
-  getPower('Get power');
+  getPower('Get power'),
+  fetchIdList('fetchIdList');
 
   final String value;
   const DeviceMenuType(this.value);
@@ -40,5 +40,3 @@ enum DeviceMenuType {
   @override
   String toString() => value;
 }
-
-

@@ -1050,7 +1050,7 @@ extension PPLefuBleConnectManager {
         
         switch currentDevice.peripheralType {
         case .peripheralTorre:
-            self.torreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state in
+            self.torreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state,type in
                 guard let `self` = self else {
                     return
                 }
@@ -1059,7 +1059,7 @@ extension PPLefuBleConnectManager {
                 self.sendCommonState(successs, callBack: callBack)
             })
         case .peripheralBorre:
-            self.borreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state in
+            self.borreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state,type in
                 guard let `self` = self else {
                     return
                 }
@@ -1068,7 +1068,7 @@ extension PPLefuBleConnectManager {
                 self.sendCommonState(successs, callBack: callBack)
             })
         case .peripheralDorre:
-            self.dorreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state in
+            self.dorreControl?.dataSyncUserInfo(info, withHandler: {[weak self] state,type in
                 guard let `self` = self else {
                     return
                 }
@@ -1092,7 +1092,7 @@ extension PPLefuBleConnectManager {
         }
         switch currentDevice.peripheralType {
         case .peripheralTorre:
-            self.torreControl?.dataSyncUserList(userList, withHandler: {[weak self] state in
+            self.torreControl?.dataSyncUserList(userList, withHandler: {[weak self] state,type in
                 guard let `self` = self else {
                     return
                 }
@@ -1101,7 +1101,7 @@ extension PPLefuBleConnectManager {
                 self.sendCommonState(successs, callBack: callBack)
             })
         case .peripheralBorre:
-            self.borreControl?.dataSyncUserList(userList, withHandler: {[weak self] state in
+            self.borreControl?.dataSyncUserList(userList, withHandler: {[weak self] state,type in
                 guard let `self` = self else {
                     return
                 }
@@ -1138,13 +1138,19 @@ extension PPLefuBleConnectManager {
                 callBack(retDict)
             })
         case .peripheralBorre:
-            self.borreControl?.dataFetchUserID({[weak self] IDS in
+            self.borreControl?.dataFetchUserInfoList({[weak self] IDS in
                 guard self != nil else {
                     return
                 }
                 
+                var array = []
+                
+                for e in IDS {
+                    array.append("userId:\(e.userID) memberId:\(e.memberID)")
+                }
+                
                 let retDict = [
-                    "userIDList":IDS
+                    "userIDList":array
                 ]
                 
                 callBack(retDict)

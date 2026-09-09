@@ -6,7 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-//#import "PPBluetoothDeviceSettingModel.h"
 #import <PPBaseKit/PPBaseKit.h>
 
 
@@ -32,12 +31,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) CGFloat targetWeight;
 @property (nonatomic, assign) CGFloat idealWeight;
 
-@property (nonatomic, assign) NSInteger nameFontSize; // 字模字体大小，部分设备支持
+@property (nonatomic, assign) NSInteger nameFontSize; // 字模字体大小，部分设备支持(Elecome)
+@property (nonatomic, strong) UIFont *nameFont; // 字模字体，部分设备支持(Elecome)
 
 //local pIndex，Borre协议专用
 @property (nonatomic, assign) NSInteger PIndex;
 
 @property (nonatomic, assign) NSInteger timeStamp; // 时间戳，该用户最近一次称重时间，亚飞设备用户列表返回
+@property (nonatomic, copy) NSString *crc32Value; // 昵称CRC32，部分设备支持
+@property (nonatomic, assign) BOOL isAthleteActive; // 开发者不需要设置此参数。Developers do not need to set this parameter.
 
 @property (nonatomic, copy) NSArray <PPUserHistoryData *> *recentData;
 

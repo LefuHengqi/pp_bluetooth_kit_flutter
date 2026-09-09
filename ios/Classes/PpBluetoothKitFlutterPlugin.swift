@@ -175,14 +175,19 @@ public class PpBluetoothKitFlutterPlugin: NSObject, FlutterPlugin {
             result([:])
 
         } else if method == "fetchHistory" {
-
+            
             let userID = params?["userID"] as? String ?? ""
             let memberID = params?["memberID"] as? String ?? ""
-
+            
             let model = PPTorreSettingModel()
             model.userID = userID
             model.memberID = memberID
             self.bleManager.fetchHistory(model: model)
+            
+        }  else if method == "fetchUserIDList" {
+            
+            self.bleManager.fetchUserIDList(result)
+
 
         }  else if method == "deleteHistory" {
             self.bleManager.deleteHistory()
