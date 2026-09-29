@@ -80,6 +80,165 @@ class _ScanPageState extends State<ScanPage> {
     }
   }
 
+  String _wifiProtocolType(PPDeviceModel device) {
+    switch (device.getDevicePeripheralType()) {
+      case PPDevicePeripheralType.apple:
+      case PPDevicePeripheralType.coconut:
+        return 'V2.0/V3.0 Protocol';
+      case PPDevicePeripheralType.ice:
+      case PPDevicePeripheralType.torre:
+      case PPDevicePeripheralType.borre:
+      case PPDevicePeripheralType.dorre:
+        return 'Torre/V4.0 Protocol';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  String _calculateApi(PPDeviceModel device) {
+    switch (device.deviceCalculateType) {
+      case PPDeviceCalculateType.direct:
+        return 'DC Four-Electrode Algorithm v2.0';
+      case PPDeviceCalculateType.alternate:
+      case PPDeviceCalculateType.normal:
+      case PPDeviceCalculateType.alternate4_0:
+        return 'AC Four-Electrode Algorithm';
+      case PPDeviceCalculateType.alternate4_1:
+        return 'Dual-Frequency AC Four-Electrode Algorithm';
+      case PPDeviceCalculateType.alternate8:
+      case PPDeviceCalculateType.alternate8_0:
+      case PPDeviceCalculateType.alternate8_1:
+      case PPDeviceCalculateType.alternate8_2:
+      case PPDeviceCalculateType.alternate8_3:
+      case PPDeviceCalculateType.alternate8_4:
+        return 'AC Eight-Electrode Algorithm';
+      case PPDeviceCalculateType.alternate8_5:
+        return 'AC Eight-Electrode Algorithm Smooth';
+      default:
+        return 'AC Four-Electrode Algorithm';
+    }
+  }
+
+  int _product(PPDeviceModel device) {
+    switch (device.deviceCalculateType) {
+      case PPDeviceCalculateType.alternate8:
+        return 1;
+      case PPDeviceCalculateType.alternate8_0:
+        return 4;
+      case PPDeviceCalculateType.alternate8_1:
+        return 3;
+      case PPDeviceCalculateType.alternate8_2:
+        return 7;
+      case PPDeviceCalculateType.alternate8_3:
+        return 5;
+      case PPDeviceCalculateType.alternate8_4:
+      case PPDeviceCalculateType.alternate8_5:
+        return 6;
+      default:
+        return -1;
+    }
+  }
+
+  bool _isWifi(PPDeviceModel device) {
+    return ((device.deviceFuncType ?? 0) & PPDeviceFuncType.Wifi.getType()) != 0;
+  }
+
+  Widget _infoPanel(List<Widget> children) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF999999),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+    );
+  }
+
+  Widget _infoText(String text, {bool right = false}) {
+    return Expanded(
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: right ? TextAlign.right : TextAlign.left,
+        style: const TextStyle(fontSize: 12, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _leftRow(String text) => Row(children: [_infoText(text)]);
+
+  Widget _buildDeviceCard(PPDeviceModel device) {
+    final product = _product(device);
+    return InkWell(
+      onTap: () => _handleDeviceTap(device, _scanResults.indexOf(device)),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Add Devices To The Platform', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            _infoPanel([
+              _leftRow('DeviceName: ${device.deviceName ?? '--'}'),
+              const SizedBox(height: 4),
+              Row(children: [
+                _infoText('AdvLength: ${device.advLength ?? 0}'),
+                _infoText('Sign: ${device.sign?.isNotEmpty == true ? device.sign : '--'}', right: true),
+              ]),
+            ]),
+            const SizedBox(height: 4),
+            const Text('Basic Attributes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            _infoPanel([
+              Row(children: [
+                _infoText('MAC: ${device.deviceMac ?? '--'}'),
+                _infoText('RSSI: ${device.rssi ?? 0}db', right: true),
+              ]),
+              const SizedBox(height: 4),
+              _leftRow('PeripheralType: ${device.getDevicePeripheralType().name}'),
+              const SizedBox(height: 4),
+              _leftRow('NeedAuth: ${device.needAuth == true ? 'Need' : 'No Need'}'),
+            ]),
+            if (_isWifi(device)) ...[
+              const SizedBox(height: 4),
+              const Text('Distribution Networks', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              _infoPanel([
+                _leftRow('WifiProtocolType: ${_wifiProtocolType(device)}'),
+                const SizedBox(height: 4),
+                _leftRow('HttpScheme: ${device.httpType == 1 ? 'https' : 'http'}'),
+                const SizedBox(height: 4),
+                _leftRow('SupportADN: ${device.isSupportADN == true ? 'Yes' : 'No'}'),
+              ]),
+            ],
+            if (device.deviceCalculateType != PPDeviceCalculateType.needNot) ...[
+              const SizedBox(height: 4),
+              const Text('Computing Library', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              _infoPanel([
+                _leftRow('CalculateType: ${device.deviceCalculateType?.name ?? 'Unknown'}'),
+                const SizedBox(height: 4),
+                _leftRow('CalculateAPI: ${_calculateApi(device)}'),
+                if (product >= 0) ...[
+                  const SizedBox(height: 4),
+                  _leftRow('Product: $product'),
+                ],
+              ]),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 统一请求蓝牙相关权限
   Future<bool> requestBluetoothPermissions() async {
     // 存储权限申请结果
@@ -208,39 +367,13 @@ class _ScanPageState extends State<ScanPage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: ListView.builder(
-          itemCount: _scanResults.length,
-          itemBuilder: (context, index) {
-            final device = _scanResults[index];
-
-            return InkWell(
-              onTap: () {
-                _handleDeviceTap(device, index);
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Card(
-                margin: EdgeInsets.all(8.0),
-                elevation: 4.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Name:${device.deviceName}\t\tRSSI:${device.rssi}\nMac:${device.deviceMac}\nsettingId:${device.deviceSettingId}\nadvLength:${device.advLength}\t\tsign:${device.sign}\nPeripheralType:${device.getDevicePeripheralType()}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(8),
+        itemCount: _scanResults.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          return _buildDeviceCard(_scanResults[index]);
+        },
       ),
       floatingActionButton: _buildScanButton(
           context), // This trailing comma makes auto-formatting nicer for build methods.

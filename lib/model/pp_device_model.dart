@@ -42,6 +42,10 @@ class PPDeviceModel {
   int? brandId = 0;
   int? avatarType = 0;
   int? peripheralType = 0;
+  // Optional network capabilities supplied by newer device payloads.
+  bool? needAuth = false;
+  int? httpType = 0;
+  bool? isSupportADN = false;
 
   PPDeviceModel(this.deviceName, this.deviceMac);
 
@@ -90,6 +94,9 @@ class PPDeviceModel {
       'brandId': brandId,
       'avatarType': avatarType,
       'peripheralType': peripheralType,
+      'needAuth': needAuth,
+      'httpType': httpType,
+      'isSupportADN': isSupportADN,
     };
   }
 
@@ -139,6 +146,9 @@ class PPDeviceModel {
     model.brandId = json['brandId'] as int?;
     model.avatarType = json['avatarType'] as int?;
     model.peripheralType = json['peripheralType'] as int?;
+    model.needAuth = json['needAuth'] as bool? ?? false;
+    model.httpType = json['httpType'] as int? ?? 0;
+    model.isSupportADN = json['isSupportADN'] as bool? ?? false;
     return model;
   }
 }

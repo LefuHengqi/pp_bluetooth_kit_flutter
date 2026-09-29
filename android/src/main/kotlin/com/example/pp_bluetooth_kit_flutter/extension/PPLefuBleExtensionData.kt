@@ -55,8 +55,22 @@ fun PPLefuBleConnectManager.convertDeviceDict(device: PPDeviceModel): Map<String
     map["imgUrl"] = device.imgUrl
     map["avatarType"] = deviceConfig?.avatarType ?: 0
     map["customDeviceName"] = deviceConfig?.customDeviceName ?: ""
+    // Keep these optional network fields compatible with SDK versions that do
+    // not expose them in the PPDeviceModel API yet.
+    map["needAuth"] = device.optionalProperty("needAuth", false)
+    map["httpType"] = device.optionalProperty("httpType", 0)
+    map["isSupportADN"] = device.optionalProperty("isSupportADN", false)
 
     return map.filterValues { it != null } as Map<String, Any>
+}
+
+private fun PPDeviceModel.optionalProperty(name: String, defaultValue: Any): Any {
+    val suffix = name.replaceFirstChar { it.uppercase() }
+    val getter = javaClass.methods.firstOrNull { method ->
+        method.parameterCount == 0 &&
+            (method.name == "get$suffix" || method.name == "is$suffix")
+    } ?: return defaultValue
+    return getter.invoke(this) ?: defaultValue
 }
 
 fun PPLefuBleConnectManager.convertMeasurementDict(model: PPBodyBaseModel): Map<String, Any> {

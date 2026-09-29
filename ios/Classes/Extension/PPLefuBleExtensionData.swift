@@ -56,6 +56,9 @@ extension PPLefuBleConnectManager {
             "imgUrl":device.imgUrl,
             "avatarType":device.avatarType.rawValue,
             "advancedConfig":device.advancedConfig,
+            "needAuth":device.needAuth,
+            "httpType":device.httpType,
+            "isSupportADN":device.isSupportADN,
         ]
         
         let filtedDict = dict.compactMapValues { $0 }

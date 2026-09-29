@@ -13,6 +13,7 @@ export class PPLefuBleExtensionData {
   static convertDeviceDict(device: PPDeviceModel | null): DeviceDict {
 
     const deviceConfig = PPLefuBleExtensionData.getDeviceConfigVo(device?.deviceSettingId);
+    const networkProperties = PPLefuBleExtensionData.getNetworkProperties(device);
 
 
     return {
@@ -44,8 +45,22 @@ export class PPLefuBleExtensionData {
       hardwareRevision: device?.hardwareVersion ?? "",
       serialNumber: device?.serialNumber ?? "",
       manufacturerName: device?.manufacturerName ?? "",
+      needAuth: networkProperties.needAuth ?? false,
+      httpType: networkProperties.httpType ?? 0,
+      isSupportADN: networkProperties.isSupportADN ?? false,
 
     };
+  }
+
+  private static getNetworkProperties(device: PPDeviceModel | null): DeviceNetworkProperties {
+    if (!device) {
+      return {};
+    }
+    try {
+      return JSON.parse(JSON.stringify(device)) as DeviceNetworkProperties;
+    } catch (_) {
+      return {};
+    }
   }
 
 
@@ -182,4 +197,13 @@ export interface DeviceDict {
   hardwareRevision: string;
   serialNumber: string;
   manufacturerName: string;
+  needAuth: boolean;
+  httpType: number;
+  isSupportADN: boolean;
+}
+
+interface DeviceNetworkProperties {
+  needAuth?: boolean;
+  httpType?: number;
+  isSupportADN?: boolean;
 }
