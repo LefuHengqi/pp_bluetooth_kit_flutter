@@ -3,6 +3,9 @@
 .sconsign.dblite
 .svn/
 
+pp_bluetooth_kit_flutter/.build/
+pp_bluetooth_kit_flutter/.swiftpm/
+
 .DS_Store
 *.swp
 profile
