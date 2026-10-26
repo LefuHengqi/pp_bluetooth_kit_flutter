@@ -127,7 +127,7 @@ class PPBodyBaseModel {
     return PPBodyBaseModel()
       ..weight = json["weight"] ?? 0
       ..impedance = json["impedance"] ?? 0
-      ..impedance100EnCode = json["impedance100EnCode"] ?? 0.0
+      ..impedance100EnCode = json["impedance100EnCode"] ?? 0
       ..isHeartRating = json["isHeartRating"] ?? false
       ..heartRate = json["heartRate"] ?? 0
       ..isOverload = json["isOverload"] ?? false
