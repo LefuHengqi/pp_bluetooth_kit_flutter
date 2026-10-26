@@ -66,18 +66,16 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   private lateinit var context: Context
   lateinit var bleManager: PPLefuBleConnectManager
 
-  companion object {
-    @Volatile private var initialized = false
-  }
+  private var isAttached = false
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
 
-    if (initialized) {
+    if (isAttached) {
       // 可加调试日志：重复引擎或重复注册场景
-      Logger.e("PpBluetoothKitFlutterPlugin has been initialized already.")
+      Logger.e("PpBluetoothKitFlutterPlugin instance has already been attached to engine.")
       return
     }
-    initialized = true
+    isAttached = true
 
     context = flutterPluginBinding.applicationContext
     bleManager = PPLefuBleConnectManager.getInstance(context)
@@ -716,7 +714,12 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    channel.setMethodCallHandler(null)
-    bleChannel.setMethodCallHandler(null)
+    if (::channel.isInitialized) {
+      channel.setMethodCallHandler(null)
+    }
+    if (::bleChannel.isInitialized) {
+      bleChannel.setMethodCallHandler(null)
+    }
+    isAttached = false
   }
 }

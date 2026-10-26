@@ -56,6 +56,19 @@ class _ScanPageState extends State<ScanPage> {
     PPBluetoothKitManager.startScan((device) {
       print('Scan result:${device.toJson()}');
 
+      // A BLE device can be reported repeatedly while scanning. Keep only
+      // one row for each MAC address (case and surrounding whitespace do not
+      // affect identity). Devices without a MAC are still displayed.
+      final mac = device.deviceMac?.trim().toUpperCase();
+      if (mac != null && mac.isNotEmpty) {
+        final alreadyDisplayed = _scanResults.any((item) {
+          return item.deviceMac?.trim().toUpperCase() == mac;
+        });
+        if (alreadyDisplayed) {
+          return;
+        }
+      }
+
       _scanResults.add(device);
       if (mounted) {
         setState(() {});
@@ -140,7 +153,8 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   bool _isWifi(PPDeviceModel device) {
-    return ((device.deviceFuncType ?? 0) & PPDeviceFuncType.Wifi.getType()) != 0;
+    return ((device.deviceFuncType ?? 0) & PPDeviceFuncType.Wifi.getType()) !=
+        0;
   }
 
   Widget _infoPanel(List<Widget> children) {
@@ -151,7 +165,8 @@ class _ScanPageState extends State<ScanPage> {
         color: const Color(0xFF999999),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, children: children),
     );
   }
 
@@ -184,18 +199,22 @@ class _ScanPageState extends State<ScanPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Add Devices To The Platform', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const Text('Add Devices To The Platform',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             _infoPanel([
               _leftRow('DeviceName: ${device.deviceName ?? '--'}'),
               const SizedBox(height: 4),
               Row(children: [
                 _infoText('AdvLength: ${device.advLength ?? 0}'),
-                _infoText('Sign: ${device.sign?.isNotEmpty == true ? device.sign : '--'}', right: true),
+                _infoText(
+                    'Sign: ${device.sign?.isNotEmpty == true ? device.sign : '--'}',
+                    right: true),
               ]),
             ]),
             const SizedBox(height: 4),
-            const Text('Basic Attributes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            const Text('Basic Attributes',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             _infoPanel([
               Row(children: [
@@ -203,28 +222,36 @@ class _ScanPageState extends State<ScanPage> {
                 _infoText('RSSI: ${device.rssi ?? 0}db', right: true),
               ]),
               const SizedBox(height: 4),
-              _leftRow('PeripheralType: ${device.getDevicePeripheralType().name}'),
+              _leftRow(
+                  'PeripheralType: ${device.getDevicePeripheralType().name}'),
               const SizedBox(height: 4),
-              _leftRow('NeedAuth: ${device.needAuth == true ? 'Need' : 'No Need'}'),
+              _leftRow(
+                  'NeedAuth: ${device.needAuth == true ? 'Need' : 'No Need'}'),
             ]),
             if (_isWifi(device)) ...[
               const SizedBox(height: 4),
-              const Text('Distribution Networks', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const Text('Distribution Networks',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               _infoPanel([
                 _leftRow('WifiProtocolType: ${_wifiProtocolType(device)}'),
                 const SizedBox(height: 4),
-                _leftRow('HttpScheme: ${device.httpType == 1 ? 'https' : 'http'}'),
+                _leftRow(
+                    'HttpScheme: ${device.httpType == 1 ? 'https' : 'http'}'),
                 const SizedBox(height: 4),
-                _leftRow('SupportADN: ${device.isSupportADN == true ? 'Yes' : 'No'}'),
+                _leftRow(
+                    'SupportADN: ${device.isSupportADN == true ? 'Yes' : 'No'}'),
               ]),
             ],
-            if (device.deviceCalculateType != PPDeviceCalculateType.needNot) ...[
+            if (device.deviceCalculateType !=
+                PPDeviceCalculateType.needNot) ...[
               const SizedBox(height: 4),
-              const Text('Computing Library', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const Text('Computing Library',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               _infoPanel([
-                _leftRow('CalculateType: ${device.deviceCalculateType?.name ?? 'Unknown'}'),
+                _leftRow(
+                    'CalculateType: ${device.deviceCalculateType?.name ?? 'Unknown'}'),
                 const SizedBox(height: 4),
                 _leftRow('CalculateAPI: ${_calculateApi(device)}'),
                 if (product >= 0) ...[
