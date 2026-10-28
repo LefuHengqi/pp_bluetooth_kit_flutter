@@ -48,6 +48,7 @@ import com.lefu.ppbase.util.Logger
 import com.lefu.ppbase.vo.PPUserGender
 import com.lefu.ppbase.vo.PPUserModel
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -67,8 +68,15 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   lateinit var bleManager: PPLefuBleConnectManager
 
   private var isAttached = false
+  private var messenger: BinaryMessenger? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+
+    if (isAttached && messenger !== flutterPluginBinding.binaryMessenger) {
+      if (::channel.isInitialized) channel.setMethodCallHandler(null)
+      if (::bleChannel.isInitialized) bleChannel.setMethodCallHandler(null)
+      isAttached = false
+    }
 
     if (isAttached) {
       // 可加调试日志：重复引擎或重复注册场景
@@ -76,6 +84,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       return
     }
     isAttached = true
+    messenger = flutterPluginBinding.binaryMessenger
 
     context = flutterPluginBinding.applicationContext
     bleManager = PPLefuBleConnectManager.getInstance(context)
@@ -714,6 +723,7 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    if (messenger !== binding.binaryMessenger) return
     if (::channel.isInitialized) {
       channel.setMethodCallHandler(null)
     }
@@ -721,5 +731,6 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
       bleChannel.setMethodCallHandler(null)
     }
     isAttached = false
+    messenger = null
   }
 }
