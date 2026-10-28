@@ -48,11 +48,13 @@ import com.lefu.ppbase.util.Logger
 import com.lefu.ppbase.vo.PPUserGender
 import com.lefu.ppbase.vo.PPUserModel
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import kotlin.reflect.KMutableProperty0
 
 
 /** PpBluetoothKitFlutterPlugin */
@@ -67,90 +69,108 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   lateinit var bleManager: PPLefuBleConnectManager
 
   private var isAttached = false
+  private var messenger: BinaryMessenger? = null
+  private val eventCleanups = mutableListOf<() -> Unit>()
+
+  private fun registerStream(channel: EventChannel, handler: PPLefuStreamHandler,
+                             slot: KMutableProperty0<PPLefuStreamHandler?>) {
+    slot.set(handler)
+    channel.setStreamHandler(handler)
+    eventCleanups.add {
+      channel.setStreamHandler(null)
+      handler.onCancel(null)
+      // Another engine may already own this singleton slot.
+      if (slot.get() === handler) slot.set(null)
+    }
+  }
+
+  private fun detachChannels() {
+    if (::channel.isInitialized) channel.setMethodCallHandler(null)
+    if (::bleChannel.isInitialized) bleChannel.setMethodCallHandler(null)
+    eventCleanups.forEach { it() }
+    eventCleanups.clear()
+    isAttached = false
+    messenger = null
+  }
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
 
-    if (isAttached) {
-      // 可加调试日志：重复引擎或重复注册场景
-      Logger.e("PpBluetoothKitFlutterPlugin instance has already been attached to engine.")
+    if (isAttached && messenger === flutterPluginBinding.binaryMessenger) {
       return
     }
-    isAttached = true
+    // A reused instance must release only its previous messenger's channels.
+    if (messenger != null) detachChannels()
+    messenger = flutterPluginBinding.binaryMessenger
 
     context = flutterPluginBinding.applicationContext
     bleManager = PPLefuBleConnectManager.getInstance(context)
 
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "pp_bluetooth_kit_flutter")
-    channel.setMethodCallHandler(this)
+    try {
+      channel = MethodChannel(flutterPluginBinding.binaryMessenger, "pp_bluetooth_kit_flutter")
+      channel.setMethodCallHandler(this)
 
-    bleChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "pp_ble_channel")
-    bleChannel.setMethodCallHandler(this)
+      bleChannel = MethodChannel(flutterPluginBinding.binaryMessenger, "pp_ble_channel")
+      bleChannel.setMethodCallHandler(this)
 
-    // 设置测量数据流
-    val measureStreamHandler = PPLefuStreamHandler()
-    bleManager.measureStreamHandler = measureStreamHandler
-    val measureEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_measurement_streams")
-    measureEventChannel.setStreamHandler(measureStreamHandler)
+      // 设置测量数据流
+      val measureStreamHandler = PPLefuStreamHandler()
+      val measureEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_measurement_streams")
+      registerStream(measureEventChannel, measureStreamHandler, bleManager::measureStreamHandler)
 
-    // 设置日志流
-    val loggerStreamHandler = PPLefuStreamHandler()
-    bleManager.loggerStreamHandler = loggerStreamHandler
-    val loggerEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_logger_streams")
-    loggerEventChannel.setStreamHandler(loggerStreamHandler)
+      // 设置日志流
+      val loggerStreamHandler = PPLefuStreamHandler()
+      val loggerEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_logger_streams")
+      registerStream(loggerEventChannel, loggerStreamHandler, bleManager::loggerStreamHandler)
 
-    // 设置连接状态流
-    val connectStateStreamHandler = PPLefuStreamHandler()
-    bleManager.connectStateStreamHandler = connectStateStreamHandler
-    val connectStateEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_connect_state_streams")
-    connectStateEventChannel.setStreamHandler(connectStateStreamHandler)
+      // 设置连接状态流
+      val connectStateStreamHandler = PPLefuStreamHandler()
+      val connectStateEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_connect_state_streams")
+      registerStream(connectStateEventChannel, connectStateStreamHandler, bleManager::connectStateStreamHandler)
 
-    // 设置扫描结果流
-    val scanResultStreamHandler = PPLefuStreamHandler()
-    bleManager.scanResultStreamHandler = scanResultStreamHandler
-    val scanEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_device_list_streams")
-    scanEventChannel.setStreamHandler(scanResultStreamHandler)
+      // 设置扫描结果流
+      val scanResultStreamHandler = PPLefuStreamHandler()
+      val scanEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_device_list_streams")
+      registerStream(scanEventChannel, scanResultStreamHandler, bleManager::scanResultStreamHandler)
 
-    // 设置历史数据流
-    val historyStreamHandler = PPLefuStreamHandler()
-    bleManager.historyStreamHandler = historyStreamHandler
-    val historyEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_history_data_streams")
-    historyEventChannel.setStreamHandler(historyStreamHandler)
+      // 设置历史数据流
+      val historyStreamHandler = PPLefuStreamHandler()
+      val historyEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_history_data_streams")
+      registerStream(historyEventChannel, historyStreamHandler, bleManager::historyStreamHandler)
 
-    // 设置电池信息流
-    val batteryStreamHandler = PPLefuStreamHandler()
-    bleManager.batteryStreamHandler = batteryStreamHandler
-    val batteryEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_battery_streams")
-    batteryEventChannel.setStreamHandler(batteryStreamHandler)
+      // 设置电池信息流
+      val batteryStreamHandler = PPLefuStreamHandler()
+      val batteryEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_battery_streams")
+      registerStream(batteryEventChannel, batteryStreamHandler, bleManager::batteryStreamHandler)
 
-    // 设置蓝牙权限流
-    val blePermissionStreamHandler = PPLefuStreamHandler()
-    bleManager.blePermissionStreamHandler = blePermissionStreamHandler
-    val blePermissionEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_ble_permission_streams")
-    blePermissionEventChannel.setStreamHandler(blePermissionStreamHandler)
+      // 设置蓝牙权限流
+      val blePermissionStreamHandler = PPLefuStreamHandler()
+      val blePermissionEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_ble_permission_streams")
+      registerStream(blePermissionEventChannel, blePermissionStreamHandler, bleManager::blePermissionStreamHandler)
 
-    // 设置DFU流
-    val dfuStreamHandler = PPLefuStreamHandler()
-    bleManager.dfuStreamHandler = dfuStreamHandler
-    val dfuEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_dfu_streams")
-    dfuEventChannel.setStreamHandler(dfuStreamHandler)
+      // 设置DFU流
+      val dfuStreamHandler = PPLefuStreamHandler()
+      val dfuEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_dfu_streams")
+      registerStream(dfuEventChannel, dfuStreamHandler, bleManager::dfuStreamHandler)
 
-    // 设置设备日志流
-    val deviceLogStreamHandler = PPLefuStreamHandler()
-    bleManager.deviceLogStreamHandler = deviceLogStreamHandler
-    val deviceLogEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "device_log_streams")
-    deviceLogEventChannel.setStreamHandler(deviceLogStreamHandler)
+      // 设置设备日志流
+      val deviceLogStreamHandler = PPLefuStreamHandler()
+      val deviceLogEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "device_log_streams")
+      registerStream(deviceLogEventChannel, deviceLogStreamHandler, bleManager::deviceLogStreamHandler)
 
-    // 设置扫描状态流
-    val scanStateStreamHandler = PPLefuStreamHandler()
-    bleManager.scanStateStreamHandler = scanStateStreamHandler
-    val scanStateEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_scan_state_streams")
-    scanStateEventChannel.setStreamHandler(scanStateStreamHandler)
+      // 设置扫描状态流
+      val scanStateStreamHandler = PPLefuStreamHandler()
+      val scanStateEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_scan_state_streams")
+      registerStream(scanStateEventChannel, scanStateStreamHandler, bleManager::scanStateStreamHandler)
 
-    // 设置厨房秤流
-    val kitchenStreamHandler = PPLefuStreamHandler()
-    bleManager.kitchenStreamHandler = kitchenStreamHandler
-    val kitchenEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_kitchen_streams")
-    kitchenEventChannel.setStreamHandler(kitchenStreamHandler)
+      // 设置厨房秤流
+      val kitchenStreamHandler = PPLefuStreamHandler()
+      val kitchenEventChannel = EventChannel(flutterPluginBinding.binaryMessenger, "pp_kitchen_streams")
+      registerStream(kitchenEventChannel, kitchenStreamHandler, bleManager::kitchenStreamHandler)
+      isAttached = true
+    } catch (e: Exception) {
+      detachChannels()
+      throw e
+    }
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -166,23 +186,19 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
         val appSecret = params?.get("appSecret") as? String
         val deviceContent = params?.get("deviceContent") as? String
 
-        if (appKey == null) {
-          bleManager.loggerStreamHandler?.sendEvent("appKey为空")
+        if (appKey.isNullOrBlank() || appSecret.isNullOrBlank() || deviceContent.isNullOrBlank()) {
+          result.error("INVALID_ARGUMENTS", "appKey, appSecret and deviceContent must be non-empty strings", null)
           return
         }
-        if (appSecret == null) {
-          bleManager.loggerStreamHandler?.sendEvent("appSecret为空")
+        try {
+          initSDK(context, appKey, appSecret, deviceContent)
+          bleManager.initSDK()
+        } catch (e: Exception) {
+          // Do not expose SDK exception messages that may contain sensitive data.
+          result.error("INIT_SDK_FAILED", "Native SDK initialization failed", null)
           return
         }
-        if (deviceContent == null) {
-          bleManager.loggerStreamHandler?.sendEvent("deviceContent为空")
-          return
-        }
-
-        // 初始化SDK
-        initSDK(context, appKey, appSecret,  deviceContent)
-        bleManager.initSDK()
-
+        result.success(null)
       }
       "setDeviceSetting" -> {
         val deviceContent = params?.get("deviceContent") as? String
@@ -714,12 +730,9 @@ class PpBluetoothKitFlutterPlugin: FlutterPlugin, MethodCallHandler {
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    if (::channel.isInitialized) {
-      channel.setMethodCallHandler(null)
+    if (messenger !== binding.binaryMessenger) {
+      return
     }
-    if (::bleChannel.isInitialized) {
-      bleChannel.setMethodCallHandler(null)
-    }
-    isAttached = false
+    detachChannels()
   }
 }
