@@ -144,8 +144,8 @@ class PPPeripheralDorre {
   }
 
   /// 获取绑定状态
-  /// 返回：true-已绑定，false-未绑定
-  static Future<bool> fetchBindingState() async {
+  /// 返回：true-已绑定，false-未绑定，null-获取失败
+  static Future<bool?> fetchBindingState() async {
     return PPBluetoothKitFlutterPlatform.instance
         .fetchBindingState(_peripheralType);
   }

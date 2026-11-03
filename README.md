@@ -46,10 +46,11 @@ After you have completed configuring the device, please go to [ the Personal Cen
 Add the following references to the**pubspec.yaml**file in the Flutter project**: ​**
 
 ```
-pp_bluetooth_kit_flutter:
-​    ​git:
+dependencies:
+  pp_bluetooth_kit_flutter:
+    git:
       url: https://github.com/LefuHengqi/pp_bluetooth_kit_flutter.git
-      ref: 0.0.34
+      ref: v1.0.0
 ```
 
 Create a new folder in the root directory of the Flutter project, named: config; rename the **config** file downloaded in step 1.4 to: lefu.config, and add the corresponding configuration to the **pubspec.yaml** file:

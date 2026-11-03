@@ -1,10 +1,10 @@
 name: pp_bluetooth_kit_flutter
 description: A new Flutter plugin project.
-version: 0.0.32
+version: 1.0.0
 homepage:
 
 environment:
-  sdk: '>=2.19.6 <3.0.0'
+  sdk: '>=2.19.6 <4.0.0'
   flutter: ">=2.5.0"
 
 dependencies:
